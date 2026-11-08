@@ -18,7 +18,8 @@ DEV-B-BUNDLE-002 M1 (saved definitions; development/test repository, disabled in
 
 The identity dependency runs before any body is read, any fixture/capture byte is
 accessed or a browser is launched. No route accepts org_id/approved/authorization from
-the client, and no route fills, uploads, submits or signs anything.
+the client. The separate prefill router accepts an explicit exact-plan execution command;
+intake and inspection never authorize entry. No route uploads, submits or signs anything.
 """
 
 from __future__ import annotations
@@ -93,7 +94,8 @@ CAPABILITIES: list[Capability] = [
         status="fixture_only",
         detail=(
             "Intake (structured JSON, saved HTML, capture reference) and read-only inspection "
-            "of the local representative fixture portal. Prefill/submission not available."
+            "of the local representative fixture portal. Fixture-only approved prefill; "
+            "no submission."
         ),
     ),
     Capability(
@@ -126,8 +128,51 @@ CAPABILITIES: list[Capability] = [
     Capability(
         feature="automation.approved_prefill",
         owner="B2",
-        status="not_implemented",
-        detail="Planned for B2-AUTO-002; needs C's ApprovedAnswerResolver (unavailable here).",
+        status="fixture_only",
+        detail="B2-AUTO-002: server-built plans and staff-authorized, single-use entry with real "
+        "Chromium read-back on registered local fixture portals only. Requires a configured "
+        "approved-content reader; none is configured on main (503, no seeded fallback).",
+    ),
+    Capability(
+        feature="automation.prefill_plan_preparation",
+        owner="B2",
+        status="fixture_only",
+        detail="Plans bind an exact saved question set, registered fixture form and approval "
+        "hashes; held fields, unselected requirements and attachments stay visible. No writes.",
+    ),
+    Capability(
+        feature="automation.prefill_execution_test_provider",
+        owner="B2",
+        status="fixture_only",
+        detail="Entry/read-back verified against an explicitly injected test approval provider "
+        "(harness), not a joined C3 integration.",
+    ),
+    Capability(
+        feature="automation.prefill_execution_c3",
+        owner="B2",
+        status="unavailable",
+        detail="Integrated C3 execution is pending C's approved-content reader (B2-AUTO-002 P2). "
+        "C2b now consumes B's exact published question identities.",
+    ),
+    Capability(
+        feature="automation.prefill_choice_values",
+        owner="B2",
+        status="unavailable",
+        detail="Choice controls need C-authorized typed values; the real producer has none yet, "
+        "so choices are held outside the test harness.",
+    ),
+    Capability(
+        feature="automation.attachment_checklist",
+        owner="B2",
+        status="fixture_only",
+        detail="AUT-04 checklist only: constraints are compared with trusted artifact records "
+        "when a reader exists, otherwise needs review. No upload.",
+    ),
+    Capability(
+        feature="automation.real_portal_prefill",
+        owner="B2",
+        status="unavailable",
+        detail="Arbitrary URLs, authenticated funder portals and file upload are out of scope.",
     ),
     Capability(
         feature="automation.final_submission",
@@ -143,7 +188,24 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 def capabilities_for(settings: Settings) -> list[Capability]:
     saved = settings.environment != "production"
     return [
-        *CAPABILITIES,
+        *[
+            c.model_copy(
+                update={
+                    "status": "unavailable",
+                    "detail": "Disabled in production: no supported prefill runtime or repository.",
+                }
+            )
+            if not saved
+            and c.feature
+            in {
+                "automation.approved_prefill",
+                "automation.prefill_plan_preparation",
+                "automation.prefill_execution_test_provider",
+                "automation.attachment_checklist",
+            }
+            else c
+            for c in CAPABILITIES
+        ],
         Capability(
             feature="automation.saved_definitions",
             owner="B2",
@@ -215,8 +277,8 @@ def _browser_status(settings: Settings) -> tuple[Any, str]:
 
 
 @router.get("/status", response_model=list[Capability])
-def status() -> list[Capability]:
-    return CAPABILITIES
+def status(settings: SettingsDep) -> list[Capability]:
+    return capabilities_for(settings)
 
 
 @router.get("/availability", response_model=AutomationAvailability)
@@ -230,7 +292,7 @@ def availability(settings: SettingsDep, capture: CaptureDep) -> AutomationAvaila
         else []
     )
     return AutomationAvailability(
-        capabilities=CAPABILITIES,
+        capabilities=capabilities_for(settings),
         import_modes=[
             ImportModeInfo(
                 mode="fixture",
@@ -479,3 +541,9 @@ def view_portal(fixture_id: str, identity: Identity, settings: SettingsDep) -> H
             "Referrer-Policy": "no-referrer",
         },
     )
+
+
+# B2-AUTO-002 approved prefill routes (same /api/automation prefix).
+from .prefill_router import prefill_router  # noqa: E402
+
+router.include_router(prefill_router)

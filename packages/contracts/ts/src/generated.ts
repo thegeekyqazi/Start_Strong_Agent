@@ -966,6 +966,245 @@ export interface ApprovalSnapshot {
   schema_version?: '1'
 }
 /**
+ * One consistent approved-content envelope (requested from Dev C; s5.1).
+ *
+ * C guarantees these properties. B recomputes the hashes and checks every identity.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApprovedPrefillContent".
+ */
+export interface ApprovedPrefillContent {
+  answer_version: number
+  answer_version_id: string
+  approval: ApprovalSnapshot
+  content_format?: 'b2-requested-approved-prefill-content/1'
+  currentness: 'current'
+  currentness_checked_at: string
+  dependencies?: DependencyRef[]
+  dependency_snapshot_sha256: string
+  is_fixture: boolean
+  organization_id: string
+  producer_epoch: string
+  producer_id: string
+  provenance: Provenance
+  question_id: string
+  question_set_id: string
+  question_version: number
+  rendered_sha256: string
+  rendered_text: string
+  renderer_version: string
+  template_sha256: string
+  template_text: string
+  typed_value?: ApprovedTypedValue | null
+  unresolved_marker_count: number
+}
+/**
+ * A C-authorized typed value for choice controls. Prose is never a choice value.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApprovedTypedValue".
+ */
+export interface ApprovedTypedValue {
+  kind: 'choice'
+  /**
+   * @minItems 1
+   * @maxItems 20
+   */
+  values:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+}
+/**
+ * AUT-04 checklist coverage only. Nothing is uploaded.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AttachmentChecklistItem".
+ */
+export interface AttachmentChecklistItem {
+  accepted_types?: string[] | null
+  artifact_ids?: string[]
+  evidence_basis: string
+  findings?: string[]
+  max_count?: number | null
+  max_size_bytes?: number | null
+  original_question_id: string
+  published_question_id: string
+  required_status: 'required' | 'optional' | 'conditional' | 'unknown'
+  status: 'needs_review_unavailable' | 'findings' | 'matches_trusted_record'
+  upload?: 'disabled'
+}
+/**
  * SEC-10 event: actor, action, object, version, decision and time. Redacted details.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1238,6 +1477,23 @@ export interface FieldMappingCheck {
    */
   requirement_hold: boolean
   status: 'matched' | 'missing' | 'ambiguous' | 'type_mismatch' | 'unsupported'
+}
+/**
+ * Registry control bound to a published question through the publication's mapping.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "BoundField".
+ */
+export interface BoundField {
+  control: ('text' | 'textarea' | 'number' | 'select' | 'radio' | 'checkbox') | 'file'
+  field_id: string
+  maximum?: string | null
+  minimum?: string | null
+  native_max_length?: number | null
+  options?: string[]
+  original_question_id: string
+  published_question_id: string
+  question_version: number
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1593,6 +1849,18 @@ export interface CheckRequest {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CurrentnessCheck".
+ */
+export interface CurrentnessCheck {
+  detail: string
+  /**
+   * pre_execution, before:<i>, after:<i>, completion
+   */
+  stage: string
+  status: 'current' | 'stale' | 'unavailable' | 'not_checked'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "DateInput".
  */
 export interface DateInput {
@@ -1670,6 +1938,14 @@ export interface DefinitionSummary {
   status: 'ok' | 'integrity_failure'
   title?: string | null
   unresolved_count?: number | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DependencyCurrentness".
+ */
+export interface DependencyCurrentness {
+  detail: string
+  status: 'current' | 'stale' | 'unavailable'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -2020,6 +2296,429 @@ export interface EvidenceAnchor {
   start: number
   verification?: 'quote_matched_hash_verified_bytes'
   warnings?: string[]
+}
+/**
+ * Body of POST /api/automation/prefill-plans/{plan_id}/execute ("Fill these fields").
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ExecutePrefillRequest".
+ */
+export interface ExecutePrefillRequest {
+  expected_plan_sha256: string
+  idempotency_key: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ExecutePrefillResult".
+ */
+export interface ExecutePrefillResult {
+  replayed: boolean
+  run: PrefillRunView
+}
+/**
+ * A stored run version plus labels computed at read time (never rewritten).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PrefillRunView".
+ */
+export interface PrefillRunView {
+  effective_outcome:
+    | 'in_progress'
+    | 'selected_fields_verified'
+    | 'stopped_with_partial_entry'
+    | 'blocked_before_entry'
+    | 'outcome_unknown'
+  history_note: string
+  /**
+   * True when an incomplete run passed its deadline.
+   */
+  interrupted: boolean
+  run: PrefillRun
+}
+/**
+ * One immutable version of a run's history (v1 = claim, later versions = progress).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PrefillRun".
+ */
+export interface PrefillRun {
+  activity?: PrefillActivity
+  actor_id: string
+  browser_version?: string | null
+  checks?: CurrentnessCheck[]
+  claimed_at: string
+  deadline_at: string
+  fields: FieldReceipt[]
+  final_reread?: 'all_match' | 'mismatch' | 'not_run'
+  finished_at?: string | null
+  grant: PrefillGrant
+  is_fixture: boolean
+  organization_id: string
+  outcome:
+    | 'in_progress'
+    | 'selected_fields_verified'
+    | 'stopped_with_partial_entry'
+    | 'blocked_before_entry'
+    | 'outcome_unknown'
+  outcome_reason?: string | null
+  plan_id: string
+  plan_sha256: string
+  provenance: Provenance
+  receipt_note: string
+  run_format?: 'b2-prefill-run/1'
+  run_id: string
+  run_version: number
+  schema_version?: '1'
+  scope?: 'selected_fields_demo_only'
+  status: 'claimed' | 'running' | 'completed'
+  submitted?: false
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PrefillActivity".
+ */
+export interface PrefillActivity {
+  blocked_log?: NetworkLogEntry[]
+  blocked_log_truncated?: boolean
+  downloads_blocked?: number
+  fixture_server_mutation_hits?: number
+  mutation_requests_blocked?: number
+  navigations_blocked?: number
+  operations_performed?: string[]
+  popups_blocked?: number
+  requests_allowed?: number
+  requests_blocked?: number
+  websockets_blocked?: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FieldReceipt".
+ */
+export interface FieldReceipt {
+  action_index: number
+  actual_length_utf16?: number | null
+  actual_sha256?: string | null
+  /**
+   * Live DOM value/checked values.
+   */
+  actual_value?: string | null
+  answer_version_id: string
+  approval_snapshot_id: string
+  compared_actual_sha256?: string | null
+  compared_intended_sha256?: string | null
+  comparison: 'b2-readback-exact/1' | 'b2-readback-textarea-crlf/1' | 'b2-readback-choice-exact/1'
+  field_id: string
+  intended_length_utf16?: number | null
+  intended_sha256: string
+  next_action: string
+  operation: 'fill' | 'select_option' | 'check'
+  published_question_id: string
+  reason?: string | null
+  rendered_sha256: string
+  result: 'match' | 'mismatch' | 'not_compared'
+  state:
+    | 'not_attempted'
+    | 'blocked_before_write'
+    | 'write_in_flight'
+    | 'entered_verified'
+    | 'entered_then_stale'
+    | 'mismatch'
+    | 'overwritten_after_verify'
+    | 'write_failed'
+    | 'outcome_unknown'
+}
+/**
+ * Single-use, short-lived authorization derived by the server from one exact plan.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PrefillGrant".
+ */
+export interface PrefillGrant {
+  actor_id: string
+  budgets: PrefillBudgets
+  created_at: string
+  expected_fingerprint: string
+  expires_at: string
+  forbidden_operations?: string[]
+  form_id: string
+  form_version: number
+  grant_id: string
+  grant_sha256: string
+  logical_origin: string
+  nonce: string
+  /**
+   * @minItems 1
+   * @maxItems 20
+   */
+  operations:
+    | [GrantedFieldOperation]
+    | [GrantedFieldOperation, GrantedFieldOperation]
+    | [GrantedFieldOperation, GrantedFieldOperation, GrantedFieldOperation]
+    | [GrantedFieldOperation, GrantedFieldOperation, GrantedFieldOperation, GrantedFieldOperation]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+    | [
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation,
+        GrantedFieldOperation
+      ]
+  organization_id: string
+  page_sha256: string
+  plan_id: string
+  plan_sha256: string
+  portal_fixture_id: string
+  runtime_epoch: string
+  runtime_origin?: 'ephemeral_loopback_fixture_server'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PrefillBudgets".
+ */
+export interface PrefillBudgets {
+  automatic_write_retries?: 0
+  browser_executions_per_grant?: 1
+  execution_timeout_ms?: number
+  max_actions?: number
+  operation_timeout_ms?: number
+  plan_ttl_seconds?: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "GrantedFieldOperation".
+ */
+export interface GrantedFieldOperation {
+  action_index: number
+  approval_snapshot_id: string
+  field_id: string
+  intended_sha256: string
+  operation: 'fill' | 'select_option' | 'check'
+  published_question_id: string
+  rendered_sha256: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -2752,6 +3451,35 @@ export interface FundingContextBinding {
   stream_id: string
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "HeldField".
+ */
+export interface HeldField {
+  approval_snapshot_id?: string | null
+  detail: string
+  field_id?: string | null
+  original_question_id?: string | null
+  published_question_id: string
+  reason:
+    | 'held_unresolved_requirement'
+    | 'held_counter_unavailable'
+    | 'held_unconfirmed_convention'
+    | 'held_value_format'
+    | 'held_value_too_long'
+    | 'held_value_empty'
+    | 'held_choice_value_unavailable'
+    | 'held_choice_not_registered'
+    | 'held_condition_unsupported'
+    | 'held_parent_not_selected'
+    | 'held_unsupported_control'
+    | 'held_attachment_upload_disabled'
+    | 'mapping_missing'
+    | 'approval_not_usable'
+    | 'approval_identity_mismatch'
+    | 'approval_integrity_mismatch'
+    | 'unresolved_fact_token'
+}
+/**
  * Body of POST /api/automation/intake. No org/approval fields exist to send.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -3018,6 +3746,32 @@ export interface PdfSourceImportResult {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PlanCondition".
+ */
+export interface PlanCondition {
+  basis: 'structured_definition_and_registry'
+  expected_value: string
+  parent_published_question_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PlanDefinitionRef".
+ */
+export interface PlanDefinitionRef {
+  definition_id: string
+  definition_version: number
+  funding_case_digest?: string | null
+  funding_case_id?: string | null
+  funding_case_version?: number | null
+  input_sha256: string
+  /**
+   * normalized_digest of the publication.
+   */
+  publication_digest: string
+  question_set_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "PlanRequest".
  */
 export interface PlanRequest {
@@ -3026,6 +3780,56 @@ export interface PlanRequest {
    * Dev B saved question set (C2b), resolved server-side; null = demo fixture.
    */
   question_set_id?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PlannedFieldAction".
+ */
+export interface PlannedFieldAction {
+  action_index: number
+  answer_version_id: string
+  approval_provenance: Provenance
+  approval_snapshot_id: string
+  comparison: 'b2-readback-exact/1' | 'b2-readback-textarea-crlf/1' | 'b2-readback-choice-exact/1'
+  condition?: PlanCondition | null
+  constraints?: string[]
+  control: 'text' | 'textarea' | 'number' | 'select' | 'radio' | 'checkbox'
+  dependencies?: DependencyRef[]
+  dependency_snapshot_sha256: string
+  field_id: string
+  intended_choices?: string[]
+  intended_length_utf16?: number | null
+  intended_sha256: string
+  /**
+   * Text/number: exact string.
+   */
+  intended_value?: string | null
+  operation: 'fill' | 'select_option' | 'check'
+  original_question_id: string
+  producer_epoch: string
+  producer_id: string
+  published_question_id: string
+  question_version: number
+  rendered_sha256: string
+  requirement_refs?: string[]
+  template_sha256: string
+}
+/**
+ * Versioned bound form map for one saved definition and one registered fixture.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PortalBinding".
+ */
+export interface PortalBinding {
+  binding_format?: 'b2-bound-form-map/1'
+  expected_fingerprint: string
+  fields: BoundField[]
+  fingerprint_algorithm?: 'b2-form-fp/1'
+  form_id: string
+  form_version: number
+  logical_origin: string
+  page_sha256: string
+  portal_fixture_id: string
 }
 /**
  * Planned field entry. Only fill operations exist; submit/sign is unrepresentable.
@@ -3047,6 +3851,569 @@ export interface PrefillAction {
   operation: 'fill_field' | 'attach_file'
   origin: string
   question_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PrefillPlan".
+ */
+export interface PrefillPlan {
+  /**
+   * @maxItems 20
+   */
+  actions:
+    | []
+    | [PlannedFieldAction]
+    | [PlannedFieldAction, PlannedFieldAction]
+    | [PlannedFieldAction, PlannedFieldAction, PlannedFieldAction]
+    | [PlannedFieldAction, PlannedFieldAction, PlannedFieldAction, PlannedFieldAction]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+    | [
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction,
+        PlannedFieldAction
+      ]
+  attachments?: AttachmentChecklistItem[]
+  budgets: PrefillBudgets
+  created_at: string
+  created_by: string
+  definition: PlanDefinitionRef
+  executable: boolean
+  expires_at: string
+  forbidden_operations?: string[]
+  held?: HeldField[]
+  is_fixture: boolean
+  mode_label: string
+  not_executable_reasons?: string[]
+  organization_id: string
+  plan_format?: 'b2-approved-prefill/1'
+  plan_id: string
+  /**
+   * sha256 of the canonical plan without this field.
+   */
+  plan_sha256: string
+  portal: PortalBinding
+  producers: ProducerLabel
+  provenance: Provenance
+  runtime_epoch: string
+  schema_version?: '1'
+  scope?: 'selected_fields_demo_only'
+  scope_note: string
+  submission?: 'not_possible'
+  unselected_requirements?: UnselectedRequirement[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ProducerLabel".
+ */
+export interface ProducerLabel {
+  approval_reader: 'explicit_test_provider' | 'c_reader'
+  approval_reader_is_fixture: boolean
+  attachment_evidence: 'unavailable' | 'explicit_test_provider' | 'artifact_reader'
+  dependency_currentness: 'not_integrated' | 'explicit_test_provider' | 'a4_adapter'
+}
+/**
+ * A required/conditional question outside the selection. It stays visible.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "UnselectedRequirement".
+ */
+export interface UnselectedRequirement {
+  answer_kind: string
+  original_question_id: string
+  published_question_id: string
+  required_status: 'required' | 'optional' | 'conditional' | 'unknown'
+}
+/**
+ * GET result: the saved plan exactly as hashed, plus separately computed availability.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PrefillPlanView".
+ */
+export interface PrefillPlanView {
+  availability: 'executable' | 'expired' | 'runtime_epoch_changed' | 'claimed' | 'empty'
+  plan: PrefillPlan
+  run_id?: string | null
+}
+/**
+ * One published question the staff selected, and the C approval naming it.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PrefillSelection".
+ */
+export interface PrefillSelection {
+  approval_snapshot_id: string
+  published_question_id: string
+}
+/**
+ * Body of POST /api/automation/prefill-plans. Identity and content come from the server.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PreparePrefillPlanRequest".
+ */
+export interface PreparePrefillPlanRequest {
+  portal_fixture_id: string
+  question_set_id: string
+  /**
+   * @minItems 1
+   * @maxItems 20
+   */
+  selections:
+    | [PrefillSelection]
+    | [PrefillSelection, PrefillSelection]
+    | [PrefillSelection, PrefillSelection, PrefillSelection]
+    | [PrefillSelection, PrefillSelection, PrefillSelection, PrefillSelection]
+    | [PrefillSelection, PrefillSelection, PrefillSelection, PrefillSelection, PrefillSelection]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
+    | [
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection,
+        PrefillSelection
+      ]
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -4419,4 +5786,23 @@ export interface TextSourceImportResult {
   source_id: string
   source_version_id: string
   warnings: string[]
+}
+/**
+ * Server-resolved artifact evidence for an attachment question (never client-claimed).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "TrustedAttachmentRecord".
+ */
+export interface TrustedAttachmentRecord {
+  artifact_id: string
+  basis: 'trusted_synthetic_test_record' | 'authorized_artifact_reader'
+  /**
+   * From the bytes, not a filename or MIME claim.
+   */
+  detected_media_type: string
+  exists: boolean
+  is_fixture: boolean
+  original_question_id: string
+  sha256: string
+  size_bytes: number
 }

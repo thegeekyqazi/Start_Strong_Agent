@@ -69,6 +69,11 @@ def test_bnd49_capabilities_report_unavailable_in_production(prod: TestClient) -
     caps = {c["feature"]: c for c in prod.get("/api/capabilities").json()["capabilities"]}
     for feature in (
         "automation.saved_definitions",
+        "automation.approved_prefill",
+        "automation.prefill_plan_preparation",
+        "automation.prefill_execution_test_provider",
+        "automation.prefill_execution_c3",
+        "automation.attachment_checklist",
         "funding.capture_library",
         "funding.reviewed_requirements",
         "funding.evaluations",
@@ -83,4 +88,17 @@ def test_capabilities_are_truthful_locally(tmp_path: Path) -> None:
     assert caps["automation.saved_definitions"]["status"] == "fixture_only"
     assert "development-only" in caps["funding.reviewed_requirements"]["detail"]
     assert "No scheduling" in caps["funding.saved_searches"]["detail"]
-    assert caps["automation.approved_prefill"]["status"] == "not_implemented"
+    assert caps["automation.approved_prefill"]["status"] == "fixture_only"
+
+
+def test_prefill_capabilities_are_disabled_on_production_feature_endpoints(
+    prod: TestClient,
+) -> None:
+    for path in ["/api/automation/status", "/api/automation/availability"]:
+        response = prod.get(path)
+        body = response.json()
+        capabilities = body if isinstance(body, list) else body["capabilities"]
+        caps = {c["feature"]: c["status"] for c in capabilities}
+        assert caps["automation.approved_prefill"] == "unavailable"
+        assert caps["automation.prefill_execution_c3"] == "unavailable"
+        assert caps["automation.final_submission"] == "unavailable"

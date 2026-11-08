@@ -145,3 +145,43 @@ export function describeError(r: { status: number; error: ErrorEnvelope | null }
   const base = text ?? r.error?.message ?? `Request failed (HTTP ${r.status}).`
   return typeof reason === 'string' ? `${base} [${reason}]` : base
 }
+
+// A lost/aborted response has uncertain effects; callers retain the same request key.
+async function prefillCall<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
+  const abort = new AbortController()
+  const timer = setTimeout(() => abort.abort(), 45_000)
+  try {
+    return await call<T>(path, { ...init, signal: abort.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+export function preparePrefill(req: import('@strongstart/contracts').PreparePrefillPlanRequest) {
+  return prefillCall<import('@strongstart/contracts').PrefillPlan>('/prefill-plans', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  })
+}
+
+export function executePrefill(
+  planId: string,
+  req: import('@strongstart/contracts').ExecutePrefillRequest,
+) {
+  return prefillCall<import('@strongstart/contracts').ExecutePrefillResult>(
+    `/prefill-plans/${encodeURIComponent(planId)}/execute`,
+    { method: 'POST', body: JSON.stringify(req) },
+  )
+}
+
+export function getPrefillPlan(planId: string) {
+  return prefillCall<import('@strongstart/contracts').PrefillPlanView>(
+    `/prefill-plans/${encodeURIComponent(planId)}`,
+  )
+}
+
+export function getPrefillRun(runId: string) {
+  return prefillCall<import('@strongstart/contracts').PrefillRunView>(
+    `/prefill-runs/${encodeURIComponent(runId)}`,
+  )
+}
