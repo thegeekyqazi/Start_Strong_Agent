@@ -22,23 +22,23 @@ header h1 {
   margin: 0 0 0.5rem;
   font-size: 1.4rem;
 }
-nav {
+.shell > nav {
   grid-area: nav;
   padding: 1rem;
   border-right: 1px solid #ccc;
 }
-nav ul {
+.shell > nav ul {
   list-style: none;
   margin: 0;
   padding: 0;
 }
-nav li {
+.shell > nav li {
   margin-bottom: 0.75rem;
 }
-nav a[aria-current='page'] {
+.shell > nav a[aria-current='page'] {
   font-weight: 700;
 }
-nav .cap {
+.shell > nav .cap {
   display: block;
   font-size: 0.8rem;
   color: #555;
@@ -84,8 +84,222 @@ main {
     grid-template-columns: 1fr;
     grid-template-areas: 'header' 'nav' 'main';
   }
-  nav {
+  .shell > nav {
     border-right: none;
     border-bottom: 1px solid #ccc;
+  }
+}
+
+/* ---- C1 shared components and application workspace (owner C; lane plan s6) ----
+   Additive only: existing colours/rules above are unchanged. Status is never colour alone. */
+:root {
+  --c-info: #1d4f91;
+  --c-simulated: #5b3a8c;
+}
+:focus-visible {
+  outline: 2px solid var(--c-info);
+  outline-offset: 2px;
+}
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.hint {
+  font-size: 0.85rem;
+  color: #555;
+}
+.status {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.status-draft {
+  color: #555;
+}
+.status-needs_attention {
+  color: #6b4c00;
+}
+.status-approved {
+  color: #11612b;
+}
+.status-stale {
+  color: #a11a1a;
+}
+.hash-chip {
+  font-size: 0.85rem;
+}
+.hash-chip code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.hash-invalid {
+  color: #a11a1a;
+}
+.evidence-card {
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  background: #fff;
+}
+.evidence-card h4 {
+  margin: 0 0 0.25rem;
+}
+.fact-value {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem;
+}
+.evidence-card dl {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 0.1rem 0.75rem;
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+.evidence-card dt {
+  color: #555;
+}
+.evidence-card dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.signals {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.9rem;
+}
+.signal-name {
+  font-weight: 600;
+}
+.signal-simulated {
+  color: var(--c-simulated);
+}
+.finding {
+  border-left: 3px solid #6b4c00;
+  padding: 0.25rem 0.5rem;
+  margin: 0.5rem 0;
+  background: #fff;
+}
+.finding-fail {
+  border-left-color: #a11a1a;
+}
+.finding-pass {
+  border-left-color: #11612b;
+}
+.finding-origin,
+.finding-detail {
+  font-size: 0.85rem;
+  color: #555;
+}
+.workspace {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+}
+.ws-questions ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.ws-questions button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.ws-questions button[aria-current='true'] {
+  border: 2px solid var(--c-info);
+}
+.question-section,
+.question-tags {
+  display: block;
+  font-size: 0.8rem;
+  color: #555;
+}
+.question-text {
+  display: block;
+}
+.original-question {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-left: 3px solid #ccc;
+  background: #fff;
+}
+.ws-editor textarea {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  font: inherit;
+  padding: 0.5rem;
+}
+.counter {
+  font-size: 0.9rem;
+}
+.draft-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+.draft-actions {
+  margin: 0.5rem 0;
+}
+.fact-chip {
+  display: inline-block;
+  padding: 0 0.4rem;
+  margin: 0 0.15rem;
+  border: 1px solid var(--c-info);
+  border-radius: 0.75rem;
+  color: var(--c-info);
+  background: #eef3fa;
+  font-size: 0.9rem;
+}
+.fact-chip-unknown {
+  border-style: dashed;
+  color: #555;
+  background: none;
+}
+.suggestion {
+  border: 1px dashed var(--c-info);
+  padding: 0.5rem 0.75rem;
+  margin: 0.5rem 0;
+}
+@media (min-width: 64rem) {
+  .workspace {
+    grid-template-columns: 16rem 1fr;
+  }
+  .ws-questions {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+  }
+  .ws-editor {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .ws-evidence {
+    grid-column: 2;
+    grid-row: 2;
+  }
+}
+@media (min-width: 88rem) {
+  .workspace {
+    grid-template-columns: 16rem 1fr 22rem;
+  }
+  .ws-questions {
+    grid-row: 1;
+  }
+  .ws-evidence {
+    grid-column: 3;
+    grid-row: 1;
   }
 }
