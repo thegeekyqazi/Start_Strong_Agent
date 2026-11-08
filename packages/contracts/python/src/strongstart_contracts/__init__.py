@@ -46,7 +46,15 @@ from .platform import (
     SessionIdentity,
 )
 from .ports import CapabilityUnavailable
-from .validation import ValidationResult
+from .validation import (
+    NumericValidationReport,
+    NumericValidationRequest,
+    RuleCapability,
+    SourceValidationReport,
+    SourceValidationRequest,
+    ValidationDependency,
+    ValidationResult,
+)
 
 __all__ = [
     "SCHEMA_VERSION",
@@ -78,6 +86,8 @@ __all__ = [
     "KnowledgeSourceVersion",
     "LimitConflict",
     "LivenessReport",
+    "NumericValidationReport",
+    "NumericValidationRequest",
     "Opportunity",
     "PdfSourceImportRequest",
     "PdfSourceImportResult",
@@ -91,10 +101,14 @@ __all__ = [
     "ReadinessReport",
     "RequirementCondition",
     "RequirementSet",
+    "RuleCapability",
     "SessionIdentity",
     "SourceReference",
+    "SourceValidationReport",
+    "SourceValidationRequest",
     "TextSourceImportRequest",
     "TextSourceImportResult",
+    "ValidationDependency",
     "ValidationResult",
     "load_fixture_bundle",
 ]

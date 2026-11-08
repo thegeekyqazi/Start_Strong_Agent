@@ -1,9 +1,15 @@
-"""DRAFT migration request from Dev C for Dev A to sequence (C3 spec s3).
+"""DRAFT migration request from Dev C for Dev A to sequence (C3 spec s3). UNNUMBERED.
 
 NOT ACTIVE: this file lives outside ``migrations/versions`` on purpose. Dev A owns migration
-sequencing (ownership.md). When accepted, Dev A copies it into ``migrations/versions``,
-adjusts ``down_revision`` to the then-current head and updates
-``REQUIRED_MIGRATION_REVISION`` in ``strongstart_api/db.py``. Until then C3 uses its
+sequencing (ownership.md). Earlier drafts were numbered 0003, then 0004, then 0005; each
+number was taken by Dev A's own migrations (0005_validation_receipts and
+0006_numeric_validation are on main; 0007_pack_replacement is in A4's open PR #15). So the
+revision ID and down-revision are now placeholders for Dev A to assign at sequencing time.
+
+``down_revision`` is a deliberately invalid placeholder: if this file were copied into
+``migrations/versions`` unchanged, Alembic would fail with an unknown-revision error
+instead of silently creating a second head. Dev A sets both values, copies the file and
+updates ``REQUIRED_MIGRATION_REVISION`` in ``strongstart_api/db.py``. Until then C3 uses its
 labelled in-memory fixture store.
 
 Tables mirror ``features/applications/store.py``: immutable answer versions, one decision
@@ -16,8 +22,8 @@ from __future__ import annotations
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0005_answers_and_approvals"
-down_revision: str | None = "0004_pdf_extraction_coverage"
+revision: str = "assign_by_dev_a_answers_and_approvals"
+down_revision: str | None = "SET_BY_DEV_A_TO_CURRENT_HEAD"  # fails closed if applied as-is
 branch_labels: str | None = None
 depends_on: str | None = None
 

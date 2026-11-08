@@ -3,10 +3,10 @@
 - Author/lane: Dev C agent
 - Intended consumers: project owner; Dev B (resolver consumer, lockfile owner); Dev A (migration sequencing)
 - UTC timestamp: 2026-11-08
-- Status: implemented as **uncommitted working-tree changes** on `dev-c/c3-approval-export` (owner rule: no add, commit or push)
+- Status: ready-for-review in PR #10 (open; not merged). Commits authored as Aryan Dayani (GitHub noreply)
 - Task spec: `docs/specs/C3-approval-and-export.md` rev 1.0 plus s12 notes
 - Engineering: v1.1 s8.1, s9.2, s15, s16, s18. Rules: APP-04, APP-06, APP-07, APP-08, POL-05, JOB-02, JOB-05, SEC-10, plus SEC-14 boundaries (catalog stays `planned`)
-- Branch base: `origin/main` `2adcdeb` (includes A2b/A2c PR #8 and the lane plan PR #9); rebased from `c69d610`
+- Branch base: rebased onto `origin/main` `2adcdeb`, then **merged** with `origin/main` `b1f9ddf` (A3 PRs #11, #13, #14). See "Merge resolution r2"
 
 ## What works (fixture mode)
 
@@ -74,9 +74,39 @@ Defects found during C3 validation and fixed:
 4. ChangeSet staling was not audited.
 5. The prefill line disappeared after an edit.
 
+## Merge resolution r2 (2026-11-08): `origin/main` `b1f9ddf` merged into C3
+
+The owner asked to resolve PR #10 "after PRs #12 and #15 have landed". **They had not landed:** #12 (Dev B bundle-002) and #15 (Dev A A4 pack replacement) are still open. This merge resolves PR #10 against the **current** `main`, which gained Dev A's A3 validation work (#11 spec, #13 A3a/A3b source validation, #14 A3c numeric validation). Another merge is needed when #12/#15 land.
+
+- **Method:** `git merge origin/main` (no rebase, no force-push).
+- **Conflicts:** only the generated `packages/contracts/schema/strongstart-contracts.schema.json` and `packages/contracts/ts/src/generated.ts`. These were **regenerated with `make contracts`** from the combined Python models, not resolved by picking a side. All Python sources merged cleanly.
+- **What the regenerated outputs contain:**
+  - C3's models (`AnswerVersion`, `ApprovalRecord`, `AuditEvent`, `ExportResult`, `ReviewerProposal`, ...);
+  - A3's `SourceValidationRequest`/`SourceValidationReport`/`RuleCapability`;
+  - every A, B1, B2 and shared model;
+  - Dev A's additive `ClaimBinding.fact_version` (default 1). That is A's response to C's fact-version request (`c2-fact-version-request.md`). C3 builds bindings without it and gets the default, so it is compatible.
+- **Dependencies:** `services/api/pyproject.toml` keeps A's `pypdf>=6.1,<7` and C3's `python-docx>=1.1`. The merged `uv.lock` passes `uv lock --check` and `uv sync --locked` with no drift, so it was not regenerated. Upstream root `pyproject.toml`/`uv.lock` changes merged cleanly.
+- **Migration coordination:** C's request was drafted as `0005_answers_and_approvals`, but `main` now has A's `0005_validation_receipts` and `0006_numeric_validation`, and A4's PR #15 adds `0007_pack_replacement`.
+  - The request is now **unnumbered**: `c3-migration-request/answers_and_approvals.py`, with revision `assign_by_dev_a_answers_and_approvals`.
+  - Its `down_revision` is the deliberately invalid placeholder `SET_BY_DEV_A_TO_CURRENT_HEAD`, so applying it unchanged fails loudly instead of creating a second head.
+  - C added **no** migration head and applied nothing.
+  - Code, spec s12, the decision record and this handoff no longer cite a number.
+
+### Validation after the merge
+
+| Command | Result |
+| --- | --- |
+| `uv sync --locked` / `uv lock --check` | exit 0 / no drift |
+| `make contracts-check` | schema and TS match the combined models |
+| `make check` | exit 0: ruff, ruff-format, mypy strict (150 files), oxlint, Prettier; **510 pytest passed** (24 deselected); **67 Vitest passed**; build ok |
+| `uv run pytest tests/applications` | 154 passed |
+| `tests/unit/test_validation_runner_adapter.py` (A3's C2 runner parity fixture) | 1 passed |
+| `make smoke` | exit 0: 82 + 11 db tests; readiness 200 at `0006_numeric_validation`; capabilities 200 (17 entries) |
+| `make browser-smoke` | exit 0, 13 passed |
+
 ## Consumer action / blockers
 
-- **Dev A:** sequence `docs/handoffs/dev-c/c3-migration-request/0005_answers_and_approvals.py` (it targets `organizations.id`, down-revision `0004_pdf_extraction_coverage`). Persistence stays fixture-only until then.
+- **Dev A (please acknowledge in PR #10):** sequence the **unnumbered** request `docs/handoffs/dev-c/c3-migration-request/answers_and_approvals.py` (it targets `organizations.id`). Assign its revision and down-revision after your current head (`0006_numeric_validation` on main, or `0007_pack_replacement` once PR #15 lands). Its placeholder down-revision fails loudly if applied unchanged. C will not add a migration head. Persistence stays fixture-only until then.
 - **Dev B:**
   - acknowledge the `uv.lock` change (`python-docx`, `lxml`);
   - consume `get_c_approved_answer_resolver` / `StoreApprovedAnswerResolver` for B2-AUTO-002;

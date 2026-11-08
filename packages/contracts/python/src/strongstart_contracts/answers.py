@@ -125,6 +125,7 @@ class ClaimBinding(ContractModel):
     model_config = contract_model_config("draft", "C")
 
     fact_id: StableId
+    fact_version: int = Field(default=1, ge=1)
     pack_version_id: StableId = Field(
         description="Binding key until Fact gains a version (request to Dev A)."
     )
