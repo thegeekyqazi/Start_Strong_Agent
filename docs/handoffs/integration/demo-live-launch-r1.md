@@ -31,6 +31,13 @@
   `skl_scope_state`; `USAGE` on `skl_records_ordinal_seq`. No UPDATE/DELETE on records.
 - `strongstart-seed-demo` (as migrator) added synthetic `demo-org` + demo-bundle metadata
   (simulated-labelled) for the fixture identity.
+- Owner-approved follow-up: `SELECT` only (no write) on the 15 knowledge read tables
+  (`active_pack_contexts`, `dependency_target_refs`, `dependency_targets`,
+  `evidence_pack_versions`, `evidence_packs`, `fact_source_refs`, `knowledge_facts`,
+  `knowledge_passages`, `knowledge_source_versions`, `knowledge_sources`, `pack_facts`,
+  `pack_manifest_policies`, `pack_manifest_sources`, `pack_manifests`, `pack_policies`) so the
+  read-only Knowledge page renders. Its import/search-write actions still fail closed (no
+  INSERT/UPDATE). Rollback: `REVOKE SELECT ON <those tables> FROM data001_app`.
 - Not done: backup/restore re-verification, role/plan changes, TLS changes.
 
 ## Live walkthrough evidence (one run each; through the web origin /api proxy)
@@ -61,6 +68,5 @@ tests/skills/test_citation_spans.py` 5 passed; `pytest -m db tests/skills` 4 pas
 ## Limitations
 
 B state (definitions, plans, captures) is still in the development-only local file store
-(DATA-002 pending). The runtime role has no grants on A knowledge tables (the A routes show
-not implemented). The Quick Tunnel is temporary, needs this machine awake, and gets a new
+(DATA-002 pending). Knowledge is read-only on TigerData (imports fail closed: no write grants). The Quick Tunnel is temporary, needs this machine awake, and gets a new
 hostname on every restart.
