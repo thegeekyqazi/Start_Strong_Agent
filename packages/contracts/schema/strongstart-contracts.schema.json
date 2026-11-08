@@ -1,5 +1,134 @@
 {
   "$defs": {
+    "AnswerFinding": {
+      "additionalProperties": false,
+      "description": "Plain-language wrapper around a shared ValidationResult (s8.3, s9.1, s18).",
+      "properties": {
+        "affected_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Affected Text"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "next_action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Action"
+        },
+        "result": {
+          "$ref": "#/$defs/ValidationResult"
+        },
+        "span_end": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Span End"
+        },
+        "span_start": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Span Start"
+        }
+      },
+      "required": [
+        "result",
+        "message"
+      ],
+      "title": "AnswerFinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "AnswerPlan": {
+      "additionalProperties": false,
+      "description": "Planner proposal (s7): evidence per question and missing inputs. Nothing invented.",
+      "properties": {
+        "evidence_bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evidence Bundle Id",
+          "type": "string"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/PlanItem"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "plan_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "planner": {
+          "$ref": "#/$defs/ModelRunInfo"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "question_set_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Set Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "plan_id",
+        "question_set_id",
+        "evidence_bundle_id",
+        "items",
+        "planner",
+        "provenance"
+      ],
+      "title": "AnswerPlan",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "AnswerSnapshot": {
       "additionalProperties": false,
       "properties": {
@@ -1772,6 +1901,114 @@
       "x-contract-status": "draft",
       "x-owner": "A"
     },
+    "CheckReport": {
+      "additionalProperties": false,
+      "description": "Deterministic findings for one exact text. Not a review or approval.",
+      "properties": {
+        "evidence_bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evidence Bundle Id",
+          "type": "string"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/AnswerFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "mode": {
+          "enum": [
+            "working",
+            "reviewed"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "rendered": {
+          "$ref": "#/$defs/RenderedAnswer"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "submitted_text_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Submitted Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "question_version",
+        "evidence_bundle_id",
+        "mode",
+        "submitted_text_sha256",
+        "rendered",
+        "findings"
+      ],
+      "title": "CheckReport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "CheckRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evidence Bundle Id",
+          "type": "string"
+        },
+        "mode": {
+          "default": "working",
+          "enum": [
+            "working",
+            "reviewed"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "text": {
+          "description": "Editor text; may contain slot tokens.",
+          "maxLength": 20000,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_version",
+        "evidence_bundle_id",
+        "text"
+      ],
+      "title": "CheckRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "ChoiceOption": {
       "additionalProperties": false,
       "properties": {
@@ -1798,6 +2035,53 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "ClaimBinding": {
+      "additionalProperties": false,
+      "description": "A fact value the server rendered into the answer, with its exact text span (s8.2).",
+      "properties": {
+        "fact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Fact Id",
+          "type": "string"
+        },
+        "pack_version_id": {
+          "description": "Binding key until Fact gains a version (request to Dev A).",
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Pack Version Id",
+          "type": "string"
+        },
+        "rendered_text": {
+          "title": "Rendered Text",
+          "type": "string"
+        },
+        "span_end": {
+          "minimum": 0,
+          "title": "Span End",
+          "type": "integer"
+        },
+        "span_start": {
+          "description": "Code-point offset in RenderedAnswer.text.",
+          "minimum": 0,
+          "title": "Span Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "fact_id",
+        "pack_version_id",
+        "span_start",
+        "span_end",
+        "rendered_text"
+      ],
+      "title": "ClaimBinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "ConditionRecord": {
       "additionalProperties": false,
@@ -1950,6 +2234,18 @@
       "additionalProperties": false,
       "description": "Validated model proposal for one question. Not an answer version or approval.",
       "properties": {
+        "check": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CheckReport"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Working-mode findings for the rendered proposal (C2)."
+        },
         "evidence_bundle_id": {
           "maxLength": 128,
           "minLength": 1,
@@ -2010,7 +2306,8 @@
             "discriminator": {
               "mapping": {
                 "fact_slot": "#/$defs/FactSlotSegment",
-                "text": "#/$defs/TextSegment"
+                "text": "#/$defs/TextSegment",
+                "unsupported": "#/$defs/UnsupportedSegment"
               },
               "propertyName": "kind"
             },
@@ -2020,6 +2317,9 @@
               },
               {
                 "$ref": "#/$defs/FactSlotSegment"
+              },
+              {
+                "$ref": "#/$defs/UnsupportedSegment"
               }
             ]
           },
@@ -2065,7 +2365,7 @@
     },
     "DraftRequest": {
       "additionalProperties": false,
-      "description": "Client request for a draft. Extra fields (e.g. ``approved``) are rejected.",
+      "description": "Client request for a draft. Strict: extra fields (e.g. ``approved``) and coerced\ntypes (e.g. ``\"1\"`` for a version) are rejected (C2 rev 1.1 owner priority).",
       "properties": {
         "evidence_bundle_id": {
           "maxLength": 128,
@@ -4809,6 +5109,80 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "PlanItem": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_fact_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "title": "Evidence Fact Ids",
+          "type": "array"
+        },
+        "missing_inputs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Missing Inputs",
+          "type": "array"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "repeated_with": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "title": "Repeated With",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_id",
+        "question_version",
+        "evidence_fact_ids",
+        "missing_inputs",
+        "repeated_with"
+      ],
+      "title": "PlanItem",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PlanRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evidence Bundle Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evidence_bundle_id"
+      ],
+      "title": "PlanRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "PrefillAction": {
       "additionalProperties": false,
       "description": "Planned field entry. Only fill operations exist; submit/sign is unrepresentable.",
@@ -5302,6 +5676,45 @@
       "type": "object",
       "x-contract-status": "frozen",
       "x-owner": "shared"
+    },
+    "RenderedAnswer": {
+      "additionalProperties": false,
+      "description": "The answer as a funder would read it: slot tokens replaced by server-rendered facts.",
+      "properties": {
+        "bindings": {
+          "items": {
+            "$ref": "#/$defs/ClaimBinding"
+          },
+          "title": "Bindings",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "text_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        },
+        "unsupported_markers": {
+          "items": {
+            "$ref": "#/$defs/UnsupportedMarker"
+          },
+          "title": "Unsupported Markers",
+          "type": "array"
+        }
+      },
+      "required": [
+        "text",
+        "text_sha256",
+        "bindings",
+        "unsupported_markers"
+      ],
+      "title": "RenderedAnswer",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "RequirementCondition": {
       "additionalProperties": false,
@@ -6167,6 +6580,63 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "UnsupportedMarker": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        },
+        "span_end": {
+          "minimum": 0,
+          "title": "Span End",
+          "type": "integer"
+        },
+        "span_start": {
+          "minimum": 0,
+          "title": "Span Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "reason",
+        "span_start",
+        "span_end"
+      ],
+      "title": "UnsupportedMarker",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "UnsupportedSegment": {
+      "additionalProperties": false,
+      "description": "Explicit APP-03 marker: the writer says a claim has no supporting evidence.",
+      "properties": {
+        "kind": {
+          "const": "unsupported",
+          "title": "Kind",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "reason"
+      ],
+      "title": "UnsupportedSegment",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "ValidationResult": {
       "additionalProperties": false,
