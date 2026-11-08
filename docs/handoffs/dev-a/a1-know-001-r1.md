@@ -7,7 +7,7 @@
 - Task spec path/revision: `docs/specs/A1-KNOW-001_Source_Fact_Foundation.md`, revision 1.0
 - Engineering version/sections and rule IDs: v1.1 sections 4, 5, 10, 11, 13, 18-20; SRC-01/02/03/05, NUM-01/05, SEC-01/13, PKG-01 evidence-contract boundary
 - Branch and exact implementation commit: `dev-a/a1-know-001-source-fact-foundation` at `f4323c2503dc463500e011c8202236ce428b17d7`
-- PR / Issue links, or not published: pending push/draft PR
+- PR / Issue links, or not published: draft GitHub PR #3, `https://github.com/thegeekyqazi/Start_Strong_Agent/pull/3`
 - Supersedes / superseded by: none
 
 ## What works
@@ -43,11 +43,13 @@ Dev B's `CapturedDocumentReader` and local capture store were not changed. A fut
 - `npm run build` — passed.
 - `npm run format:check` — passed.
 
-Not run locally: PostgreSQL smoke tests, because Docker/PostgreSQL is unavailable on this machine. The new smoke cases cover migration readiness, seed idempotency, exact reconstruction and tamper rejection and must run in CI.
+Not run locally: PostgreSQL smoke tests, because Docker/PostgreSQL is unavailable on this machine. The new smoke cases cover migration readiness, seed idempotency, exact reconstruction and tamper rejection; they subsequently passed in PR CI.
 
 The Knowledge Vitest file could not start on local Node 22.13.1 because `undici` requires a newer runtime; the repository declares Node 22.22.2+. TypeScript build succeeds, and CI on the declared runtime is the browser-unit gate.
 
 The full Python non-DB run found 12 existing Dev B Windows failures: directory `fsync` via `os.open(directory)` is denied on Windows, and checked-out CRLF artifact bytes no longer match B1's stored hashes. No B-owned files were changed. A-owned/unit/contract tests pass.
+
+PR #3 CI run `42443138553` passed all five required jobs: Python (including 212 non-DB tests), contracts/schema drift, PostgreSQL DB smoke, web lint/format/typecheck/Vitest/build, and Playwright browser readiness.
 
 ## Decisions and deviations
 
@@ -59,7 +61,7 @@ The full Python non-DB run found 12 existing Dev B Windows failures: directory `
 - Dev B: no code action for A1. Acknowledge that B1 remains on its development store until a separately specified import seam exists.
 - Dev C: consume `EvidenceBundle` unchanged; do not treat simulated `needs_review` facts as verified/current.
 
-Real integration is blocked only on PR review, migration smoke and supported-runtime UI tests. No live or partner evidence has been claimed.
+Real integration is blocked only on PR review/merge authorization. CI migration smoke and supported-runtime UI tests pass. No live or partner evidence has been claimed.
 
 ## Acknowledgments
 

@@ -6,7 +6,7 @@
 - Decided/accepted by and evidence: Dev A implementation discretion; owner authorized A work using the initialized project structure.
 - Engineering path/version/sections: `docs/engineering/StrongStart_Engineering_Plan.md` v1.1 sections 4, 5, 10, 11 and 18.
 - Feature spec path/revision: `docs/specs/A1-KNOW-001_Source_Fact_Foundation.md` revision 1.0.
-- PR / Issue: pending publication
+- PR / Issue: GitHub PR #3
 - Supersedes / superseded by: none
 
 ## Original requirement
@@ -27,6 +27,6 @@ This decision does not replace B1's `CapturedDocumentReader`, and it makes no cr
 
 ## Validation and rollback
 
-Unit tests cover safe integrity failure and server-derived organization scope. PostgreSQL smoke tests cover idempotent seeding, exact fact reconstruction and tampered-byte rejection; they require a PostgreSQL service and cannot run on the current machine because Docker is unavailable. CI is the intended real migration/smoke gate.
+Unit tests cover safe integrity failure and server-derived organization scope. PostgreSQL smoke tests cover idempotent seeding, exact fact reconstruction and tampered-byte rejection. They could not run locally because Docker is unavailable, and passed in PR #3 CI on 2026-11-08.
 
 Rollback is the normal Alembic downgrade before production data exists. Superseding storage must migrate and verify every byte/hash pair before removing the column.
