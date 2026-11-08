@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 from .automation import QuestionSet
 from .common import (
@@ -22,6 +22,7 @@ from .common import (
     contract_model_config,
 )
 from .evidence import EvidenceBundle
+from .validation import ValidationResult
 
 
 class DependencyRef(ContractModel):
@@ -70,10 +71,16 @@ class ApprovalSnapshot(ContractModel):
 # template references facts as ``{{fact:ID}}`` slots resolved by the server (s8.2).
 
 
-class DraftRequest(ContractModel):
-    """Client request for a draft. Extra fields (e.g. ``approved``) are rejected."""
+def _strict_request_config() -> ConfigDict:
+    """Request bodies: extra fields forbidden and no type coercion ("1" is not 1)."""
+    return ConfigDict(**contract_model_config("draft", "C"), strict=True)
 
-    model_config = contract_model_config("draft", "C")
+
+class DraftRequest(ContractModel):
+    """Client request for a draft. Strict: extra fields (e.g. ``approved``) and coerced
+    types (e.g. ``"1"`` for a version) are rejected (C2 rev 1.1 owner priority)."""
+
+    model_config = _strict_request_config()
 
     question_version: int = Field(ge=1)
     evidence_bundle_id: StableId
@@ -93,7 +100,123 @@ class FactSlotSegment(ContractModel):
     fact_id: StableId
 
 
-DraftSegment = Annotated[TextSegment | FactSlotSegment, Field(discriminator="kind")]
+class UnsupportedSegment(ContractModel):
+    """Explicit APP-03 marker: the writer says a claim has no supporting evidence."""
+
+    model_config = contract_model_config("draft", "C")
+
+    kind: Literal["unsupported"]
+    reason: StableId
+
+
+DraftSegment = Annotated[
+    TextSegment | FactSlotSegment | UnsupportedSegment, Field(discriminator="kind")
+]
+
+
+# --- C2 (docs/specs/C2-draft-claims.md rev 1.1, s3) ------------------------------------
+# Server-rendered claim bindings and deterministic findings. Stateless: a report binds to
+# the exact submitted text hash; nothing here persists, approves or carries a status.
+
+
+class ClaimBinding(ContractModel):
+    """A fact value the server rendered into the answer, with its exact text span (s8.2)."""
+
+    model_config = contract_model_config("draft", "C")
+
+    fact_id: StableId
+    pack_version_id: StableId = Field(
+        description="Binding key until Fact gains a version (request to Dev A)."
+    )
+    span_start: int = Field(ge=0, description="Code-point offset in RenderedAnswer.text.")
+    span_end: int = Field(ge=0)
+    rendered_text: str
+
+
+class UnsupportedMarker(ContractModel):
+    model_config = contract_model_config("draft", "C")
+
+    reason: StableId
+    span_start: int = Field(ge=0)
+    span_end: int = Field(ge=0)
+
+
+class RenderedAnswer(ContractModel):
+    """The answer as a funder would read it: slot tokens replaced by server-rendered facts."""
+
+    model_config = contract_model_config("draft", "C")
+
+    text: str
+    text_sha256: Sha256Hex
+    bindings: list[ClaimBinding]
+    unsupported_markers: list[UnsupportedMarker]
+
+
+class AnswerFinding(ContractModel):
+    """Plain-language wrapper around a shared ValidationResult (s8.3, s9.1, s18)."""
+
+    model_config = contract_model_config("draft", "C")
+
+    result: ValidationResult
+    message: str
+    next_action: str | None = None
+    span_start: int | None = Field(default=None, ge=0)
+    span_end: int | None = Field(default=None, ge=0)
+    affected_text: str | None = None
+
+
+class CheckRequest(ContractModel):
+    model_config = _strict_request_config()
+
+    question_version: int = Field(ge=1)
+    evidence_bundle_id: StableId
+    text: str = Field(max_length=20_000, description="Editor text; may contain slot tokens.")
+    mode: Literal["working", "reviewed"] = "working"
+
+
+class CheckReport(ContractModel):
+    """Deterministic findings for one exact text. Not a review or approval."""
+
+    model_config = contract_model_config("draft", "C")
+
+    schema_version: Literal["1"] = SCHEMA_VERSION
+    question_id: StableId
+    question_version: int = Field(ge=1)
+    evidence_bundle_id: StableId
+    mode: Literal["working", "reviewed"]
+    submitted_text_sha256: Sha256Hex
+    rendered: RenderedAnswer
+    findings: list[AnswerFinding]
+
+
+class PlanRequest(ContractModel):
+    model_config = _strict_request_config()
+
+    evidence_bundle_id: StableId
+
+
+class PlanItem(ContractModel):
+    model_config = contract_model_config("draft", "C")
+
+    question_id: StableId
+    question_version: int = Field(ge=1)
+    evidence_fact_ids: list[StableId]
+    missing_inputs: list[str]
+    repeated_with: list[StableId]
+
+
+class AnswerPlan(ContractModel):
+    """Planner proposal (s7): evidence per question and missing inputs. Nothing invented."""
+
+    model_config = contract_model_config("draft", "C")
+
+    schema_version: Literal["1"] = SCHEMA_VERSION
+    plan_id: StableId
+    question_set_id: StableId
+    evidence_bundle_id: StableId
+    items: list[PlanItem]
+    planner: ModelRunInfo
+    provenance: Provenance
 
 
 class ModelRunInfo(ContractModel):
@@ -124,6 +247,9 @@ class DraftProposal(ContractModel):
     uncertainties: list[str]
     provider: ModelRunInfo
     provenance: Provenance
+    check: CheckReport | None = Field(
+        default=None, description="Working-mode findings for the rendered proposal (C2)."
+    )
 
 
 class ApplicationWorkspace(ContractModel):
@@ -143,4 +269,8 @@ ANSWERS_PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     DraftRequest,
     DraftProposal,
     ApplicationWorkspace,
+    CheckRequest,
+    CheckReport,
+    PlanRequest,
+    AnswerPlan,
 )

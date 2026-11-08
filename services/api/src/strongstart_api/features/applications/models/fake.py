@@ -33,6 +33,8 @@ class FakeAdapter:
         )
 
     async def complete(self, task: StructuredTask) -> str:
+        if task.operation == "plan_application":
+            return self._plan(task)
         facts: list[dict[str, Any]] = list(task.payload.get("allowed_facts", []))
         fact_ids = sorted(str(f["fact_id"]) for f in facts)[:1]
         text = (
@@ -50,3 +52,24 @@ class FakeAdapter:
             ],
         }
         return json.dumps(body, sort_keys=True, separators=(",", ":"))
+
+    @staticmethod
+    def _plan(task: StructuredTask) -> str:
+        """Deterministic planner: all allowed facts go to the first question; every other
+        question gets an explicit missing-input note. Nothing is invented (s7)."""
+        questions: list[dict[str, Any]] = list(task.payload.get("questions", []))
+        fact_ids = sorted(str(f["fact_id"]) for f in task.payload.get("allowed_facts", []))
+        items = []
+        for n, q in enumerate(questions):
+            assigned = fact_ids if n == 0 else []
+            items.append(
+                {
+                    "question_id": q["question_id"],
+                    "evidence_fact_ids": assigned,
+                    "missing_inputs": []
+                    if assigned
+                    else ["No evidence in this bundle answers this question; staff input needed."],
+                    "repeated_with": [],
+                }
+            )
+        return json.dumps({"items": items}, sort_keys=True, separators=(",", ":"))
