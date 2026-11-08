@@ -336,7 +336,7 @@ def test_auto2_09_grant_binds_every_action_critical_value(h: Harness, stub: Stub
     assert grant_problem(grant, p) is None
     assert grant.expires_at == p.expires_at and grant.runtime_epoch == p.runtime_epoch
     assert [o.field_id for o in grant.operations] == ["org-name-field", "summary-field"]
-    changes = [
+    changes: list[dict[str, Any]] = [
         {"organization_id": "other-org"},
         {"actor_id": "someone-else"},
         {"logical_origin": "fixture://elsewhere.local"},
@@ -431,14 +431,16 @@ def test_auto2_10_racing_execute_requests_produce_one_execution(
     assert stub.launches == 1
 
 
-def _claim_in_process(root: str, plan_id: str, idem: str, blocked: Any, out: Any) -> None:
+def _claim_in_process(
+    root: str, plan_id: str, idem: str, blocked: Any, acquired: Any, out: Any
+) -> None:
     from strongstart_api.features.automation.prefill_store import AlreadyClaimed, PrefillRepository
     from strongstart_api.features.dev_b_store.core import LocalVersionStore, set_lock_observer
     from tests.automation.test_prefill_plan import _run_record
 
     def observe(path: Path, event: str) -> None:
-        if path.name == "prefill-runs.lock" and event == "blocked":
-            blocked.set()
+        if path.name == "prefill-runs.lock":
+            (blocked if event == "blocked" else acquired).set()
 
     set_lock_observer(observe)
     repo = PrefillRepository(LocalVersionStore(Path(root)))
@@ -460,7 +462,7 @@ def _run_record(plan_id: str) -> Any:
         grant_id="grant-x", grant_sha256="0" * 64, plan_id=plan_id, plan_sha256="0" * 64,
         organization_id="demo-org", actor_id="a", portal_fixture_id="rep-prefill-v1",
         logical_origin="fixture://rep-prefill.local", form_id="rep-prefill", form_version=1,
-        expected_fingerprint="0" * 64,
+        expected_fingerprint="0" * 64, page_sha256="0" * 64,
         operations=[{"action_index": 0, "field_id": "org-name-field", "operation": "fill",
                      "published_question_id": "q", "approval_snapshot_id": "a",
                      "rendered_sha256": "0" * 64, "intended_sha256": "0" * 64}],
@@ -480,11 +482,13 @@ def test_auto2_10_two_processes_claim_one_plan_exactly_once(tmp_path: Path) -> N
     plan_id = "pfp-" + "a" * 26
     ctx = multiprocessing.get_context("spawn")
     events = [ctx.Event(), ctx.Event()]
+    acquired = [ctx.Event(), ctx.Event()]
     out = ctx.Queue()
     with store.collection("demo-org", "prefill-runs").locked():
         procs = [
             ctx.Process(
-                target=_claim_in_process, args=(str(root), plan_id, f"key-proc-{i:04d}", e, out)
+                target=_claim_in_process,
+                args=(str(root), plan_id, f"key-proc-{i:04d}", e, acquired[i], out),
             )
             for i, e in enumerate(events)
         ]
@@ -493,11 +497,13 @@ def test_auto2_10_two_processes_claim_one_plan_exactly_once(tmp_path: Path) -> N
         # Both children really attempted the cross-process claim lock and were refused.
         for e in events:
             assert e.wait(TIMEOUT), "a child never contended for the claim lock"
+        assert not any(e.is_set() for e in acquired)
     results = sorted([out.get(timeout=TIMEOUT), out.get(timeout=TIMEOUT)])
     for proc in procs:
         proc.join(TIMEOUT)
         assert proc.exitcode == 0
     assert results == ["already_claimed", "claimed"]
+    assert all(e.is_set() for e in acquired)
 
 
 # --------------------------------------------------------------------------- AUTO2-11 / 12
@@ -824,3 +830,83 @@ def test_auto2_31_production_has_no_prefill(tmp_path: Path) -> None:
     r = c.post("/api/automation/prefill-plans", json=body)
     assert r.status_code == 403 and r.json()["details"]["reason"] == "fixture_not_allowed"
     assert not (tmp_path / "s").exists()
+
+
+def test_auto2_12_producer_restart_rejects_prepared_content(h: Harness, stub: StubBrowser) -> None:
+    _, p = two_text(h)
+    h.approvals.epoch = "producer-restarted"
+    r = execute(h, p)
+    assert r.status_code == 201
+    run = r.json()["run"]["run"]
+    assert run["outcome"] == "blocked_before_entry"
+    assert run["outcome_reason"] == "approval_changed:producer_epoch"
+    assert stub.launches == 0
+
+
+def test_auto2_19_changed_typed_choice_cannot_reuse_plan(h: Harness, stub: StubBrowser) -> None:
+    from dataclasses import replace
+
+    pub = save_definition(h.client)
+    approval_id = approve(h, pub, "pf-service-area", "Approved choice", typed=["region"])
+    p = plan(h, pub, [("pf-service-area", approval_id)]).json()
+    # Text and its hashes stay identical; the producer changes only the authorized choice.
+    h.approvals._approvals[approval_id] = replace(
+        h.approvals._approvals[approval_id], typed=["city"]
+    )
+    r = execute(h, p)
+    assert r.status_code == 201
+    run = r.json()["run"]["run"]
+    assert run["outcome"] == "blocked_before_entry"
+    assert run["outcome_reason"] == "approval_changed:typed_value"
+    assert stub.launches == 0
+
+
+def test_auto2_12_final_reread_does_not_outlive_grant(
+    h: Harness, stub: StubBrowser, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    _, p = two_text(h)
+
+    def expires_after_entries(*args: Any, **kwargs: Any) -> Any:
+        result = stub(*args, **kwargs)
+        h.clock.advance(121)
+        return result
+
+    monkeypatch.setattr(prefill_browser, "execute_actions", expires_after_entries)
+    run = execute(h, p).json()["run"]["run"]
+    assert run["final_reread"] == "all_match"
+    assert run["outcome"] == "stopped_with_partial_entry"
+    assert run["outcome_reason"] == "grant_expired"
+
+
+def test_auto2_08_direct_executor_requires_exact_grant(
+    h: Harness, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from strongstart_api.features.automation import prefill_runner
+    from strongstart_api.features.automation.prefill_deps import PrefillBrowserConfig
+    from strongstart_api.features.automation.registry import PREFILL_PORTALS
+    from strongstart_contracts.automation_prefill import PrefillPlan
+
+    _, raw = two_text(h)
+    p = PrefillPlan.model_validate(raw)
+    grant = prefill_runner.derive_grant(p, "fixture-staff", h.clock())
+    actions = prefill_runner._browser_actions(p, PREFILL_PORTALS[p.portal.portal_fixture_id])
+    assert actions is not None
+
+    def forbidden(*args: Any, **kwargs: Any) -> Any:
+        pytest.fail("an invalid direct execution must not open a browser")
+
+    monkeypatch.setattr(prefill_browser, "_session", forbidden)
+    hooks: Any = object()
+    for candidate in [None, grant.model_copy(update={"page_sha256": "f" * 64})]:
+        result = prefill_browser.execute_actions(
+            b"untrusted caller",
+            ready_selector="body",
+            expected_fingerprint=p.portal.expected_fingerprint,
+            expected_page_sha256=p.portal.page_sha256,
+            actions=actions,
+            hooks=hooks,
+            config=PrefillBrowserConfig(),
+            grant=candidate,
+        )
+        assert result.reason == "invalid_execution_grant"
+        assert result.operations == []

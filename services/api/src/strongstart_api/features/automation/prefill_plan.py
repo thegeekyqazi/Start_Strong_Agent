@@ -517,6 +517,8 @@ def build_plan(
             operation=value.operation,
             approval_snapshot_id=sel.approval_snapshot_id,
             answer_version_id=content.answer_version_id,
+            producer_id=content.producer_id,
+            producer_epoch=content.producer_epoch,
             template_sha256=content.template_sha256,
             rendered_sha256=content.rendered_sha256,
             dependency_snapshot_sha256=content.dependency_snapshot_sha256,

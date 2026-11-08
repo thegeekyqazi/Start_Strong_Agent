@@ -297,6 +297,14 @@ async def execute_plan(
             raise _store_error(exc) from None
 
     result = await run_in_threadpool(work)
+    if not result.replayed and result.run.run.outcome_reason == "browser_unavailable":
+        raise intake_error(
+            503,
+            ErrorCode.CAPABILITY_UNAVAILABLE,
+            "browser_unavailable",
+            "Chromium is unavailable; no fields were entered. The stored receipt is available.",
+            run_id=result.run.run.run_id,
+        )
     if result.replayed:
         response.status_code = 200
     return result

@@ -97,3 +97,16 @@ A4 is merged, but it offers no in-process consumer interface, and B does not cal
 ## Validation and rollback
 
 The AUTO2-* evidence is in the task handoff. To roll back, revert the task commits and delete `.local-data/dev-b-store/**/prefill-*`. There are no migrations.
+
+## Takeover update (2026-11-08, Dev B / Codex)
+
+Status remains `developer-decision`; the content-reader request remains `proposed-cross-module`. This append supersedes the **question-identity dependency state** in the baseline/phase text above, not the accepted history or approval boundaries.
+
+- Clean `a2b8146`/PR #17 checkpoint preserved; upstream `e6df77a` merged normally (`04f68ec`). C2b #18 now consumes `ApplicationDefinitionReader` with exact published question IDs. P2 is still pending C's public approved-content reader; no implementation/factory has appeared. A4's in-process factory remains unavailable.
+- P1 now includes committed real Chromium and Automation UI tests. Test approval injection exists only under `tests/`; production/runtime contains no seeded fallback. Phase/evidence details: `docs/handoffs/dev-b/b2-auto-002-approved-prefill-r1.md`.
+- Corrections within spec sections 5.3, 7–8: action records retain producer ID/epoch and compare live typed choices/dependency lists; completion checks include expiry/runtime/definition; the direct executor checks the exact grant/action/page binding. The grant adds the page hash; older incomplete draft records fail closed and require a new plan after upgrade. These are additive draft-contract refinements, not permission or approval changes. Regeneration preserves all A/B/C registrations.
+- Readiness refinement: an observed existing hostile-inspector lifecycle timeout is addressed by waiting for the initial document commit and then the existing registered readiness predicate. Network, submit denial and read-only fingerprint semantics are unchanged.
+- UI uses a synchronous in-flight guard, selection generations, a retained per-tab execution identity and read-only refresh recovery. Prefill HTTP waits are bounded at 45 seconds; an aborted/lost response retains the same key. Known browser unavailability is 503 with a persisted zero-write run ID; historical replay remains read-only.
+- No new migrations, paid providers, upload, submit/sign, automatic recovery, OS-level arbitrary-site egress isolation or integrated C/A4 claim is introduced. The original word-counter and attachment-reader holds remain.
+
+Validation and rollback: see the handoff for exact tests, mutation failures/restoration and limitations. Revert this task's commits through review to roll back; prepare fresh plans rather than rewriting old approval/grant records. Cross-module adoption still requires producer acknowledgment.

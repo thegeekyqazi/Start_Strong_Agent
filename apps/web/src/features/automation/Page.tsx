@@ -1,6 +1,6 @@
 // Intake & Prefill page (owner: B2, B2-AUTO-001). Import, inspect evidence, inspect the fixture
 // portal read-only and export the handoff. Every imported string is rendered as escaped React
-// text; nothing here uses innerHTML, runs imported scripts, fills fields or submits anything.
+// text. The separate prefill panel requests explicit exact-plan entry; nothing submits.
 import { useEffect, useState } from 'react'
 import type {
   ApplicationIntakeResult,
@@ -20,6 +20,7 @@ import {
 import { EvidencePanel, FindingList, InspectionView, QuestionTable } from './views'
 import { SavedDefinitions, type Preview } from './saved'
 import { clearIntakeReference, readIntakeReference } from './handoff'
+import { PrefillPanel } from './prefill'
 import './automation.css'
 
 type Mode = IntakeSource['mode']
@@ -172,8 +173,8 @@ export function AutomationPage() {
     <section aria-labelledby="automation-heading" className="automation">
       <h2 id="automation-heading">Intake &amp; Prefill</h2>
       <p className="badge badge-planned">
-        Intake and read-only fixture inspection only. Prefill is not implemented; submission is
-        staff-only.
+        Intake, read-only inspection and selected-field fixture prefill. Integrated C3 entry is
+        unavailable; submission is staff-only.
       </p>
 
       <section aria-labelledby="avail-heading" className="panel">
@@ -365,6 +366,7 @@ export function AutomationPage() {
         </p>
       )}
       <SavedDefinitions preview={preview} />
+      <PrefillPanel />
 
       <section aria-labelledby="inspect-heading" className="panel">
         <h3 id="inspect-heading">3. Representative portal inspection (read-only)</h3>

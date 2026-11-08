@@ -25,8 +25,8 @@ function availability(browser: AutomationAvailability['browser_status']): Automa
       {
         feature: 'automation.approved_prefill',
         owner: 'B2',
-        status: 'not_implemented',
-        detail: 'later',
+        status: 'fixture_only',
+        detail: 'Test provider only; integrated C3 unavailable.',
       },
       {
         feature: 'automation.final_submission',
@@ -232,7 +232,7 @@ describe('AutomationPage', () => {
     mockFetch(() => ({ status: 200, body: availability('installed_not_launched') }))
     render(<AutomationPage />)
     expect(await screen.findByText('automation.final_submission')).toBeInTheDocument()
-    expect(screen.getByText('Not implemented')).toBeInTheDocument()
+    expect(screen.getByText('Fixture only')).toBeInTheDocument()
     expect(screen.getByText(/FIXTURE MODE/)).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Inspect fields' })).toBeEnabled()
   })

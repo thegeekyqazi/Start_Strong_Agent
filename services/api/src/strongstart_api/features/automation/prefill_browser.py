@@ -26,6 +26,8 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, Literal, Protocol
 
+from strongstart_contracts.automation_prefill import PrefillGrant
+
 from ..dev_b_store.core import canonical_json, sha256_hex
 from .inspection import fingerprint, observed_fields
 from .inspector import ENUMERATE_JS, READY_JS, ActivityLog, InspectionFailure, RestrictedSession
@@ -227,8 +229,14 @@ def execute_actions(
     hooks: Hooks,
     config: PrefillBrowserConfig,
     extra_pages: dict[str, bytes] | None = None,
+    grant: PrefillGrant | None = None,
 ) -> BrowserOutcome:
     outcome = BrowserOutcome(stage="blocked_before_entry", reason=None)
+    # Even an internal caller must supply the claimed, exact command. Live expiry,
+    # epoch and approval checks remain in the persisted runner hooks before each write.
+    if not _grant_matches(grant, actions, expected_fingerprint, expected_page_sha256):
+        outcome.reason = "invalid_execution_grant"
+        return outcome
     written: list[BrowserAction] = []
     in_flight: int | None = None
     live: list[RestrictedSession] = []
@@ -389,3 +397,29 @@ def _stop(written: list[BrowserAction]) -> Literal["blocked_before_entry", "stop
 
 def _sha_bytes(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def _grant_matches(
+    grant: PrefillGrant | None, actions: list[BrowserAction], fp: str, page_sha: str
+) -> bool:
+    if grant is None:
+        return False
+    record = grant.model_dump(mode="json")
+    record.pop("grant_sha256")
+    if sha256_hex(canonical_json(record)) != grant.grant_sha256:
+        return False
+    if grant.expected_fingerprint != fp or grant.page_sha256 != page_sha:
+        return False
+    expected = [
+        (o.action_index, o.field_id, o.operation, o.intended_sha256) for o in grant.operations
+    ]
+    actual = [
+        (
+            a.index,
+            a.control.field_id,
+            a.operation,
+            _sha(a.value) if a.value is not None else sha256_hex(canonical_json(list(a.choices))),
+        )
+        for a in actions
+    ]
+    return bool(actions) and expected == actual

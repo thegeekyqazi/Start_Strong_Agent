@@ -396,9 +396,11 @@ def restricted_fixture_session(
 
                 page.on("download", on_download)
                 try:
-                    page.goto(
-                        origin + PORTAL_PATH, wait_until="domcontentloaded", timeout=remaining()
-                    )
+                    # Observe the initial document commit, then the registered readiness
+                    # predicate. A hostile script may start a denied navigation before the
+                    # initial DOMContentLoaded waiter settles; that lifecycle event must not
+                    # become our readiness authority or consume the whole time budget.
+                    page.goto(origin + PORTAL_PATH, wait_until="commit", timeout=remaining())
                     # Poll the declared readiness condition with trusted code. (wait_for_selector
                     # would wait on a blocked, never-committed navigation started by the page.)
                     while not page.evaluate(READY_JS, ready_selector):

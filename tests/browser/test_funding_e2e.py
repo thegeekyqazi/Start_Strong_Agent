@@ -37,7 +37,9 @@ def _free_port() -> int:
 
 
 @contextmanager
-def stack(tmp_path: Path, **env: str) -> Iterator[str]:
+def stack(
+    tmp_path: Path, *, app_factory: str = "strongstart_api.app:app_factory", **env: str
+) -> Iterator[str]:
     if not (DIST / "index.html").exists():
         pytest.fail("apps/web/dist is missing; run `npm run build` (make browser-smoke does)")
     api_port = _free_port()
@@ -53,7 +55,7 @@ def stack(tmp_path: Path, **env: str) -> Iterator[str]:
             "-m",
             "uvicorn",
             "--factory",
-            "strongstart_api.app:app_factory",
+            app_factory,
             "--host",
             "127.0.0.1",
             "--port",

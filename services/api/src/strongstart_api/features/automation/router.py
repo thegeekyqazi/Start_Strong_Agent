@@ -18,7 +18,8 @@ DEV-B-BUNDLE-002 M1 (saved definitions; development/test repository, disabled in
 
 The identity dependency runs before any body is read, any fixture/capture byte is
 accessed or a browser is launched. No route accepts org_id/approved/authorization from
-the client, and no route fills, uploads, submits or signs anything.
+the client. The separate prefill router accepts an explicit exact-plan execution command;
+intake and inspection never authorize entry. No route uploads, submits or signs anything.
 """
 
 from __future__ import annotations
@@ -150,8 +151,8 @@ CAPABILITIES: list[Capability] = [
         feature="automation.prefill_execution_c3",
         owner="B2",
         status="unavailable",
-        detail="Integrated C3 execution is pending C's approved-content reader and B question "
-        "identities in C's workspace (B2-AUTO-002 P2).",
+        detail="Integrated C3 execution is pending C's approved-content reader (B2-AUTO-002 P2). "
+        "C2b now consumes B's exact published question identities.",
     ),
     Capability(
         feature="automation.prefill_choice_values",
@@ -187,7 +188,24 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 def capabilities_for(settings: Settings) -> list[Capability]:
     saved = settings.environment != "production"
     return [
-        *CAPABILITIES,
+        *[
+            c.model_copy(
+                update={
+                    "status": "unavailable",
+                    "detail": "Disabled in production: no supported prefill runtime or repository.",
+                }
+            )
+            if not saved
+            and c.feature
+            in {
+                "automation.approved_prefill",
+                "automation.prefill_plan_preparation",
+                "automation.prefill_execution_test_provider",
+                "automation.attachment_checklist",
+            }
+            else c
+            for c in CAPABILITIES
+        ],
         Capability(
             feature="automation.saved_definitions",
             owner="B2",
@@ -259,8 +277,8 @@ def _browser_status(settings: Settings) -> tuple[Any, str]:
 
 
 @router.get("/status", response_model=list[Capability])
-def status() -> list[Capability]:
-    return CAPABILITIES
+def status(settings: SettingsDep) -> list[Capability]:
+    return capabilities_for(settings)
 
 
 @router.get("/availability", response_model=AutomationAvailability)
@@ -274,7 +292,7 @@ def availability(settings: SettingsDep, capture: CaptureDep) -> AutomationAvaila
         else []
     )
     return AutomationAvailability(
-        capabilities=CAPABILITIES,
+        capabilities=capabilities_for(settings),
         import_modes=[
             ImportModeInfo(
                 mode="fixture",

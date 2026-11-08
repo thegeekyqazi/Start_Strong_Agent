@@ -104,6 +104,7 @@ def derive_grant(plan: PrefillPlan, actor_id: str, now: datetime) -> PrefillGran
         "form_id": plan.portal.form_id,
         "form_version": plan.portal.form_version,
         "expected_fingerprint": plan.portal.expected_fingerprint,
+        "page_sha256": plan.portal.page_sha256,
         "operations": [
             GrantedFieldOperation(
                 action_index=a.action_index,
@@ -145,6 +146,7 @@ def grant_problem(grant: PrefillGrant, plan: PrefillPlan) -> str | None:
         plan.portal.form_id,
         plan.portal.form_version,
         plan.portal.expected_fingerprint,
+        plan.portal.page_sha256,
         plan.runtime_epoch,
         plan.expires_at,
     )
@@ -157,6 +159,7 @@ def grant_problem(grant: PrefillGrant, plan: PrefillPlan) -> str | None:
         grant.form_id,
         grant.form_version,
         grant.expected_fingerprint,
+        grant.page_sha256,
         grant.runtime_epoch,
         grant.expires_at,
     )
@@ -172,7 +175,7 @@ def _receipt(
     action: PlannedFieldAction, state: FieldState, out: FieldOutcome | None = None
 ) -> FieldReceipt:
     next_action = {
-        "entered_verified": "Review the value in the portal before any staff submission.",
+        "entered_verified": "Review this selected-field receipt; the fixture page is closed.",
         "not_attempted": "Prepare a new plan to enter this field.",
         "blocked_before_write": "Resolve the reason, then prepare a new plan.",
         "write_in_flight": "Effect unknown: check the field manually before any action.",
@@ -290,8 +293,17 @@ def _approval_problem(deps: ExecutionDeps, plan: PrefillPlan, a: PlannedFieldAct
         or content.template_sha256 != a.template_sha256
         or content.rendered_sha256 != a.rendered_sha256
         or content.dependency_snapshot_sha256 != a.dependency_snapshot_sha256
+        or [d.model_dump() for d in content.dependencies]
+        != [d.model_dump() for d in a.dependencies]
     ):
         return "approval_changed:content_or_dependencies"
+    if content.producer_id != a.producer_id or content.producer_epoch != a.producer_epoch:
+        return "approval_changed:producer_epoch"
+    if a.operation != "fill":
+        if content.typed_value is None or sorted(content.typed_value.values) != sorted(
+            a.intended_choices
+        ):
+            return "approval_changed:typed_value"
     if deps.currentness is not None:
         state = deps.currentness.check(plan.organization_id, plan.plan_id, list(a.dependencies))
         if state.status != "current":
@@ -525,6 +537,7 @@ def _run_claimed(deps: ExecutionDeps, plan: PrefillPlan, run: PrefillRun) -> Pre
             actions=actions,
             hooks=hooks,
             config=deps.config,
+            grant=running.grant,
         )
     except Exception:  # never leave a claimed run without a final status
         steps = deps.repo.steps(plan.organization_id, running.run_id, len(plan.actions))
@@ -564,7 +577,7 @@ def _run_claimed(deps: ExecutionDeps, plan: PrefillPlan, run: PrefillRun) -> Pre
         final_outcome = "stopped_with_partial_entry"
     else:
         completion = next(
-            (p for a in plan.actions if (p := _approval_problem(deps, plan, a)) is not None), None
+            (p for a in plan.actions if (p := hooks._live_problem(a)) is not None), None
         )
         checks.append(
             CurrentnessCheck(

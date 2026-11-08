@@ -75,7 +75,7 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     assert caps["automation"]["owner"] == "B2"
     # B2-AUTO-001: intake + fixture inspection only
     assert caps["automation"]["status"] == "fixture_only"
-    assert caps["automation.approved_prefill"]["status"] == "not_implemented"
+    assert caps["automation.approved_prefill"]["status"] == "fixture_only"
     assert caps["automation.final_submission"]["status"] == "unavailable"
 
 

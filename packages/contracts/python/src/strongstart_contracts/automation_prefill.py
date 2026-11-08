@@ -310,6 +310,8 @@ class PlannedFieldAction(ContractModel):
     operation: Operation
     approval_snapshot_id: StableId
     answer_version_id: StableId
+    producer_id: str
+    producer_epoch: str
     template_sha256: Sha256Hex
     rendered_sha256: Sha256Hex
     dependency_snapshot_sha256: Sha256Hex
@@ -481,6 +483,7 @@ class PrefillGrant(ContractModel):
     form_id: StableId
     form_version: int = Field(ge=1)
     expected_fingerprint: Sha256Hex
+    page_sha256: Sha256Hex
     operations: list[GrantedFieldOperation] = Field(min_length=1, max_length=MAX_ACTIONS)
     created_at: datetime
     expires_at: datetime

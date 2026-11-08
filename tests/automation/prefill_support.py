@@ -215,7 +215,7 @@ class TestCurrentness:
     def check(
         self, organization_id: str, target_id: str, dependencies: list[DependencyRef]
     ) -> DependencyCurrentness:
-        return DependencyCurrentness(status=self.status, detail="TEST currentness provider")  # type: ignore[arg-type]
+        return DependencyCurrentness(status=self.status, detail="TEST currentness provider")
 
 
 class Clock:
