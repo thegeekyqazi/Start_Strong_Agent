@@ -37,6 +37,18 @@ from .evidence import (
 from .fixtures import FixtureBundle, load_fixture_bundle
 from .funding import Opportunity, RequirementCondition, RequirementSet
 from .jobs import ChangedVersion, ChangeSet, JobBudget, JobContext, JobResult
+from .packs import (
+    ActivatePackRequest,
+    ActivePackState,
+    DependencyRegistrationRequest,
+    DependencyTargetState,
+    InvalidationSummary,
+    PackActivationReport,
+    PackFactBinding,
+    PackManifest,
+    PackManifestRequest,
+    PackPolicyBinding,
+)
 from .platform import (
     Capability,
     CapabilityReport,
@@ -58,6 +70,8 @@ from .validation import (
 
 __all__ = [
     "SCHEMA_VERSION",
+    "ActivatePackRequest",
+    "ActivePackState",
     "AnswerSnapshot",
     "ApplicationDefinition",
     "ApprovalSnapshot",
@@ -68,6 +82,8 @@ __all__ = [
     "ChangedVersion",
     "DateKnowledge",
     "DependencyRef",
+    "DependencyRegistrationRequest",
+    "DependencyTargetState",
     "ErrorCode",
     "ErrorEnvelope",
     "EvidenceBundle",
@@ -75,6 +91,7 @@ __all__ = [
     "FieldMapping",
     "FixtureBundle",
     "FormMap",
+    "InvalidationSummary",
     "JobBudget",
     "JobContext",
     "JobResult",
@@ -89,6 +106,11 @@ __all__ = [
     "NumericValidationReport",
     "NumericValidationRequest",
     "Opportunity",
+    "PackActivationReport",
+    "PackFactBinding",
+    "PackManifest",
+    "PackManifestRequest",
+    "PackPolicyBinding",
     "PdfSourceImportRequest",
     "PdfSourceImportResult",
     "PrefillAction",

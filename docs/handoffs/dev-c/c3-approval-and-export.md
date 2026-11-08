@@ -110,7 +110,7 @@ PR #12 (DEV-B-BUNDLE-002) landed while the first merge was being validated, whic
 
 - **Conflicts:** only the two generated contract files again, regenerated with `make contracts`. The combined schema carries every lane: C 33 models, B1 70, B2 50, A-series, shared.
 - **No new migrations** (head stays `0006_numeric_validation`) and no dependency changes. `uv lock --check` shows no drift.
-- **PR #15 (A4) is still open.** When it lands with `0007_pack_replacement`, PR #10 needs one more merge. The unnumbered C3 migration request is unaffected.
+- PR #15 (A4) was still open at this point. It landed shortly after; see "Third merge".
 - **C2b is unblocked.** PR #12 delivered `ApplicationDefinitionReader` in answer to C's `c2-question-read-port-request.md` (see `docs/handoffs/dev-b/bundle-002-question-reader-r1.md`). Consuming it is follow-up C2b work, not part of this PR.
 
 | Command (tree after second merge) | Result |
@@ -121,12 +121,27 @@ PR #12 (DEV-B-BUNDLE-002) landed while the first merge was being validated, whic
 | `make smoke` | exit 0: 97 + 11 db tests; readiness 200 at `0006_numeric_validation`; capabilities 200 (22 entries) |
 | `make browser-smoke` | exit 0, **16 passed** (PR #12 added B's e2e) |
 
+### Third merge: `origin/main` `5f1c5a0` (Dev A PR #15, A4 pack replacement)
+
+PR #15 merged after the second merge was pushed. With it, **both PRs named in the owner's request (#12 and #15) have landed**, and this branch now contains them.
+
+- **No conflicts.** Git auto-merged everything, including the generated contract files. `make contracts-check` confirms the committed schema and TypeScript match the combined models (A4's `packs.py` contracts included), so nothing needed regenerating.
+- **Dependencies:** `uv sync --locked` and `uv lock --check` are clean.
+- **Migration head** is now A's `0007_pack_replacement` (`REQUIRED_MIGRATION_REVISION`). C's request stays unnumbered and inactive. C added no head.
+
+| Command (tree after third merge) | Result |
+| --- | --- |
+| `make check` | exit 0: mypy strict (181 files) clean; **682 pytest passed** (28 deselected); **84 Vitest passed**; contracts drift clean; build ok |
+| `uv run pytest tests/applications` | 154 passed |
+| `make smoke` | exit 0: 99 + 12 db tests; readiness 200 at `0007_pack_replacement`; capabilities 200 (22 entries) |
+| `make browser-smoke` | exit 0, **16 passed** |
+
 ## Consumer action / blockers
 
-- **Dev A (please acknowledge in PR #10):** sequence the **unnumbered** request `docs/handoffs/dev-c/c3-migration-request/answers_and_approvals.py` (it targets `organizations.id`). Assign its revision and down-revision after your current head (`0006_numeric_validation` on main, or `0007_pack_replacement` once PR #15 lands). Its placeholder down-revision fails loudly if applied unchanged. C will not add a migration head. Persistence stays fixture-only until then.
+- **Dev A (please acknowledge in PR #10):** sequence the **unnumbered** request `docs/handoffs/dev-c/c3-migration-request/answers_and_approvals.py` (it targets `organizations.id`). Assign its revision and down-revision after your current head (`0007_pack_replacement`, current head on main). Its placeholder down-revision fails loudly if applied unchanged. C will not add a migration head. Persistence stays fixture-only until then.
 - **Dev B:**
   - acknowledge the `uv.lock` change (`python-docx`, `lxml`);
   - consume `get_c_approved_answer_resolver` / `StoreApprovedAnswerResolver` for B2-AUTO-002;
   - agree whether C should wire it into the shared `ports.get_approved_answer_resolver`.
 - **Dev B:** thanks for `ApplicationDefinitionReader`; C will consume it in a C2b follow-up (not in this PR).
-- **Owner:** review PR #10. It is open and not merged; one more merge is needed after A4's PR #15 lands.
+- **Owner:** review PR #10. It is open and not merged, and it is now resolved against `main` including both #12 and #15.

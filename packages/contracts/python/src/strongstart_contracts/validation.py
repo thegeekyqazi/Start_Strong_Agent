@@ -79,6 +79,7 @@ class ValidationDependency(ContractModel):
         "rounding_policy",
         "formula",
         "project_input",
+        "policy",
     ]
     ref_id: StableId
     version: str

@@ -6,6 +6,8 @@ Requires the local PostgreSQL service and STRONGSTART_DATABASE_URL (make db-up).
 from __future__ import annotations
 
 import base64
+import hashlib
+import json
 
 import pytest
 from alembic import command
@@ -16,22 +18,39 @@ from sqlalchemy import delete, func, insert, select, update
 from strongstart_api.app import create_app
 from strongstart_api.config import Settings
 from strongstart_api.db import (
+    active_pack_contexts,
     bootstrap_metadata,
+    dependency_target_refs,
+    dependency_targets,
     evidence_pack_versions,
+    evidence_packs,
     fact_source_refs,
     get_engine,
+    invalidation_events,
     knowledge_facts,
     knowledge_passages,
     knowledge_source_versions,
     knowledge_sources,
     organizations,
+    pack_change_sets,
+    pack_changes,
     pack_facts,
+    pack_manifest_policies,
+    pack_manifest_sources,
+    pack_manifests,
+    pack_policies,
     validation_dependencies,
     validation_evaluations,
     validation_results,
 )
 from strongstart_api.features.knowledge.artifacts import LocalArtifactStore
 from strongstart_api.features.knowledge.ingestion import TextIngestionService
+from strongstart_api.features.knowledge.packs import (
+    PackConflictError,
+    PackManifestError,
+    PackNotFoundError,
+    PackService,
+)
 from strongstart_api.features.knowledge.pdf_ingestion import BoundedPdfParser, PdfIngestionService
 from strongstart_api.features.knowledge.repository import (
     KnowledgeIntegrityError,
@@ -46,7 +65,13 @@ from strongstart_api.features.validation.service import (
     SourceValidationService,
 )
 from strongstart_api.seed import seed_demo
-from strongstart_contracts import NumericValidationRequest, SourceValidationRequest
+from strongstart_contracts import (
+    DependencyRegistrationRequest,
+    NumericValidationRequest,
+    PackManifestRequest,
+    SourceValidationRequest,
+    ValidationDependency,
+)
 from tests.conftest import BUNDLE_PATH, REPO_ROOT
 from tests.knowledge.pdf_fixture import make_text_pdf
 
@@ -319,6 +344,269 @@ def test_numeric_validation_resolves_authorized_fact_and_persists_dependencies(
             )
     finally:
         _delete_validation_receipt(engine, report.evaluation_id)
+
+
+def test_pack_replacement_stales_exact_dependents_and_keeps_history(migrated: str) -> None:
+    engine = get_engine(migrated)
+    seed_demo(engine, BUNDLE_PATH)
+    service = PackService(engine)
+    policy_v1 = "Approved policy version one"
+    policy_v2 = "Approved policy version two"
+    policy_hash_v1 = hashlib.sha256(policy_v1.encode()).hexdigest()
+    policy_hash_v2 = hashlib.sha256(policy_v2.encode()).hexdigest()
+    fact_ids = ("a4-fact-old", "a4-fact-common", "a4-fact-new")
+    pack_versions = ("a4-pack-v1", "a4-pack-v2")
+    context = "a4-test-application"
+    evaluation_id = None
+    try:
+        with engine.begin() as conn:
+            conn.execute(
+                insert(knowledge_facts),
+                [
+                    {
+                        "id": fact_id,
+                        "fact_version": version,
+                        "organization_id": "demo-org",
+                        "metric_id": metric,
+                        "value_exact": value,
+                        "raw_value": value,
+                        "unit": "children",
+                        "scope": "Demo Org",
+                        "population": "children",
+                        "reporting_period": "2026",
+                        "status": "verified",
+                        "provenance_class": "simulated",
+                        "is_simulated": True,
+                    }
+                    for fact_id, version, metric, value in (
+                        (fact_ids[0], 1, "served", "120"),
+                        (fact_ids[1], 1, "capacity", "50"),
+                        (fact_ids[2], 2, "served", "125"),
+                    )
+                ],
+            )
+            conn.execute(
+                insert(fact_source_refs),
+                [
+                    {
+                        "fact_id": fact_id,
+                        "source_version_id": "demo-synthetic-metrics-v1",
+                        "locator": "line:1",
+                    }
+                    for fact_id in fact_ids
+                ],
+            )
+            conn.execute(
+                insert(pack_policies),
+                [
+                    {
+                        "policy_id": "a4-writing-policy",
+                        "policy_version": version,
+                        "organization_id": "demo-org",
+                        "content_sha256": content_hash,
+                        "content": content,
+                        "status": "approved",
+                    }
+                    for version, content_hash, content in (
+                        (1, policy_hash_v1, policy_v1),
+                        (2, policy_hash_v2, policy_v2),
+                    )
+                ],
+            )
+        fixture = json.loads(
+            (REPO_ROOT / "tests/fixtures/demo/a4-pack-replacement.json").read_text(encoding="utf-8")
+        )
+        manifest_a, manifest_b = [
+            PackManifestRequest.model_validate(item) for item in fixture["manifests"]
+        ]
+        bad_manifest = manifest_a.model_copy(
+            update={
+                "pack_version_id": "a4-bad-pack-v1",
+                "bundle_id": "a4-bad-bundle-v1",
+                "source_version_ids": ["missing-source-version"],
+            }
+        )
+        with pytest.raises(PackManifestError, match="source_version_not_found"):
+            service.create_manifest("demo-org", "demo-staff", bad_manifest)
+        with engine.connect() as conn:
+            assert (
+                conn.execute(
+                    select(evidence_pack_versions.c.id).where(
+                        evidence_pack_versions.c.id == "a4-bad-pack-v1"
+                    )
+                ).scalar_one_or_none()
+                is None
+            )
+        service.create_manifest("demo-org", "demo-staff", manifest_a)
+        service.create_manifest("demo-org", "demo-staff", manifest_b)
+        with pytest.raises(PackConflictError):
+            service.create_manifest("demo-org", "demo-staff", manifest_a)
+        first = service.activate("demo-org", "demo-staff", context, pack_versions[0], None)
+        assert first.active.revision == 1 and first.invalidated == []
+
+        for kind, target_id, dependency in (
+            (
+                "approval",
+                "a4-approval",
+                ValidationDependency(kind="fact_version", ref_id=fact_ids[0], version="1"),
+            ),
+            (
+                "browser_grant",
+                "a4-browser-grant",
+                ValidationDependency(kind="policy", ref_id="a4-writing-policy", version="1"),
+            ),
+            (
+                "answer",
+                "a4-unaffected-answer",
+                ValidationDependency(kind="fact_version", ref_id=fact_ids[1], version="1"),
+            ),
+        ):
+            service.register_target(
+                "demo-org",
+                DependencyRegistrationRequest(
+                    target_kind=kind,
+                    target_id=target_id,
+                    dependencies=[dependency],
+                ),
+            )
+        with pytest.raises(PackConflictError):
+            service.register_target(
+                "demo-org",
+                DependencyRegistrationRequest(
+                    target_kind="approval",
+                    target_id="a4-approval",
+                    dependencies=[
+                        ValidationDependency(kind="fact_version", ref_id=fact_ids[0], version="1")
+                    ],
+                ),
+            )
+        with pytest.raises(PackManifestError, match="dependency_version_invalid"):
+            service.register_target(
+                "demo-org",
+                DependencyRegistrationRequest(
+                    target_kind="answer",
+                    target_id="a4-invalid-target",
+                    dependencies=[
+                        ValidationDependency(
+                            kind="fact_version", ref_id=fact_ids[0], version="invalid"
+                        )
+                    ],
+                ),
+            )
+
+        validation_repository = SourceValidationRepository(engine)
+        numeric_report = NumericValidationService(validation_repository).evaluate(
+            "demo-org",
+            "demo-staff",
+            NumericValidationRequest(
+                pack_version_id=pack_versions[0],
+                fact_id=fact_ids[0],
+                rule_ids=["NUM-03"],
+                claimed_value="120",
+            ),
+        )
+        evaluation_id = numeric_report.evaluation_id
+        before_receipt = validation_repository.get_numeric_receipt("demo-org", evaluation_id)
+
+        replaced = service.activate(
+            "demo-org", "demo-staff", context, pack_versions[1], pack_versions[0]
+        )
+        invalidated = {(item.target_kind, item.target_id) for item in replaced.invalidated}
+        assert invalidated >= {
+            ("approval", "a4-approval"),
+            ("browser_grant", "a4-browser-grant"),
+            ("validation", evaluation_id),
+        }
+        assert ("answer", "a4-unaffected-answer") not in invalidated
+        assert service.get_target("demo-org", "approval", "a4-approval").state == "stale"
+        assert service.get_target("demo-org", "browser_grant", "a4-browser-grant").state == "stale"
+        assert service.get_target("demo-org", "answer", "a4-unaffected-answer").state == "current"
+        assert (
+            validation_repository.get_numeric_receipt("demo-org", evaluation_id) == before_receipt
+        )
+        assert service.active_state("demo-org", context).pack_version_id == pack_versions[1]
+        assert {
+            fact.fact_id
+            for fact in PostgresKnowledgeRepository(engine)
+            .get_bundle("demo-org", pack_versions[1])
+            .facts
+        } == {fact_ids[1], fact_ids[2]}
+        api = TestClient(
+            create_app(Settings(_env_file=None, database_url=migrated, auth_mode="fixture"))
+        )
+        assert api.get(f"/api/knowledge/evidence/{pack_versions[0]}").status_code == 409
+        active_response = api.get(f"/api/knowledge/evidence/{pack_versions[1]}")
+        assert active_response.status_code == 200
+        assert active_response.json()["pack_version_id"] == pack_versions[1]
+        with pytest.raises(PackConflictError):
+            service.require_active("demo-org", context, pack_versions[0])
+        with pytest.raises(PackConflictError):
+            service.activate("demo-org", "demo-staff", context, pack_versions[0], pack_versions[0])
+        repeated = service.activate(
+            "demo-org", "demo-staff", context, pack_versions[1], pack_versions[1]
+        )
+        assert repeated.idempotent is True and repeated.change_set is None
+        with pytest.raises(PackNotFoundError):
+            service.get_manifest("other-org", pack_versions[1])
+    finally:
+        if evaluation_id is not None:
+            _delete_validation_receipt(engine, evaluation_id)
+        with engine.begin() as conn:
+            target_ids = ["a4-approval", "a4-browser-grant", "a4-unaffected-answer"]
+            if evaluation_id is not None:
+                target_ids.append(evaluation_id)
+            change_set_ids = list(
+                conn.execute(
+                    select(pack_change_sets.c.id).where(
+                        pack_change_sets.c.application_context == context
+                    )
+                ).scalars()
+            )
+            conn.execute(
+                delete(invalidation_events).where(
+                    invalidation_events.c.change_set_id.in_(change_set_ids)
+                )
+            )
+            conn.execute(
+                delete(dependency_target_refs).where(
+                    dependency_target_refs.c.target_id.in_(target_ids)
+                )
+            )
+            conn.execute(
+                delete(dependency_targets).where(dependency_targets.c.target_id.in_(target_ids))
+            )
+            conn.execute(
+                delete(pack_changes).where(pack_changes.c.change_set_id.in_(change_set_ids))
+            )
+            conn.execute(delete(pack_change_sets).where(pack_change_sets.c.id.in_(change_set_ids)))
+            conn.execute(
+                delete(active_pack_contexts).where(
+                    active_pack_contexts.c.application_context == context
+                )
+            )
+            conn.execute(
+                delete(pack_manifest_policies).where(
+                    pack_manifest_policies.c.pack_version_id.in_(pack_versions)
+                )
+            )
+            conn.execute(
+                delete(pack_manifest_sources).where(
+                    pack_manifest_sources.c.pack_version_id.in_(pack_versions)
+                )
+            )
+            conn.execute(delete(pack_facts).where(pack_facts.c.pack_version_id.in_(pack_versions)))
+            conn.execute(
+                delete(pack_manifests).where(pack_manifests.c.pack_version_id.in_(pack_versions))
+            )
+            conn.execute(
+                delete(evidence_pack_versions).where(evidence_pack_versions.c.id.in_(pack_versions))
+            )
+            conn.execute(delete(evidence_packs).where(evidence_packs.c.id == "a4-pack"))
+            conn.execute(delete(fact_source_refs).where(fact_source_refs.c.fact_id.in_(fact_ids)))
+            conn.execute(delete(knowledge_facts).where(knowledge_facts.c.id.in_(fact_ids)))
+            conn.execute(
+                delete(pack_policies).where(pack_policies.c.policy_id == "a4-writing-policy")
+            )
 
 
 def test_source_validation_detects_tampering_and_hides_other_org(migrated: str) -> None:

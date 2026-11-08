@@ -19,7 +19,9 @@ FEATURE_OPS = [
     "/api/applications/draft-jobs",
 ]
 # B2-AUTO-001 implemented automation intake; it is no longer a 501 placeholder.
-UNIMPLEMENTED_OPS = [p for p in FEATURE_OPS if not p.startswith("/api/automation/")]
+UNIMPLEMENTED_OPS = [
+    p for p in FEATURE_OPS if not p.startswith(("/api/automation/", "/api/knowledge/"))
+]
 
 
 def client(**overrides: Any) -> TestClient:
