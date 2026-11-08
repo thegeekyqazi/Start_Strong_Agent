@@ -77,3 +77,18 @@ Staff scenario inputs are labelled `staff_asserted` or `simulated`. The report s
 ## Validation and rollback
 
 Validated by the BND-* tests listed in the bundle handoff. To roll back, revert the bundle commits and delete `.local-data/dev-b-store`; there are no migrations. A later shared repository can replace the local adapters behind the readers without changing feature logic.
+
+## Update 2026-11-08: atomic funding-case binding at publication (PR #12 review follow-up)
+
+The owner asked that the bound funding case's current-version check be atomic with definition publication, not an unprotected check immediately before the write. That supersedes the earlier "small window" limitation recorded in the bundle handoff.
+
+- **Boundary.** `FundingCaseVersionPin` (`strongstart_contracts.funding_review`), implemented by the funding case repository and exposed only through `strongstart_api.features.funding.public.build_funding_case_version_pin`.
+  - `pinned(org, case_id, version, digest)` takes the **same cross-process lock that case commits take** (`VersionCollection.locked()`, `fcntl`/`msvcrt`, bounded wait).
+  - It re-checks that `version` is current with exactly `digest`, and raises `FundingCaseVersionChanged` otherwise.
+  - Automation commits the definition **inside** that block (`automation/context.py::publication_guard`), so no case revision can commit between the check and the write, from any thread or process.
+  - The earlier check in `resolve_publication_context` remains only as a fast, friendly failure.
+- **Lock order.** Always cases → definitions. Case writers take only the cases lock, and definitions without a case take only the definitions lock, so there is no reverse ordering. Code holding a collection's lock must not commit to that same collection.
+- **Idempotent replay first.** `DefinitionRepository.replay()` runs before intake, the hash check and context validation. A command whose publication already committed returns that exact version (200, `replayed: true`), even after the bound case changed. A *new* command against the stale version gets 409 `context_changed`.
+- **Failure outcome.** A changed or deleted case, or a digest mismatch, under the pin gives 409 `context_changed` / 404 `context_not_found` / 409 `integrity_failure`, and nothing is published. If the wait times out, the result is 503 `store_busy`.
+- **Tradeoff.** A case writer may wait while a definition commit holds the pin; the commit is short and local. Unreferenced content-addressed input blobs are never written on a rejected pin, because the save runs inside the block.
+- **Validation.** `tests/automation/test_case_binding_atomicity.py` (BND-26a..e): pause after context resolution then revise → 409 and no definition; revise while the pin is held → the revision waits; a spawned process is blocked by the pin; replay after a case change → 200 with the same version; stale digest → conflict. A mutation check with the guard disabled made BND-26a/b fail (201 bound to the stale v1; interleaved revision), so the tests detect the race.

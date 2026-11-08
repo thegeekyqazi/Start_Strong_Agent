@@ -61,7 +61,7 @@ from .capture import (
     UnconfiguredCaptureSource,
     load_fixture_capture_source,
 )
-from .context import resolve_publication_context
+from .context import publication_guard, resolve_publication_context
 from .definitions import (
     DefinitionRepository,
     check_publishable,
@@ -381,6 +381,14 @@ async def save_definition(
     body = _validated(SaveDefinitionRequest, await _read_bounded_json(request))
 
     def work() -> SaveDefinitionResult:
+        # 1. A completed idempotent command replays first, before intake or context checks,
+        #    so a lost-response retry succeeds even if the bound case changed since.
+        try:
+            done = store.replay(identity.organization_id, body)
+        except Exception as exc:
+            raise store_error(exc) from None
+        if done is not None:
+            return SaveDefinitionResult(replayed=True, publication=done)
         intake_result, raw = intake_with_input_bytes(body.source, identity, settings, capture)
         if intake_result.input.sha256 != body.expected_input_sha256:
             raise intake_error(
@@ -392,17 +400,19 @@ async def save_definition(
             )
         check_publishable(intake_result)
         context = resolve_publication_context(body, intake_result, identity, settings)
-        try:
-            pub, replayed = store.save(
-                organization_id=identity.organization_id,
-                actor=identity.actor_id,
-                cmd=body,
-                intake=intake_result,
-                raw=raw,
-                context=context,
-            )
-        except Exception as exc:
-            raise store_error(exc) from None
+        # 2. Re-validate the bound case version under the case lock and commit inside it.
+        with publication_guard(context, identity, settings):
+            try:
+                pub, replayed = store.save(
+                    organization_id=identity.organization_id,
+                    actor=identity.actor_id,
+                    cmd=body,
+                    intake=intake_result,
+                    raw=raw,
+                    context=context,
+                )
+            except Exception as exc:
+                raise store_error(exc) from None
         return SaveDefinitionResult(replayed=replayed, publication=pub)
 
     result = await run_in_threadpool(work)

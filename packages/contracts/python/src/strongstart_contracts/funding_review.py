@@ -25,6 +25,7 @@ from __future__ import annotations
 
 import datetime as _dt
 import re
+from contextlib import AbstractContextManager
 from datetime import datetime
 from typing import Annotated, Final, Literal, Protocol, Self, runtime_checkable
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -555,6 +556,31 @@ class FundingCaseReader(Protocol):
     ) -> FundingCaseEnvelope: ...
 
     def get_current(self, organization_id: str, case_id: str) -> FundingCaseEnvelope: ...
+
+
+class FundingCaseVersionChanged(Exception):
+    """The pinned case version is no longer current, or its digest differs."""
+
+    def __init__(self, current_version: int) -> None:
+        super().__init__(f"current case version is {current_version}")
+        self.current_version = current_version
+
+
+@runtime_checkable
+class FundingCaseVersionPin(Protocol):
+    """Atomic current-version boundary for consumers that bind an exact case version.
+
+    ``pinned(org, case_id, version, digest)`` is a context manager. On entry it takes the
+    funding-case store's cross-process write lock and verifies that ``version`` is still
+    the current version with exactly ``digest``; otherwise it raises
+    ``FundingCaseVersionChanged`` (or ``FundingCaseNotFound``). While the block runs, no
+    case revision can commit, so a write made inside the block is atomic with the check.
+    Keep the block short: other case writers wait (bounded) for it.
+    """
+
+    def pinned(
+        self, organization_id: str, case_id: str, version: int, digest: str
+    ) -> AbstractContextManager[None]: ...
 
 
 class UnconfiguredFundingCaseReader:

@@ -411,6 +411,19 @@ class VersionCollection:
             return None
         return value if isinstance(value, str) else None
 
+    @contextlib.contextmanager
+    def locked(self) -> Iterator[None]:
+        """Hold this collection's cross-process write lock (the same lock ``commit`` takes).
+
+        Used to make a check on this collection atomic with a write elsewhere: while held,
+        no other process or thread can commit a new version here. Lock order rule: a
+        caller holding this lock may take the lock of a *different* collection (e.g.
+        ``cases`` then ``definitions``), never the reverse, and must not commit to this
+        same collection (that would wait on itself until the bounded timeout).
+        """
+        with _exclusive_lock(self._lock, self.store.lock_timeout_s):
+            yield
+
     def replay(self, idempotency_key: str, command_hash: str) -> CommitResult | None:
         """Completed result for this key, if any (before doing external work such as a
         provider call). Raises IdempotencyReused for the same key with another command."""

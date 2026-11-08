@@ -7,6 +7,8 @@ hash-verified stored capture bytes through ``CapturedDocumentReader`` (never a U
 
 from __future__ import annotations
 
+import contextlib
+from collections.abc import Iterator
 from datetime import UTC, datetime
 from typing import Any
 
@@ -46,6 +48,7 @@ from strongstart_contracts.funding_review import (
     FundingCaseNotFound,
     FundingCaseSummary,
     FundingCaseVersion,
+    FundingCaseVersionChanged,
     FundingContext,
     Requirement,
     ReviewCommand,
@@ -394,6 +397,27 @@ class FundingCaseRepository:
                 409, "already_reviewed", "this version is already reviewed"
             ) from None
         return self.get_version(org, case_id, version), result.replayed
+
+    @contextlib.contextmanager
+    def pinned(self, org: str, case_id: str, version: int, version_digest: str) -> Iterator[None]:
+        """``FundingCaseVersionPin``: hold the case lock while the caller writes."""
+        coll = self._cases(org)
+        with coll.locked():
+            try:
+                current = coll.current_version(case_id)
+            except NotFound:
+                raise FundingCaseNotFound(case_id) from None
+            if current == 0:
+                raise FundingCaseNotFound(case_id)
+            if current != version:
+                raise FundingCaseVersionChanged(current)
+            try:
+                _, d = self._load_version(org, case_id, version)
+            except IntegrityFailure:
+                raise FundingCaseIntegrityError(case_id) from None
+            if d != version_digest:
+                raise FundingCaseVersionChanged(current)
+            yield
 
     def record_observation(self, org: str, observation: ChangeObservation) -> None:
         if observation.linked_case_id is None:

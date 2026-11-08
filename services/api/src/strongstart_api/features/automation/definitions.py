@@ -358,6 +358,25 @@ class DefinitionRepository:
 
     # -- save -----------------------------------------------------------------
 
+    @staticmethod
+    def command_hash(cmd: SaveDefinitionRequest) -> str:
+        command = cmd.model_dump(mode="json", exclude={"idempotency_key"})
+        return sha256_hex(canonical_json(command))
+
+    def replay(
+        self, organization_id: str, cmd: SaveDefinitionRequest
+    ) -> PublishedApplicationVersion | None:
+        """The already-committed result of this idempotent command, if any.
+
+        Checked before intake and context validation, so a lost-response retry still
+        returns the original version even after the bound funding case has changed.
+        """
+        done = self._coll(organization_id).replay(cmd.idempotency_key, self.command_hash(cmd))
+        if done is None:
+            return None
+        pub: PublishedApplicationVersion = self._load(organization_id, done.object_id, done.version)
+        return pub
+
     def save(
         self,
         *,
@@ -371,8 +390,7 @@ class DefinitionRepository:
         sha = self.store.put_blob(organization_id, raw)
         if sha != intake.input.sha256:  # pragma: no cover - guarded by the caller
             raise IntegrityFailure("input bytes changed during save")
-        command = cmd.model_dump(mode="json", exclude={"idempotency_key"})
-        command_hash = sha256_hex(canonical_json(command))
+        command_hash = self.command_hash(cmd)
         now = datetime.now(UTC)
 
         def build(object_id: str, version: int, prev: dict[str, Any] | None) -> dict[str, Any]:

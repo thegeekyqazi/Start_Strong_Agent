@@ -27,6 +27,8 @@ from strongstart_api.features.funding.public import (
 )
 ```
 
+**Update (review follow-up):** consumers that *bind* an exact case version must also use `FundingCaseVersionPin`, via `build_funding_case_version_pin(settings)`. Its `pinned(org, case_id, version, digest)` holds the case store's cross-process lock and re-checks current version + digest. Commit the dependent write inside it; keep the block short, and never commit to the case store inside it. Automation's saved definitions do this.
+
 Production returns `UnconfiguredFundingCaseReader`, which raises `CapabilityUnavailable`. The repository is the development/test Dev B local store.
 
 ## Envelope semantics (`b1-funding-case/1`)

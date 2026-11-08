@@ -19,6 +19,7 @@ from fastapi import Depends
 
 from strongstart_contracts.funding_review import (
     FundingCaseReader,
+    FundingCaseVersionPin,
     UnconfiguredFundingCaseReader,
 )
 
@@ -40,6 +41,11 @@ def build_funding_case_reader(settings: Settings) -> FundingCaseReader:
     return repo if repo is not None else UnconfiguredFundingCaseReader()
 
 
+def build_funding_case_version_pin(settings: Settings) -> FundingCaseVersionPin | None:
+    """Atomic current-version boundary (None in production: no repository exists)."""
+    return build_funding_case_repository(settings)
+
+
 def get_funding_case_reader(
     settings: Annotated[Settings, Depends(get_settings)],
 ) -> FundingCaseReader:
@@ -49,5 +55,6 @@ def get_funding_case_reader(
 __all__ = [
     "build_funding_case_reader",
     "build_funding_case_repository",
+    "build_funding_case_version_pin",
     "get_funding_case_reader",
 ]

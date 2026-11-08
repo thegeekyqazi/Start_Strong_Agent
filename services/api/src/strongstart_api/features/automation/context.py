@@ -8,6 +8,9 @@ feature's public ``FundingCaseReader``.
 
 from __future__ import annotations
 
+import contextlib
+from collections.abc import Iterator
+
 from strongstart_contracts import ErrorCode, SessionIdentity
 from strongstart_contracts.application_publication import (
     FundingContextBinding,
@@ -19,11 +22,16 @@ from strongstart_contracts.funding_review import (
     FundingCaseEnvelope,
     FundingCaseIntegrityError,
     FundingCaseNotFound,
+    FundingCaseVersionChanged,
 )
 from strongstart_contracts.ports import CapabilityUnavailable
 
 from ...config import Settings
-from ..funding.public import build_funding_case_reader  # supported public factory only
+from ..dev_b_store import StoreBusy, StoreUnavailable
+from ..funding.public import (  # supported public factories only
+    build_funding_case_reader,
+    build_funding_case_version_pin,
+)
 from .definitions import blocked, declared_context
 from .intake_errors import intake_error
 
@@ -161,3 +169,66 @@ def _case_context(
         ),
         notes=notes,
     )
+
+
+@contextlib.contextmanager
+def publication_guard(
+    context: PublicationContext, identity: SessionIdentity, settings: Settings
+) -> Iterator[None]:
+    """Make the bound case's current-version check atomic with the definition commit.
+
+    ``resolve_publication_context`` is only an early, user-friendly check. The binding is
+    re-validated here *while holding the funding-case store's cross-process lock*, and the
+    caller commits the definition inside this block, so no case revision can commit between
+    the check and the write. Lock order: cases -> definitions (never the reverse).
+    """
+    binding = context.binding
+    if binding is None:
+        yield
+        return
+    pin = build_funding_case_version_pin(settings)
+    if pin is None:
+        raise intake_error(
+            503,
+            ErrorCode.CAPABILITY_UNAVAILABLE,
+            "context_unavailable",
+            "no funding case repository is available",
+        )
+    # Body exceptions (the definition commit) are re-raised through this generator; only
+    # the pin's own entry failures match the case-specific handlers below.
+    try:
+        with pin.pinned(
+            identity.organization_id,
+            binding.funding_case_id,
+            binding.funding_case_version,
+            binding.funding_case_digest,
+        ):
+            yield
+    except FundingCaseVersionChanged as exc:
+        raise intake_error(
+            409,
+            ErrorCode.VERSION_CONFLICT,
+            "context_changed",
+            "the selected funding case changed before the definition was saved; nothing "
+            "was published",
+            current_version=exc.current_version,
+        ) from None
+    except FundingCaseNotFound:
+        raise intake_error(
+            404, ErrorCode.FORBIDDEN, "context_not_found", "funding case not found"
+        ) from None
+    except FundingCaseIntegrityError:
+        raise intake_error(
+            409,
+            ErrorCode.VERSION_CONFLICT,
+            "integrity_failure",
+            "the funding case failed verification; nothing was saved",
+        ) from None
+    except StoreBusy:
+        raise intake_error(
+            503, ErrorCode.CAPABILITY_UNAVAILABLE, "store_busy", "store is busy; retry later"
+        ) from None
+    except StoreUnavailable as exc:
+        raise intake_error(
+            503, ErrorCode.CAPABILITY_UNAVAILABLE, exc.reason, "funding case store unavailable"
+        ) from None
