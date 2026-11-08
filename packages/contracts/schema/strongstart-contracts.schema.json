@@ -645,6 +645,22 @@
           "title": "Question Id",
           "type": "string"
         },
+        "question_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dev B question set this version was written for (C2b).",
+          "title": "Question Set Id"
+        },
         "question_version": {
           "minimum": 1,
           "title": "Question Version",
@@ -736,6 +752,22 @@
           "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
           "title": "Question Id",
           "type": "string"
+        },
+        "question_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+          "title": "Question Set Id"
         },
         "question_version": {
           "minimum": 1,
@@ -1076,11 +1108,40 @@
         "question_set": {
           "$ref": "#/$defs/QuestionSet"
         },
+        "question_set_ref": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QuestionSetRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Set when questions come from Dev B's reader (C2b)."
+        },
+        "question_source": {
+          "default": "fixture_bundle",
+          "enum": [
+            "fixture_bundle",
+            "dev_b_saved_definition"
+          ],
+          "title": "Question Source",
+          "type": "string"
+        },
         "schema_version": {
           "const": "1",
           "default": "1",
           "title": "Schema Version",
           "type": "string"
+        },
+        "unresolved": {
+          "description": "Dev B's unresolved items, keyed by published IDs.",
+          "items": {
+            "$ref": "#/$defs/UnresolvedItem"
+          },
+          "title": "Unresolved",
+          "type": "array"
         }
       },
       "required": [
@@ -3518,6 +3579,22 @@
           "title": "Mode",
           "type": "string"
         },
+        "question_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+          "title": "Question Set Id"
+        },
         "question_version": {
           "minimum": 1,
           "title": "Question Version",
@@ -4476,6 +4553,22 @@
           "title": "Evidence Bundle Id",
           "type": "string"
         },
+        "question_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+          "title": "Question Set Id"
+        },
         "question_version": {
           "minimum": 1,
           "title": "Question Version",
@@ -5258,6 +5351,22 @@
           "minItems": 1,
           "title": "Question Ids",
           "type": "array"
+        },
+        "question_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+          "title": "Question Set Id"
         }
       },
       "required": [
@@ -9713,6 +9822,22 @@
           "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
           "title": "Evidence Bundle Id",
           "type": "string"
+        },
+        "question_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+          "title": "Question Set Id"
         }
       },
       "required": [
@@ -10535,6 +10660,61 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "QuestionSetRef": {
+      "additionalProperties": false,
+      "description": "Which exact Dev B saved definition version supplied the questions (C2b).",
+      "properties": {
+        "definition_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Definition Id",
+          "type": "string"
+        },
+        "definition_version": {
+          "minimum": 1,
+          "title": "Definition Version",
+          "type": "integer"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "mode_label": {
+          "title": "Mode Label",
+          "type": "string"
+        },
+        "question_set_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Set Id",
+          "type": "string"
+        },
+        "review_status": {
+          "title": "Review Status",
+          "type": "string"
+        },
+        "saved_at": {
+          "format": "date-time",
+          "title": "Saved At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_set_id",
+        "definition_id",
+        "definition_version",
+        "is_fixture",
+        "mode_label",
+        "review_status",
+        "saved_at"
+      ],
+      "title": "QuestionSetRef",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "ReadinessCheck": {
       "additionalProperties": false,

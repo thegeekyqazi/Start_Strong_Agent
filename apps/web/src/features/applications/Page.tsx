@@ -13,6 +13,7 @@ import type {
   EvidenceBundle,
   Question,
   RenderedAnswer,
+  UnresolvedItem,
 } from '@strongstart/contracts'
 import {
   EvidenceCard,
@@ -29,14 +30,22 @@ import {
   type ApplicationsClient,
 } from './client'
 import { describeReviewError, httpReviewClient, type ReviewClient } from '../review/client'
+import { QuestionSetPicker } from './QuestionSetPicker'
+import {
+  httpQuestionSetClient,
+  loadSelectedQuestionSet,
+  saveSelectedQuestionSet,
+  UNRESOLVED_TEXT,
+  type QuestionSetClient,
+} from './questionSets'
 
 const CHECK_DELAY_MS = 300
 
 type Mode = 'working' | 'reviewed'
 type Load =
   | { kind: 'loading' }
-  | { kind: 'error'; message: string }
-  | { kind: 'ready'; data: ApplicationWorkspace }
+  | { kind: 'error'; message: string; forQs: string | null }
+  | { kind: 'ready'; data: ApplicationWorkspace; forQs: string | null }
 type Checked = { text: string; mode: Mode; report: CheckReport }
 
 /** Server spans are Unicode code-point offsets; slice by code point, not UTF-16 unit. */
@@ -93,11 +102,26 @@ function RenderedPreview({
   )
 }
 
-function QuestionNotices({ question }: { question: Question }) {
+function QuestionNotices({
+  question,
+  unresolved = [],
+}: {
+  question: Question
+  unresolved?: UnresolvedItem[]
+}) {
   const conflicts = question.conflicts ?? []
   const limit = question.limit ?? null
+  const items = unresolved.filter((u) => u.question_id === question.question_id)
   return (
     <div className="limit-info">
+      {items.map((u, n) => (
+        <FindingRow
+          key={`${u.kind}-${n}`}
+          origin="question_data"
+          outcome="notice"
+          message={`Saved definition: ${UNRESOLVED_TEXT[u.kind] ?? u.detail}`}
+        />
+      ))}
       {conflicts.length === 0 && limit && limit.unit !== 'unknown' && limit.maximum != null && (
         <p>
           Limit: {limit.maximum} {limit.unit}.{' '}
@@ -197,11 +221,15 @@ function QuestionTags({ q }: { q: Question }) {
 export function ApplicationsPage({
   client = httpApplicationsClient,
   reviewClient = httpReviewClient,
+  questionSets = httpQuestionSetClient,
 }: {
   client?: ApplicationsClient
   reviewClient?: ReviewClient
+  questionSets?: QuestionSetClient
 }) {
-  const [load, setLoad] = useState<Load>({ kind: 'loading' })
+  // C2b: an explicit choice between the demo fixture and a Dev B saved question set.
+  const [qsId, setQsId] = useState<string | null>(loadSelectedQuestionSet)
+  const [loaded, setLoaded] = useState<Load>({ kind: 'loading' })
   const [selected, setSelected] = useState<string | null>(null)
   const [texts, setTexts] = useState<Record<string, string>>({})
   const [drafts, setDrafts] = useState<Record<string, DraftProposal>>({})
@@ -223,19 +251,35 @@ export function ApplicationsPage({
 
   useEffect(() => {
     let active = true
-    client.workspace().then((r) => {
+    client.workspace(qsId).then((r) => {
       if (!active) return
       if (r.ok) {
-        setLoad({ kind: 'ready', data: r.data })
+        setLoaded({ kind: 'ready', data: r.data, forQs: qsId })
         setSelected(r.data.question_set.questions[0]?.question_id ?? null)
       } else {
-        setLoad({ kind: 'error', message: describeWorkspaceError(r) })
+        setLoaded({ kind: 'error', message: describeWorkspaceError(r), forQs: qsId })
       }
     })
     return () => {
       active = false
     }
-  }, [client])
+  }, [client, qsId])
+
+  // A result for a different selection counts as still loading (no stale questions shown).
+  const load: Load =
+    loaded.kind !== 'loading' && loaded.forQs === qsId ? loaded : { kind: 'loading' }
+
+  function chooseQuestionSet(id: string | null) {
+    saveSelectedQuestionSet(id)
+    setQsId(id)
+    setPlan(null)
+    setDraftError(null)
+    setSaveMessage(null)
+  }
+
+  const picker = (
+    <QuestionSetPicker value={qsId} onChange={chooseQuestionSet} client={questionSets} />
+  )
 
   const ws = load.kind === 'ready' ? load.data : null
   const question = ws?.question_set.questions.find((q) => q.question_id === selected) ?? null
@@ -250,6 +294,7 @@ export function ApplicationsPage({
         .check(qid, {
           question_version: question.question_version,
           evidence_bundle_id: ws.evidence_bundle.bundle_id,
+          question_set_id: qsId,
           text,
           mode,
         })
@@ -258,23 +303,36 @@ export function ApplicationsPage({
         })
     }, CHECK_DELAY_MS)
     return () => clearTimeout(handle)
-  }, [client, ws, question, text, mode])
+  }, [client, ws, question, text, mode, qsId])
 
   // Load the latest saved version for the selected question (C3 saved versions).
   useEffect(() => {
     if (!question || question.question_id in saved) return
     const qid = question.question_id
-    reviewClient.history(qid).then((r) => {
+    reviewClient.history(qid, qsId).then((r) => {
       setSaved((s) => ({ ...s, [qid]: r.ok ? (r.data.versions.at(-1) ?? null) : null }))
     })
-  }, [reviewClient, question, saved])
+  }, [reviewClient, question, saved, qsId])
 
-  if (load.kind === 'loading') return <p role="status">Loading the application…</p>
+  if (load.kind === 'loading')
+    return (
+      <section aria-labelledby="applications-heading">
+        <h2 id="applications-heading">Applications</h2>
+        {picker}
+        <p role="status">Loading the application…</p>
+      </section>
+    )
   if (load.kind === 'error' || !ws) {
     return (
       <section aria-labelledby="applications-heading">
         <h2 id="applications-heading">Applications</h2>
+        {picker}
         <p role="alert">{load.kind === 'error' ? load.message : ''}</p>
+        {qsId && (
+          <button type="button" onClick={() => chooseQuestionSet(null)}>
+            Use the demo fixture questions instead
+          </button>
+        )}
       </section>
     )
   }
@@ -289,7 +347,7 @@ export function ApplicationsPage({
 
   async function requestPlan() {
     setPlanError(null)
-    const r = await client.plan({ evidence_bundle_id: bundle.bundle_id })
+    const r = await client.plan({ evidence_bundle_id: bundle.bundle_id, question_set_id: qsId })
     if (r.ok) setPlan(r.data)
     else setPlanError(describeDraftError(r))
   }
@@ -300,6 +358,7 @@ export function ApplicationsPage({
     const r = await client.draft(q.question_id, {
       question_version: q.question_version,
       evidence_bundle_id: bundle.bundle_id,
+      question_set_id: qsId,
     })
     setBusy(false)
     if (!r.ok) {
@@ -331,7 +390,15 @@ export function ApplicationsPage({
         Draft answers to the funder's questions using your organization's evidence. Drafts are
         suggestions; nothing here is reviewed or approved.
       </p>
+      {picker}
       {ws.is_fixture && <p className="badge badge-planned">{ws.data_label}</p>}
+      {ws.question_set_ref && (
+        <p className="hint">
+          Saved definition {ws.question_set_ref.definition_id}, version{' '}
+          {ws.question_set_ref.definition_version}: saved, not reviewed or approved by Dev B
+          {ws.question_set_ref.is_fixture ? '; fixture material' : ''}.
+        </p>
+      )}
       <div className="plan-actions">
         <button type="button" onClick={requestPlan}>
           Plan this application
@@ -377,7 +444,7 @@ export function ApplicationsPage({
                 {PROVENANCE_LABEL[question.source_refs[0].provenance.provenance_class] ??
                   question.source_refs[0].provenance.provenance_class}
               </p>
-              <QuestionNotices question={question} />
+              <QuestionNotices question={question} unresolved={ws.unresolved ?? []} />
               <fieldset className="mode-toggle">
                 <legend>Check mode</legend>
                 <label>
@@ -437,6 +504,7 @@ export function ApplicationsPage({
                       question_id: question.question_id,
                       question_version: question.question_version,
                       evidence_bundle_id: bundle.bundle_id,
+                      question_set_id: qsId,
                       text,
                       expected_answer_version: latest ? latest.answer_version : null,
                     })

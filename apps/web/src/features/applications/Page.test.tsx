@@ -177,7 +177,10 @@ describe('Applications workspace', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Request a draft' }))
     await waitFor(() => expect(editor().value).toBe(TEMPLATE))
     expect(calls).toEqual([
-      ['mission-q1', { question_version: 1, evidence_bundle_id: 'demo-evidence-a-v1' }],
+      [
+        'mission-q1',
+        { question_version: 1, evidence_bundle_id: 'demo-evidence-a-v1', question_set_id: null },
+      ],
     ])
     const chip = await screen.findByLabelText(/Linked fact children-served/)
     expect(chip).toHaveTextContent(`${RENDERED_FACT} · Simulated · Not yet verified by staff`)

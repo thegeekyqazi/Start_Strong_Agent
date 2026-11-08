@@ -148,7 +148,9 @@ def test_job05_fact_modification_stales_approval_and_blocks_resolve_and_export()
     class Source:
         is_fixture = True
 
-        def get(self, organization_id: str) -> ApplicationWorkspace:
+        def get(
+            self, organization_id: str, question_set_id: str | None = None
+        ) -> ApplicationWorkspace:
             return changed
 
     c.app.dependency_overrides[get_workspace_source] = lambda: Source()  # type: ignore[attr-defined]

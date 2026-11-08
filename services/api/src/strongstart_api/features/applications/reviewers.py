@@ -27,6 +27,7 @@ from .approval import Context
 from .coordinator import run_role
 from .models.base import DataClassNotPermitted, ModelAdapter, ModelOutputRejected, StructuredTask
 from .models.validation import parse_model_json
+from .workspace import load_workspace
 
 _Id = Annotated[str, StringConstraints(pattern=r"^[a-z0-9][a-z0-9._:-]{0,127}$")]
 
@@ -119,7 +120,7 @@ async def propose(
     timeout_seconds: float,
 ) -> ReviewerProposal:
     version = ctx.store.get_version(ctx.organization_id, body.answer_version_id)
-    ws = ctx.workspace_source.get(ctx.organization_id)
+    ws = load_workspace(ctx.workspace_source, ctx.organization_id, version.question_set_id)
     facts = {f.fact_id: f for f in ws.evidence_bundle.facts}
     bound = [b for b in version.rendered.bindings if b.fact_id in facts]
     caps = adapter.capabilities()

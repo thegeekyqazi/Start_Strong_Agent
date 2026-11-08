@@ -32,6 +32,7 @@ from . import audit
 from .approval import Context, stale_reason, to_contract
 from .service import build_check_report
 from .store import StoredExport, StoredVersion
+from .workspace import load_workspace
 
 LABEL_WORKING = "WORKING DRAFT - NOT REVIEWED"
 LABEL_REVIEWED = "REVIEWED - EXACT APPROVED VERSIONS"
@@ -96,7 +97,9 @@ def _blockers(
     out: list[ExportBlocker] = []
     fresh = build_check_report(
         question=question,
-        bundle=ctx.workspace_source.get(ctx.organization_id).evidence_bundle,
+        bundle=load_workspace(
+            ctx.workspace_source, ctx.organization_id, latest.question_set_id
+        ).evidence_bundle,
         text=latest.text,
         mode="reviewed",
         policy=ctx.policy,
@@ -113,7 +116,7 @@ def _blockers(
 
 
 def build_export(ctx: Context, identity: SessionIdentity, body: ExportRequest) -> ExportResult:
-    ws = ctx.workspace_source.get(ctx.organization_id)
+    ws = load_workspace(ctx.workspace_source, ctx.organization_id, body.question_set_id)
     questions = {q.question_id: q for q in ws.question_set.questions}
     bundle = ws.evidence_bundle
     facts = {f.fact_id: f for f in bundle.facts}
@@ -254,7 +257,9 @@ def _docx(
             # outcomes, so a placeholder reads [NEEDS REVIEW] rather than [PROBLEM].
             findings = build_check_report(
                 question=question,
-                bundle=ctx.workspace_source.get(ctx.organization_id).evidence_bundle,
+                bundle=load_workspace(
+                    ctx.workspace_source, ctx.organization_id, latest.question_set_id
+                ).evidence_bundle,
                 text=latest.text,
                 mode="working",
                 policy=ctx.policy,

@@ -15,6 +15,13 @@ import {
   httpApplicationsClient,
   type ApplicationsClient,
 } from '../applications/client'
+import { QuestionSetPicker } from '../applications/QuestionSetPicker'
+import {
+  httpQuestionSetClient,
+  loadSelectedQuestionSet,
+  saveSelectedQuestionSet,
+  type QuestionSetClient,
+} from '../applications/questionSets'
 import { describeReviewError, httpReviewClient, type ReviewClient } from './client'
 import { wordDiff } from './diff'
 
@@ -59,10 +66,15 @@ function Diff({ before, after }: { before: AnswerVersion; after: AnswerVersion }
 export function ReviewPage({
   appClient = httpApplicationsClient,
   client = httpReviewClient,
+  questionSets = httpQuestionSetClient,
 }: {
   appClient?: ApplicationsClient
   client?: ReviewClient
+  questionSets?: QuestionSetClient
 }) {
+  // C2b: the same explicit question-set choice as the Applications page (shared per tab).
+  const [qsId, setQsId] = useState<string | null>(loadSelectedQuestionSet)
+  const [loadedFor, setLoadedFor] = useState<string | null | undefined>(undefined)
   const [ws, setWs] = useState<ApplicationWorkspace | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [questionId, setQuestionId] = useState<string | null>(null)
@@ -75,33 +87,50 @@ export function ReviewPage({
 
   useEffect(() => {
     let active = true
-    appClient.workspace().then((r) => {
+    appClient.workspace(qsId).then((r) => {
       if (!active) return
+      setLoadedFor(qsId)
       if (r.ok) {
         setWs(r.data)
+        setLoadError(null)
         setQuestionId(r.data.question_set.questions[0]?.question_id ?? null)
-      } else setLoadError(describeWorkspaceError(r))
+      } else {
+        setWs(null)
+        setHist(null)
+        setLoadError(describeWorkspaceError(r))
+      }
     })
     return () => {
       active = false
     }
-  }, [appClient])
+  }, [appClient, qsId])
+
+  function chooseQuestionSet(id: string | null) {
+    saveSelectedQuestionSet(id)
+    setQsId(id)
+    setMessage(null)
+    setExported(null)
+  }
+
+  const picker = (
+    <QuestionSetPicker value={qsId} onChange={chooseQuestionSet} client={questionSets} />
+  )
 
   const reload = useCallback(async () => {
     if (!questionId) return
-    const r = await client.history(questionId)
+    const r = await client.history(questionId, qsId)
     if (r.ok) {
       setHist(r.data)
       setSelectedId(r.data.versions.at(-1)?.answer_version_id ?? null)
       setAck(false)
     } else setMessage(describeReviewError(r))
-  }, [client, questionId])
+  }, [client, questionId, qsId])
 
   // Load history when the question changes (state is set only in the async callback).
   useEffect(() => {
     if (!questionId) return
     let active = true
-    client.history(questionId).then((r) => {
+    client.history(questionId, qsId).then((r) => {
       if (!active) return
       if (r.ok) {
         setHist(r.data)
@@ -112,10 +141,29 @@ export function ReviewPage({
     return () => {
       active = false
     }
-  }, [client, questionId])
+  }, [client, questionId, qsId])
 
-  if (loadError) return <p role="alert">{loadError}</p>
-  if (!ws) return <p role="status">Loading reviews…</p>
+  if (loadedFor !== qsId || (!ws && !loadError))
+    return (
+      <section aria-labelledby="review-heading">
+        <h2 id="review-heading">Review</h2>
+        {picker}
+        <p role="status">Loading reviews…</p>
+      </section>
+    )
+  if (loadError || !ws)
+    return (
+      <section aria-labelledby="review-heading">
+        <h2 id="review-heading">Review</h2>
+        {picker}
+        <p role="alert">{loadError}</p>
+        {qsId && (
+          <button type="button" onClick={() => chooseQuestionSet(null)}>
+            Use the demo fixture questions instead
+          </button>
+        )}
+      </section>
+    )
 
   const questions = [...ws.question_set.questions].sort((a, b) => a.order - b.order)
   const versions = hist?.versions ?? []
@@ -171,7 +219,11 @@ export function ReviewPage({
   async function exportAs(mode: 'working' | 'reviewed') {
     const [first, ...rest] = questions.map((q) => q.question_id)
     if (first === undefined) return // the contract requires at least one question
-    const r = await client.exportAnswers({ mode, question_ids: [first, ...rest] })
+    const r = await client.exportAnswers({
+      mode,
+      question_ids: [first, ...rest],
+      question_set_id: qsId,
+    })
     if (r.ok) setExported(r.data)
     else setMessage(describeReviewError(r))
   }
@@ -187,6 +239,13 @@ export function ReviewPage({
         <p className="badge badge-planned">
           FIXTURE store – saved versions and approvals are demo data and are lost on restart.
           Fixture approval – not authentication.
+        </p>
+      )}
+      {picker}
+      {ws.question_set_ref && (
+        <p className="hint">
+          Questions from saved definition {ws.question_set_ref.definition_id}, version{' '}
+          {ws.question_set_ref.definition_version} (saved, not reviewed by Dev B).
         </p>
       )}
       <label htmlFor="review-question">Question</label>{' '}
