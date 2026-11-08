@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import type { CapabilityReport } from '@strongstart/contracts'
+import { afterEach, beforeEach, vi } from 'vitest'
 import App from './App'
 import type { ApiState } from './api'
 import { FEATURES } from './features/registry'
@@ -30,6 +31,30 @@ const reachable = (ready: boolean, fixture = false): ApiState => ({
 })
 
 describe('App shell', () => {
+  beforeEach(() => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        Promise.resolve(
+          new Response(
+            JSON.stringify({
+              schema_version: '1',
+              authenticated: false,
+              identity_is_fixture: false,
+              environment: 'test',
+              storage: 'unconfigured',
+              status: 'unavailable',
+              detail: 'STRONGSTART_DATABASE_URL is not configured.',
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } },
+          ),
+        ),
+      ),
+    )
+  })
+
+  afterEach(() => vi.unstubAllGlobals())
+
   it('registers every lane feature with its owner', async () => {
     render(<App load={async () => reachable(true)} />)
     for (const f of FEATURES) {
