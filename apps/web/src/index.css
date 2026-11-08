@@ -2,7 +2,10 @@
  * nav: workflow rail with compact operational header · signature: connected evidence trail · states: loading, empty, error, full, fixture, stale
  * axes: light/grotesk-sans/warm · posture: committed · contrast: pass · v2.0.0 */
 /* Hallmark · pre-emit critique: P4 H5 E4 S5 R4 V4 · weakest: E, reduced the surface count and unified every control before the visual sweep */
-@import url('./fonts.css');
+/* No remote font import: the app must make no requests to external hosts (SEC-07 boundary,
+ * and every e2e test asserts it). tokens.css lists 'Red Hat *' first, so installed copies are
+ * used, and it falls back to the system stack otherwise. Self-hosted font files can be added
+ * later through a reviewed change. */
 @import url('./tokens.css');
 @import url('./base.css');
 
