@@ -1,11 +1,20 @@
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
-import type { DraftProposal, ErrorEnvelope } from '@strongstart/contracts'
+import { act, fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import type {
+  AnswerFinding,
+  AnswerPlan,
+  CheckReport,
+  CheckRequest,
+  DraftProposal,
+  ErrorEnvelope,
+} from '@strongstart/contracts'
 import { demoWorkspace } from '../../shell/components/demoBundle.testdata'
 import type { ApiResult, ApplicationsClient } from './client'
 import { ApplicationsPage } from './Page'
 
-const TEMPLATE =
-  'SYNTHETIC FIXTURE DRAFT: Demo Org supports early learning. Linked evidence: {{fact:demo-fact-children-served}}.'
+const FACT = 'demo-fact-children-served'
+const TEMPLATE = `SYNTHETIC FIXTURE DRAFT: Demo Org supports early learning. Linked evidence: {{fact:${FACT}}}.`
+const RENDERED_FACT = '120 children (2025-09/2026-06)'
+const HASH = 'c'.repeat(64)
 
 const proposal: DraftProposal = {
   schema_version: '1',
@@ -15,11 +24,100 @@ const proposal: DraftProposal = {
   evidence_bundle_id: 'demo-evidence-a-v1',
   pack_version_id: 'demo-a-v1',
   template_text: TEMPLATE,
-  template_sha256: 'c'.repeat(64),
+  template_sha256: HASH,
   segments: [],
-  fact_ids: ['demo-fact-children-served'],
+  fact_ids: [FACT],
   uncertainties: ['Linked facts must be checked by staff before this text is used.'],
   provider: { adapter: 'fake', model: 'fake-deterministic-v1', is_fixture: true },
+  provenance: { provenance_class: 'simulated', is_simulated: true },
+}
+
+function finding(
+  rule: string,
+  outcome: AnswerFinding['result']['outcome'],
+  message: string,
+  affected?: string,
+): AnswerFinding {
+  return {
+    result: { rule_id: rule, rule_version: 'c2-1', outcome, inputs: {}, reasons: [] },
+    message,
+    affected_text: affected ?? null,
+    next_action: outcome === 'pass' ? null : 'Fix it.',
+  }
+}
+
+/** Mirrors the API contract shape; rule logic itself is tested in pytest against the real API. */
+function report(questionId: string, body: CheckRequest): CheckReport {
+  const token = `{{fact:${FACT}}}`
+  const at = Array.from(body.text.split(token)[0]).length
+  const text = body.text.replace(token, RENDERED_FACT)
+  const words = text.trim() === '' ? 0 : text.trim().split(/\s+/).length
+  const findings = [
+    finding(
+      'APP-01',
+      'needs_review',
+      `${words} of 50 words (words-v1). Counting method not confirmed.`,
+    ),
+  ]
+  if (/\b500\b/.test(body.text)) {
+    findings.push(
+      finding(
+        'APP-03',
+        body.mode === 'reviewed' ? 'fail' : 'needs_review',
+        '"500" is a number that is not linked to evidence.',
+        '500',
+      ),
+    )
+  }
+  return {
+    schema_version: '1',
+    question_id: questionId,
+    question_version: 1,
+    evidence_bundle_id: body.evidence_bundle_id,
+    mode: body.mode ?? 'working',
+    submitted_text_sha256: HASH,
+    rendered: {
+      text,
+      text_sha256: HASH,
+      bindings: body.text.includes(token)
+        ? [
+            {
+              fact_id: FACT,
+              pack_version_id: 'demo-a-v1',
+              span_start: at,
+              span_end: at + Array.from(RENDERED_FACT).length,
+              rendered_text: RENDERED_FACT,
+            },
+          ]
+        : [],
+      unsupported_markers: [],
+    },
+    findings,
+  }
+}
+
+const plan: AnswerPlan = {
+  schema_version: '1',
+  plan_id: 'plan-1',
+  question_set_id: 'demo-gos-questions-v1',
+  evidence_bundle_id: 'demo-evidence-a-v1',
+  items: [
+    {
+      question_id: 'mission-q1',
+      question_version: 1,
+      evidence_fact_ids: [FACT],
+      missing_inputs: [],
+      repeated_with: [],
+    },
+    {
+      question_id: 'services-q2',
+      question_version: 1,
+      evidence_fact_ids: [],
+      missing_inputs: ['Program descriptions'],
+      repeated_with: [],
+    },
+  ],
+  planner: { adapter: 'fake', model: 'fake-deterministic-v1', is_fixture: true },
   provenance: { provenance_class: 'simulated', is_simulated: true },
 }
 
@@ -34,14 +132,20 @@ function fail(status: number, reason?: string): ApiResult<never> {
 
 function client(draft: ApiResult<DraftProposal> = { ok: true, data: proposal }) {
   const calls: unknown[] = []
+  const checks: CheckRequest[] = []
   const c: ApplicationsClient = {
     workspace: async () => ({ ok: true, data: demoWorkspace }),
     draft: async (id, body) => {
       calls.push([id, body])
       return draft
     },
+    check: async (id, body) => {
+      checks.push(body)
+      return { ok: true, data: report(id, body) }
+    },
+    plan: async () => ({ ok: true, data: plan }),
   }
-  return { c, calls }
+  return { c, calls, checks }
 }
 
 const editor = () => screen.getByLabelText('Your answer') as HTMLTextAreaElement
@@ -56,19 +160,18 @@ describe('Applications workspace', () => {
         selector: 'blockquote',
       }),
     ).toBeInTheDocument()
-    expect(screen.queryByRole('textbox', { name: /question/i })).not.toBeInTheDocument()
     expect(editor().value).toBe('')
     expect(screen.getByText('120 children')).toBeInTheDocument()
     expect(
       screen.getByText(/Limit: 50 words\. Counting method not confirmed\./),
     ).toBeInTheDocument()
-    expect(
-      screen.getByText(/0 of 50 words \(placeholder count; counting convention unverified\)/),
-    ).toBeInTheDocument()
+    await waitFor(() =>
+      expect(document.querySelector('.counter')).toHaveTextContent(/0 of 50 words \(words-v1\)/),
+    )
     expect(screen.queryByText(/Approved/)).not.toBeInTheDocument()
   })
 
-  it('fills the editor with the fake draft and renders fact slots as chips', async () => {
+  it('fills the editor with the draft and renders server-rendered fact chips', async () => {
     const { c, calls } = client()
     render(<ApplicationsPage client={c} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Request a draft' }))
@@ -76,13 +179,47 @@ describe('Applications workspace', () => {
     expect(calls).toEqual([
       ['mission-q1', { question_version: 1, evidence_bundle_id: 'demo-evidence-a-v1' }],
     ])
-    const chip = screen.getByLabelText(/Linked fact children-served/)
-    expect(chip).toHaveTextContent(
-      '120 children · 2025-09/2026-06 · Simulated · Not yet verified by staff',
-    )
+    const chip = await screen.findByLabelText(/Linked fact children-served/)
+    expect(chip).toHaveTextContent(`${RENDERED_FACT} · Simulated · Not yet verified by staff`)
     expect(screen.getByText(/fixed sample output, not an AI model/)).toBeInTheDocument()
     expect(screen.getByText('Draft – not reviewed')).toBeInTheDocument()
-    expect(screen.getByTitle('c'.repeat(64))).toBeInTheDocument()
+  })
+
+  it('flags a raw number from the checks and marks findings out of date after an edit', async () => {
+    const { c, checks } = client()
+    render(<ApplicationsPage client={c} />)
+    fireEvent.change(await screen.findByLabelText('Your answer'), {
+      target: { value: 'We served 500 children.' },
+    })
+    expect(
+      await screen.findByText(/"500" is a number that is not linked to evidence/),
+    ).toBeInTheDocument()
+    const checksPanel = screen.getByRole('region', { name: 'Checks on this text' })
+    expect(within(checksPanel).getAllByText('Needs your review').length).toBeGreaterThanOrEqual(2)
+    fireEvent.change(editor(), { target: { value: 'We served many children.' } })
+    expect(screen.getByText(/Out of date – the text or check mode changed/)).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByText(/"500" is a number/)).not.toBeInTheDocument())
+    expect(checks.at(-1)?.text).toBe('We served many children.')
+  })
+
+  it('review mode re-checks and shows blocking findings', async () => {
+    const { c, checks } = client()
+    render(<ApplicationsPage client={c} />)
+    fireEvent.change(await screen.findByLabelText('Your answer'), {
+      target: { value: 'We served 500 children.' },
+    })
+    await screen.findByText(/"500" is a number/)
+    fireEvent.click(screen.getByLabelText(/Review check/))
+    expect(await screen.findByText('Problem found')).toBeInTheDocument()
+    expect(checks.at(-1)?.mode).toBe('reviewed')
+  })
+
+  it('shows the plan with missing inputs and never-invented wording', async () => {
+    render(<ApplicationsPage client={client().c} />)
+    fireEvent.click(await screen.findByRole('button', { name: 'Plan this application' }))
+    expect(await screen.findByText('Answer plan')).toBeInTheDocument()
+    expect(screen.getByText(/Missing: Program descriptions \(not invented\)/)).toBeInTheDocument()
+    expect(screen.getByText(/Evidence: demo-fact-children-served/)).toBeInTheDocument()
   })
 
   it('never overwrites staff text with a draft (engineering s15)', async () => {
@@ -99,27 +236,17 @@ describe('Applications workspace', () => {
 
   it('keeps text typed while a draft request is in flight', async () => {
     let resolve: (r: ApiResult<DraftProposal>) => void = () => {}
-    const c: ApplicationsClient = {
-      workspace: async () => ({ ok: true, data: demoWorkspace }),
-      draft: () => new Promise((r) => (resolve = r)),
-    }
+    const base = client().c
+    const c: ApplicationsClient = { ...base, draft: () => new Promise((r) => (resolve = r)) }
     render(<ApplicationsPage client={c} />)
     fireEvent.click(await screen.findByRole('button', { name: 'Request a draft' }))
     fireEvent.change(editor(), { target: { value: 'typed meanwhile' } })
-    resolve({ ok: true, data: proposal })
+    await act(async () => resolve({ ok: true, data: proposal }))
     expect(await screen.findByText('Suggested draft')).toBeInTheDocument()
     expect(editor().value).toBe('typed meanwhile')
   })
 
-  it('updates the placeholder counter while typing', async () => {
-    render(<ApplicationsPage client={client().c} />)
-    fireEvent.change(await screen.findByLabelText('Your answer'), {
-      target: { value: 'one two three' },
-    })
-    expect(screen.getByText(/3 of 50 words/)).toBeInTheDocument()
-  })
-
-  it('shows both limits for a conflict and both counts for an unknown unit', async () => {
+  it('shows both limits for a conflict and the unknown-unit notice', async () => {
     render(<ApplicationsPage client={client().c} />)
     fireEvent.click(await screen.findByRole('button', { name: /Describe your partnerships/ }))
     expect(
@@ -127,7 +254,6 @@ describe('Applications workspace', () => {
     ).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: /List pending applications/ }))
     expect(screen.getByText(/does not say words or characters/)).toBeInTheDocument()
-    expect(screen.getByText(/0 words, 0 characters/)).toBeInTheDocument()
   })
 
   it.each([
@@ -151,8 +277,8 @@ describe('Applications workspace', () => {
     [503, /isn't set up on this server yet/],
   ])('workspace %s shows a distinct message', async (status, text) => {
     const c: ApplicationsClient = {
+      ...client().c,
       workspace: async () => fail(status),
-      draft: async () => fail(500),
     }
     render(<ApplicationsPage client={c} />)
     expect(await screen.findByRole('alert')).toHaveTextContent(text)

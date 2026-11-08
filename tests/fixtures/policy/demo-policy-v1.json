@@ -1,0 +1,24 @@
+{
+  "policy_id": "demo-policy",
+  "policy_version": "1",
+  "provenance": {
+    "provenance_class": "simulated",
+    "is_simulated": true,
+    "note": "SYNTHETIC C2 fixture exercising the POL-01/POL-02 engine only. The terms are illustrative (engineering plan v1.1 s19.2 mentions children/Volunteer Coach terminology); this is NOT Strong Start's approved writing guide (U01), which is not in the repository."
+  },
+  "terminology_rules": [
+    {
+      "rule_id": "demo-term-coach",
+      "scope": "Demo Literacy Program",
+      "forbidden_term": "tutor",
+      "preferred_term": "Volunteer Coach"
+    }
+  ],
+  "protected_names": [
+    {
+      "rule_id": "demo-name-dlp",
+      "full_name": "Demo Literacy Program",
+      "acronym": "DLP"
+    }
+  ]
+}

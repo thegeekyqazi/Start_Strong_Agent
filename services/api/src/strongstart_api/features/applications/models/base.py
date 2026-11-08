@@ -37,7 +37,7 @@ class StructuredTask:
     """A bounded, typed request. Identity/permissions are never part of the payload."""
 
     task_id: str
-    operation: Literal["draft_answer"]
+    operation: Literal["draft_answer", "plan_application"]
     instructions: str
     payload: dict[str, Any]
     output_schema: dict[str, Any]

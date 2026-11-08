@@ -21,7 +21,8 @@ Migration `0003_artifact_text_ingestion` preserves A1 database-byte rows and sup
 - `pytest tests/knowledge tests/contracts tests/unit -q`: 135 passed.
 - PostgreSQL 17 local container: migrations through `0004` passed; `tests/smoke/test_db_smoke.py -m db -q`: 6 passed.
 - Contract generation/check: passed. Local Node 22.13.1 is below the repository's declared Node 22.22.2+, but the contract-only commands completed.
-- Web lint, formatting, TypeScript and production build passed; Vitest on Node 22.22.2: 52 tests passed.
+- Web lint, formatting, TypeScript and production build passed; after reconciling current `main`/C2, Vitest on Node 22.22.2: 54 tests passed.
+- Current-main producer/consumer regression (`knowledge`, contracts, applications and unit): 250 tests passed; strict mypy passed across 120 files.
 
 ## Completed A2 additions
 

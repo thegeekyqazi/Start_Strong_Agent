@@ -12,7 +12,15 @@ from typing import Annotated, NoReturn
 from fastapi import APIRouter, Depends
 
 from strongstart_contracts import Capability, CapabilityUnavailable, ErrorCode
-from strongstart_contracts.answers import ApplicationWorkspace, DraftProposal, DraftRequest
+from strongstart_contracts.answers import (
+    AnswerPlan,
+    ApplicationWorkspace,
+    CheckReport,
+    CheckRequest,
+    DraftProposal,
+    DraftRequest,
+    PlanRequest,
+)
 
 from ...config import Settings, get_settings
 from ...errors import ApiError, not_implemented
@@ -28,11 +36,14 @@ from .models.base import (
 )
 from .models.fake import FakeAdapter
 from .models.gemini import GeminiAdapter
+from .rules.policy import WritingPolicy, fixture_policy
 from .service import (
     EvidenceBundleNotFound,
     QuestionNotFound,
     QuestionVersionConflict,
+    check_answer,
     draft_answer,
+    plan_application,
 )
 from .workspace import (
     FixtureWorkspaceSource,
@@ -105,7 +116,8 @@ def capabilities_for(settings: Settings) -> list[Capability]:
         owner="C",
         status="fixture_only" if settings.fixture_mode else "unavailable",
         detail=(
-            "Fixture workspace over demo-bundle@1 (synthetic questions and evidence)."
+            "Fixture workspace over demo-bundle@1: plan, draft and deterministic checks "
+            "(APP-01/02/03, POL-01/02/03) with a synthetic demo policy."
             if settings.fixture_mode
             else "Workspace needs a configured question/evidence producer."
         ),
@@ -137,6 +149,39 @@ def get_model_adapter(settings: Annotated[Settings, Depends(get_settings)]) -> M
     if settings.environment == "production":
         return _FixtureAdapterForbidden()
     return FakeAdapter()
+
+
+def get_policy(settings: Annotated[Settings, Depends(get_settings)]) -> WritingPolicy | None:
+    """Synthetic demo policy in fixture mode only; otherwise none (POL rules say so)."""
+    return fixture_policy() if settings.fixture_mode else None
+
+
+def _lookup_error(exc: Exception) -> ApiError:
+    if isinstance(exc, EvidenceBundleNotFound):
+        return ApiError(
+            404,
+            ErrorCode.VALIDATION_FAILED,
+            "unknown evidence bundle",
+            {"reason": "unknown_evidence_bundle"},
+        )
+    if isinstance(exc, QuestionVersionConflict):
+        return ApiError(
+            409,
+            ErrorCode.VERSION_CONFLICT,
+            "question version changed",
+            {"current_question_version": exc.current},
+        )
+    return ApiError(
+        404, ErrorCode.VALIDATION_FAILED, "unknown question", {"reason": "unknown_question"}
+    )
+
+
+_LOOKUP_ERRORS = (
+    QuestionNotFound,
+    WorkspaceNotFound,
+    EvidenceBundleNotFound,
+    QuestionVersionConflict,
+)
 
 
 def _model_error(exc: ModelError) -> ApiError:
@@ -178,6 +223,7 @@ async def draft(
     settings: Annotated[Settings, Depends(get_settings)],
     source: Annotated[WorkspaceSource, Depends(get_workspace_source)],
     adapter: Annotated[ModelAdapter, Depends(get_model_adapter)],
+    policy: Annotated[WritingPolicy | None, Depends(get_policy)],
 ) -> DraftProposal:
     try:
         return await draft_answer(
@@ -187,25 +233,53 @@ async def draft(
             question_id=question_id,
             request=body,
             timeout_seconds=settings.model_timeout_seconds,
+            policy=policy,
         )
-    except (QuestionNotFound, WorkspaceNotFound):
-        raise ApiError(
-            404, ErrorCode.VALIDATION_FAILED, "unknown question", {"reason": "unknown_question"}
-        ) from None
-    except EvidenceBundleNotFound:
-        raise ApiError(
-            404,
-            ErrorCode.VALIDATION_FAILED,
-            "unknown evidence bundle",
-            {"reason": "unknown_evidence_bundle"},
-        ) from None
-    except QuestionVersionConflict as exc:
-        raise ApiError(
-            409,
-            ErrorCode.VERSION_CONFLICT,
-            "question version changed",
-            {"current_question_version": exc.current},
-        ) from None
+    except _LOOKUP_ERRORS as exc:
+        raise _lookup_error(exc) from None
+    except ModelError as exc:
+        raise _model_error(exc) from None
+
+
+@router.post("/questions/{question_id}/check", response_model=CheckReport)
+def check(
+    question_id: str,
+    body: CheckRequest,
+    identity: Identity,
+    source: Annotated[WorkspaceSource, Depends(get_workspace_source)],
+    policy: Annotated[WritingPolicy | None, Depends(get_policy)],
+) -> CheckReport:
+    """Deterministic findings for the exact submitted text. Stateless; no approval."""
+    try:
+        return check_answer(
+            source=source,
+            organization_id=identity.organization_id,
+            question_id=question_id,
+            request=body,
+            policy=policy,
+        )
+    except _LOOKUP_ERRORS as exc:
+        raise _lookup_error(exc) from None
+
+
+@router.post("/plan", response_model=AnswerPlan)
+async def plan(
+    body: PlanRequest,
+    identity: Identity,
+    settings: Annotated[Settings, Depends(get_settings)],
+    source: Annotated[WorkspaceSource, Depends(get_workspace_source)],
+    adapter: Annotated[ModelAdapter, Depends(get_model_adapter)],
+) -> AnswerPlan:
+    try:
+        return await plan_application(
+            source=source,
+            adapter=adapter,
+            organization_id=identity.organization_id,
+            request=body,
+            timeout_seconds=settings.model_timeout_seconds,
+        )
+    except _LOOKUP_ERRORS as exc:
+        raise _lookup_error(exc) from None
     except ModelError as exc:
         raise _model_error(exc) from None
 
