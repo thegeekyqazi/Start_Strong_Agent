@@ -31,9 +31,7 @@ def upgrade() -> None:
             "created_at", sa.DateTime(timezone=True), nullable=False, server_default=sa.func.now()
         ),
         sa.CheckConstraint("char_length(manifest_sha256) = 64", name="ck_pack_manifest_hash"),
-        sa.UniqueConstraint(
-            "organization_id", "manifest_sha256", name="uq_pack_manifest_org_hash"
-        ),
+        sa.UniqueConstraint("organization_id", "manifest_sha256", name="uq_pack_manifest_org_hash"),
     )
     op.create_index(
         "ix_pack_manifests_context",

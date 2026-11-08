@@ -414,9 +414,7 @@ def test_pack_replacement_stales_exact_dependents_and_keeps_history(migrated: st
                 ],
             )
         fixture = json.loads(
-            (REPO_ROOT / "tests/fixtures/demo/a4-pack-replacement.json").read_text(
-                encoding="utf-8"
-            )
+            (REPO_ROOT / "tests/fixtures/demo/a4-pack-replacement.json").read_text(encoding="utf-8")
         )
         manifest_a, manifest_b = [
             PackManifestRequest.model_validate(item) for item in fixture["manifests"]
@@ -431,11 +429,14 @@ def test_pack_replacement_stales_exact_dependents_and_keeps_history(migrated: st
         with pytest.raises(PackManifestError, match="source_version_not_found"):
             service.create_manifest("demo-org", "demo-staff", bad_manifest)
         with engine.connect() as conn:
-            assert conn.execute(
-                select(evidence_pack_versions.c.id).where(
-                    evidence_pack_versions.c.id == "a4-bad-pack-v1"
-                )
-            ).scalar_one_or_none() is None
+            assert (
+                conn.execute(
+                    select(evidence_pack_versions.c.id).where(
+                        evidence_pack_versions.c.id == "a4-bad-pack-v1"
+                    )
+                ).scalar_one_or_none()
+                is None
+            )
         service.create_manifest("demo-org", "demo-staff", manifest_a)
         service.create_manifest("demo-org", "demo-staff", manifest_b)
         with pytest.raises(PackConflictError):
@@ -475,9 +476,7 @@ def test_pack_replacement_stales_exact_dependents_and_keeps_history(migrated: st
                     target_kind="approval",
                     target_id="a4-approval",
                     dependencies=[
-                        ValidationDependency(
-                            kind="fact_version", ref_id=fact_ids[0], version="1"
-                        )
+                        ValidationDependency(kind="fact_version", ref_id=fact_ids[0], version="1")
                     ],
                 ),
             )
@@ -533,9 +532,7 @@ def test_pack_replacement_stales_exact_dependents_and_keeps_history(migrated: st
             .facts
         } == {fact_ids[1], fact_ids[2]}
         api = TestClient(
-            create_app(
-                Settings(_env_file=None, database_url=migrated, auth_mode="fixture")
-            )
+            create_app(Settings(_env_file=None, database_url=migrated, auth_mode="fixture"))
         )
         assert api.get(f"/api/knowledge/evidence/{pack_versions[0]}").status_code == 409
         active_response = api.get(f"/api/knowledge/evidence/{pack_versions[1]}")

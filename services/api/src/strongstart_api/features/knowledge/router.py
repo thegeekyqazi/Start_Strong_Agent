@@ -232,9 +232,7 @@ def evidence_bundle(
     try:
         if pack_service is not None:
             try:
-                manifest = pack_service.get_manifest(
-                    identity.organization_id, pack_version_id
-                )
+                manifest = pack_service.get_manifest(identity.organization_id, pack_version_id)
             except PackNotFoundError:
                 manifest = None
             if manifest is not None:
