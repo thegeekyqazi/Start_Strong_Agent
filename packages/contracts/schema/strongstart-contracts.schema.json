@@ -1907,6 +1907,200 @@
       "x-contract-status": "draft",
       "x-owner": "shared"
     },
+    "KnowledgeAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "authenticated": {
+          "title": "Authenticated",
+          "type": "boolean"
+        },
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "environment": {
+          "title": "Environment",
+          "type": "string"
+        },
+        "identity_is_fixture": {
+          "title": "Identity Is Fixture",
+          "type": "boolean"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "fixture_only",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "storage": {
+          "enum": [
+            "postgresql",
+            "unconfigured"
+          ],
+          "title": "Storage",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authenticated",
+        "identity_is_fixture",
+        "environment",
+        "storage",
+        "status",
+        "detail"
+      ],
+      "title": "KnowledgeAvailability",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A1"
+    },
+    "KnowledgePassage": {
+      "additionalProperties": false,
+      "description": "Exact inert text at a locator in one source version.",
+      "properties": {
+        "exact_text": {
+          "title": "Exact Text",
+          "type": "string"
+        },
+        "locator": {
+          "title": "Locator",
+          "type": "string"
+        },
+        "passage_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Passage Id",
+          "type": "string"
+        },
+        "source_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "passage_id",
+        "source_id",
+        "source_version_id",
+        "locator",
+        "exact_text"
+      ],
+      "title": "KnowledgePassage",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A1"
+    },
+    "KnowledgeSnapshot": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_bundles": {
+          "items": {
+            "$ref": "#/$defs/EvidenceBundle"
+          },
+          "title": "Evidence Bundles",
+          "type": "array"
+        },
+        "generated_at": {
+          "format": "date-time",
+          "title": "Generated At",
+          "type": "string"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "passages": {
+          "items": {
+            "$ref": "#/$defs/KnowledgePassage"
+          },
+          "title": "Passages",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_versions": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeSourceVersion"
+          },
+          "title": "Source Versions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "organization_id",
+        "generated_at",
+        "source_versions",
+        "passages",
+        "evidence_bundles",
+        "is_fixture"
+      ],
+      "title": "KnowledgeSnapshot",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A1"
+    },
+    "KnowledgeSourceVersion": {
+      "additionalProperties": false,
+      "description": "Metadata for exact immutable source bytes; content is never returned as executable HTML.",
+      "properties": {
+        "media_type": {
+          "title": "Media Type",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "source_reference": {
+          "$ref": "#/$defs/SourceReference"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "media_type",
+        "size_bytes",
+        "source_reference"
+      ],
+      "title": "KnowledgeSourceVersion",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A1"
+    },
     "LimitConflict": {
       "additionalProperties": false,
       "properties": {

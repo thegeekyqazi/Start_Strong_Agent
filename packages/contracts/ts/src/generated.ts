@@ -634,6 +634,57 @@ export interface JobContext {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "KnowledgeAvailability".
+ */
+export interface KnowledgeAvailability {
+  authenticated: boolean
+  detail: string
+  environment: string
+  identity_is_fixture: boolean
+  schema_version?: '1'
+  status: 'available' | 'fixture_only' | 'unavailable'
+  storage: 'postgresql' | 'unconfigured'
+}
+/**
+ * Exact inert text at a locator in one source version.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "KnowledgePassage".
+ */
+export interface KnowledgePassage {
+  exact_text: string
+  locator: string
+  passage_id: string
+  source_id: string
+  source_version_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "KnowledgeSnapshot".
+ */
+export interface KnowledgeSnapshot {
+  evidence_bundles: EvidenceBundle[]
+  generated_at: string
+  is_fixture: boolean
+  organization_id: string
+  passages: KnowledgePassage[]
+  schema_version?: '1'
+  source_versions: KnowledgeSourceVersion[]
+}
+/**
+ * Metadata for exact immutable source bytes; content is never returned as executable HTML.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "KnowledgeSourceVersion".
+ */
+export interface KnowledgeSourceVersion {
+  media_type: string
+  size_bytes: number
+  source_reference: SourceReference
+  title: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "LivenessReport".
  */
 export interface LivenessReport {

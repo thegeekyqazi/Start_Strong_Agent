@@ -10,6 +10,9 @@ from sqlalchemy import (
     Column,
     DateTime,
     Engine,
+    ForeignKey,
+    Integer,
+    LargeBinary,
     MetaData,
     String,
     Table,
@@ -23,7 +26,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from strongstart_contracts import ReadinessCheck, ReadinessReport
 
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0001_bootstrap"
+REQUIRED_MIGRATION_REVISION = "0002_source_fact_foundation"
 
 metadata = MetaData()
 
@@ -48,6 +51,105 @@ bootstrap_metadata = Table(
     Column("key", String(128), primary_key=True),
     Column("value", Text, nullable=False),
     Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+knowledge_sources = Table(
+    "knowledge_sources",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("title", Text, nullable=False),
+    Column("provenance_class", String(32), nullable=False),
+    Column("is_simulated", Boolean, nullable=False),
+    Column("provenance_note", Text),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+knowledge_source_versions = Table(
+    "knowledge_source_versions",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column("source_id", String(128), ForeignKey("knowledge_sources.id"), nullable=False),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("media_type", Text, nullable=False),
+    Column("content_bytes", LargeBinary, nullable=False),
+    Column("content_sha256", String(64), nullable=False),
+    Column("size_bytes", Integer, nullable=False),
+    Column("captured_at", DateTime(timezone=True)),
+    Column("publication_status", String(24), nullable=False),
+    Column("publication_date", DateTime(timezone=True)),
+    Column("reporting_period", Text),
+    Column("verification_status", String(24), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+knowledge_passages = Table(
+    "knowledge_passages",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column(
+        "source_version_id", String(128), ForeignKey("knowledge_source_versions.id"), nullable=False
+    ),
+    Column("locator", Text, nullable=False),
+    Column("exact_text", Text, nullable=False),
+)
+
+evidence_packs = Table(
+    "evidence_packs",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+)
+
+evidence_pack_versions = Table(
+    "evidence_pack_versions",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column("pack_id", String(128), ForeignKey("evidence_packs.id"), nullable=False),
+    Column("bundle_id", String(128), nullable=False, unique=True),
+    Column("access_context", Text, nullable=False),
+    Column("coverage_notes", Text, nullable=False, server_default=""),
+)
+
+knowledge_facts = Table(
+    "knowledge_facts",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("metric_id", String(128), nullable=False),
+    Column("value_exact", Text),
+    Column("raw_value", Text),
+    Column("unit", Text),
+    Column("scope", Text, nullable=False),
+    Column("population", Text),
+    Column("reporting_period", Text),
+    Column("status", String(24), nullable=False),
+    Column("provenance_class", String(32), nullable=False),
+    Column("is_simulated", Boolean, nullable=False),
+    Column("provenance_note", Text),
+)
+
+fact_source_refs = Table(
+    "fact_source_refs",
+    metadata,
+    Column("fact_id", String(128), ForeignKey("knowledge_facts.id"), primary_key=True),
+    Column(
+        "source_version_id",
+        String(128),
+        ForeignKey("knowledge_source_versions.id"),
+        primary_key=True,
+    ),
+    Column("locator", Text, nullable=False),
+)
+
+pack_facts = Table(
+    "pack_facts",
+    metadata,
+    Column(
+        "pack_version_id", String(128), ForeignKey("evidence_pack_versions.id"), primary_key=True
+    ),
+    Column("fact_id", String(128), ForeignKey("knowledge_facts.id"), primary_key=True),
+    Column("allowed", Boolean, nullable=False, server_default="true"),
 )
 
 
