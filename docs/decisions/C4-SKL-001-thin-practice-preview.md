@@ -8,7 +8,8 @@
 - Engineering path/version/sections: docs/engineering/StrongStart_Engineering_Plan.md v1.1
   §§4–5, 8.2–8.3, 9, 11, 12.1–12.4, 13.1–13.3, 15–18, 20–21
 - Feature spec path/revision: docs/specs/C4-SKL-001_Thin_Practice_Generator_and_Draft_Preview.md r1.0
-- PR / Issue: stacked draft PR on `data/data-001-tigerdata-application-state` (PR #20)
+- PR / Issue: draft PR #23. Opened stacked on PR #20; #20 merged to `main` at `12ac1b4`
+  (content-identical to the stacked base `068f5aa`), so #23 was retargeted to `main`.
 - Supersedes / superseded by: none
 
 ## Original requirement

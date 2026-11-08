@@ -4,8 +4,9 @@
 2026-11-08, decision `C4-SKL-001-thin-practice-preview`). Not full C4/G3/G4, not all SKL-01…16,
 not production-ready. Broader regression is left for the integrated release check.
 
-- Branch `dev-c/c4-skl-001-practice-preview`, **stacked on** `data/data-001-tigerdata-application-state`
-  (PR #20, head `068f5aa`). Integration order: PR #20 first, then this PR retargeted to `main`.
+- Branch `dev-c/c4-skl-001-practice-preview`, draft PR #23. Branched from the DATA-001 head
+  `068f5aa`; PR #20 has since merged to `main` (`12ac1b4`, no content difference), so #23 now
+  targets `main` directly.
 - Spec: [C4-SKL-001 r1.0](../../specs/C4-SKL-001_Thin_Practice_Generator_and_Draft_Preview.md);
   engineering v1.1 §§4–5, 8.2–8.3, 9, 12, 13, 15–18. Migration `0010_practice_skills` (after `0009`).
 - Owners: project owner (engineering); Sawaab (UI/UX) — see [UI contract](c4-skl-001-ui-contract.md).
@@ -126,7 +127,7 @@ tested now. Deferred = out of the thin scope.
 
 ## Next actions
 
-- Owner: review stacked draft PR; merge PR #20 first, then retarget this PR to `main`.
+- Owner: review draft PR #23 (targets `main`).
 - Release check: run full `make smoke` / `make browser-smoke`, add the race/rollback tests above,
   and a bounded live-provider rehearsal if a key is configured.
 - Sawaab: presentation pass on the Skills page per the UI contract.
