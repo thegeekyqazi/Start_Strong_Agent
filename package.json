@@ -1,0 +1,26 @@
+{
+  "name": "strongstart-workspace",
+  "private": true,
+  "description": "Strong Start monorepo JavaScript workspace root.",
+  "packageManager": "npm@10.9.7",
+  "engines": {
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
+  },
+  "workspaces": [
+    "packages/contracts/ts",
+    "apps/web"
+  ],
+  "scripts": {
+    "contracts:generate": "npm run generate -w @strongstart/contracts",
+    "contracts:check": "npm run check -w @strongstart/contracts",
+    "lint": "npm run lint -w @strongstart/web",
+    "format:check": "prettier --check apps/web packages/contracts/ts",
+    "format": "prettier --write apps/web packages/contracts/ts",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test -w @strongstart/web",
+    "build": "npm run build -w @strongstart/web"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.10"
+  }
+}

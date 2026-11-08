@@ -1,0 +1,22 @@
+{
+  "name": "@strongstart/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "GENERATED TypeScript declarations for Strong Start contracts (source: Pydantic models).",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
+  },
+  "scripts": {
+    "generate": "node scripts/generate.mjs --write",
+    "check": "node scripts/generate.mjs --check",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "json-schema-to-typescript": "^16.0.0",
+    "typescript": "^7.0.2"
+  }
+}

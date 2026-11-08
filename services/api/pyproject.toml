@@ -1,0 +1,28 @@
+[project]
+name = "strongstart-api"
+version = "0.1.0"
+description = "Strong Start FastAPI host: configuration, health, capabilities and feature routers."
+requires-python = ">=3.12,<3.14"
+dependencies = [
+    "strongstart-contracts",
+    "fastapi>=0.115",
+    "uvicorn[standard]>=0.32",
+    "pydantic>=2.9",
+    "pydantic-settings>=2.6",
+    "sqlalchemy>=2.0.36",
+    "alembic>=1.14",
+    "psycopg[binary]>=3.2",
+]
+
+[project.scripts]
+strongstart-seed-demo = "strongstart_api.seed:main"
+
+[tool.uv.sources]
+strongstart-contracts = { workspace = true }
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/strongstart_api"]

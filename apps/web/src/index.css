@@ -1,0 +1,91 @@
+:root {
+  font-family: system-ui, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+  background: #fafafa;
+}
+body {
+  margin: 0;
+}
+.shell {
+  display: grid;
+  grid-template-columns: 16rem 1fr;
+  grid-template-areas: 'header header' 'nav main';
+  min-height: 100vh;
+}
+header {
+  grid-area: header;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #ccc;
+}
+header h1 {
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
+}
+nav {
+  grid-area: nav;
+  padding: 1rem;
+  border-right: 1px solid #ccc;
+}
+nav ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+nav li {
+  margin-bottom: 0.75rem;
+}
+nav a[aria-current='page'] {
+  font-weight: 700;
+}
+nav .cap {
+  display: block;
+  font-size: 0.8rem;
+  color: #555;
+}
+main {
+  grid-area: main;
+  padding: 1rem 1.5rem;
+}
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+.badge {
+  display: inline-block;
+  padding: 0.1rem 0.5rem;
+  border-radius: 0.25rem;
+  border: 1px solid currentColor;
+  font-size: 0.85rem;
+}
+.badge-ok {
+  color: #11612b;
+}
+.badge-unavailable {
+  color: #a11a1a;
+}
+.badge-planned {
+  color: #6b4c00;
+}
+.banner-fixture {
+  background: #fff3cd;
+  border: 2px solid #b58100;
+  padding: 0.5rem;
+  font-weight: 700;
+}
+.checks {
+  margin: 0;
+  font-size: 0.85rem;
+}
+@media (max-width: 40rem) {
+  .shell {
+    grid-template-columns: 1fr;
+    grid-template-areas: 'header' 'nav' 'main';
+  }
+  nav {
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+  }
+}

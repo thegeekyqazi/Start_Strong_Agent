@@ -1,0 +1,46 @@
+# Secrets / local config
+.env
+.env.*
+!.env.example
+infra/.env
+
+# Bootstrap inputs (original archive and downloaded duplicates) stay untracked
+.bootstrap-input/
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+build/
+
+# Node
+node_modules/
+apps/web/dist/
+packages/contracts/ts/dist/
+*.tsbuildinfo
+.vite/
+
+# Logs, caches, local data
+*.log
+logs/
+.cache/
+pgdata/
+coverage/
+.coverage
+
+# Browser automation artifacts / sessions
+playwright-report/
+test-results/
+.playwright/
+*.har
+storage-state*.json
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store

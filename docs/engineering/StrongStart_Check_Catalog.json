@@ -1,0 +1,1335 @@
+{
+  "schema_version": "1.0",
+  "title": "Strong Start engineering validation registry",
+  "as_of": "2026-11-07",
+  "status": "design_not_implemented",
+  "baseline_rule_count": 51,
+  "additional_rule_count": 35,
+  "rules": [
+    {
+      "id": "SRC-01",
+      "priority": "P0",
+      "requirement": "A citation's source/version ID exists.",
+      "on_failure": "Reject dangling references.",
+      "implementation": "Foreign-key/lookup of source version within authorized evidence set.",
+      "minimum_fixture": "Unknown version ID fails; known authorized ID passes.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-02",
+      "priority": "P0",
+      "requirement": "Stored artifact hash matches its registered version.",
+      "on_failure": "Hold dependent claims on integrity mismatch.",
+      "implementation": "SHA-256 of stored original bytes against immutable artifact record.",
+      "minimum_fixture": "Alter one byte after capture; integrity check fails.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-03",
+      "priority": "P0",
+      "requirement": "Referenced page or section exists.",
+      "on_failure": "Flag invalid source location.",
+      "implementation": "Resolve locator against page/section/table inventory of that version.",
+      "minimum_fixture": "Page 31 in a 30-page document fails.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-04",
+      "priority": "P0",
+      "requirement": "A claimed direct quote matches the stored passage under a documented normalization rule.",
+      "on_failure": "Flag mismatch; matching alone does not prove relevance.",
+      "implementation": "Compare quote to recorded passage using versioned whitespace policy.",
+      "minimum_fixture": "Changed digit fails; allowed whitespace difference passes.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-05",
+      "priority": "P0",
+      "requirement": "Capture succeeded and required content is nonempty.",
+      "on_failure": "Record capture failure instead of inventing content.",
+      "implementation": "Check capture status and nonempty expected extraction fields.",
+      "minimum_fixture": "HTTP success with empty document returns needs review.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-06",
+      "priority": "P1",
+      "requirement": "Detect identical artifact hashes and repeated candidate URLs.",
+      "on_failure": "Deduplicate storage/candidates while retaining provenance.",
+      "implementation": "Canonical-URL keys plus artifact hashes; preserve distinct capture metadata.",
+      "minimum_fixture": "Same bytes at two URLs share artifact, retain both origins.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-07",
+      "priority": "P1",
+      "requirement": "Detect source-version changes.",
+      "on_failure": "Revalidate affected requirements and claims.",
+      "implementation": "Compare captured content hashes and semantic record versions.",
+      "minimum_fixture": "Changed guideline invalidates dependent requirement snapshot.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-08",
+      "priority": "P1",
+      "requirement": "Required extraction fields and original-artifact reference are present.",
+      "on_failure": "Mark incomplete capture.",
+      "implementation": "Validate required capture metadata and resolvable original-artifact key.",
+      "minimum_fixture": "Missing original file reference fails ingestion readiness.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-09",
+      "priority": "P1",
+      "requirement": "Page count or extraction coverage is known and within the processed range.",
+      "on_failure": "Label partial document coverage.",
+      "implementation": "Compare processed pages to actual page inventory; flag omissions.",
+      "minimum_fixture": "Two pages extracted from thirty stays partial.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "SRC-10",
+      "priority": "P1",
+      "requirement": "Record parser/OCR version, warnings, and capture time.",
+      "on_failure": "Prevent silent loss of processing provenance.",
+      "implementation": "Require parser version, timestamps and explicit warning list, even empty.",
+      "minimum_fixture": "Missing parser version fails provenance completeness.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Authorized artifact/source-version store (A)",
+        "Evidence/funder capture consumers (B/C)"
+      ]
+    },
+    {
+      "id": "NUM-01",
+      "priority": "P0",
+      "requirement": "Parse numeric values without losing sign, decimal, scale, or percent markers.",
+      "on_failure": "Flag ambiguous formats.",
+      "implementation": "Locale-aware decimal parser; retain raw value and ambiguity status.",
+      "minimum_fixture": "Parenthesized loss and 1.2 million retain sign/scale; ambiguous 1,234 is reviewed.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-02",
+      "priority": "P0",
+      "requirement": "Values fall within the defined metric's range, such as a proportion from 0 to 100%.",
+      "on_failure": "Flag impossible values for that metric.",
+      "implementation": "Metric-specific typed bounds; unknown metric has no invented bounds.",
+      "minimum_fixture": "101 percent fails a bounded share; 101 percent growth is not automatically invalid.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-03",
+      "priority": "P0",
+      "requirement": "Claim value matches the cited structured fact.",
+      "on_failure": "Block altered numbers.",
+      "implementation": "Compare bound claim slot with verified fact/derivation using declared rounding.",
+      "minimum_fixture": "94 changed to 95 fails even when both appear elsewhere.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-04",
+      "priority": "P0",
+      "requirement": "Claim unit/currency matches source and task.",
+      "on_failure": "Flag people/families, hours, CAD/USD, or scale mismatches.",
+      "implementation": "Match typed unit, scale and currency; require explicit conversion record.",
+      "minimum_fixture": "CAD treated as USD or families as children fails.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-05",
+      "priority": "P0",
+      "requirement": "Period, program, and population match the selected fact.",
+      "on_failure": "Prevent cross-year or cross-program substitution.",
+      "implementation": "Compare metric key plus period, program, geography and population.",
+      "minimum_fixture": "LSW enrollment cannot satisfy an organization-wide completion slot.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-06",
+      "priority": "P0",
+      "requirement": "Budgets reconcile line items, subtotals, and totals using decimal arithmetic and documented rounding.",
+      "on_failure": "Show the discrepancy and inputs.",
+      "implementation": "Decimal line-item sum, subtotal graph and documented rounding tolerance.",
+      "minimum_fixture": "Items sum to 10,001 but budget says 10,000; show delta 1.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-07",
+      "priority": "P1",
+      "requirement": "Computed ratios have the intended nonzero denominator.",
+      "on_failure": "Reject invalid calculation or require denominator review.",
+      "implementation": "Validate nonzero approved denominator and execute registered formula.",
+      "minimum_fixture": "Zero or absent denominator prevents ratio output.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-08",
+      "priority": "P1",
+      "requirement": "Enrollment, completion, assessed participants, and responses use distinct metric IDs.",
+      "on_failure": "Flag reuse under the wrong label.",
+      "implementation": "Require the expected metric ID in typed evidence binding.",
+      "minimum_fixture": "Enrollment ID bound to completion claim fails.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-09",
+      "priority": "P1",
+      "requirement": "Compare matching fact keys for inconsistent values.",
+      "on_failure": "Surface conflict; do not select a winner automatically.",
+      "implementation": "Group comparable fact keys; flag unequal values without choosing a winner.",
+      "minimum_fixture": "Two same-scope, same-period totals differ; both remain visible.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-10",
+      "priority": "P1",
+      "requirement": "Distinguish percent change from percentage-point change.",
+      "on_failure": "Flag calculation/wording mismatch once metric meaning is established.",
+      "implementation": "Calculate relative change and point difference in separate typed operations.",
+      "minimum_fixture": "40 to 50 percent is 10 points or 25 percent relative change.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-11",
+      "priority": "P1",
+      "requirement": "Aggregate only nonoverlapping, compatible scopes.",
+      "on_failure": "Require review where overlap or comparability is unknown.",
+      "implementation": "Require explicit disjoint-scope declaration and compatible units/periods.",
+      "minimum_fixture": "Overlapping regional totals return needs review instead of summing.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "NUM-12",
+      "priority": "P1",
+      "requirement": "Future targets and requested costs have approved project inputs.",
+      "on_failure": "Leave placeholders rather than derive commitments from historic data.",
+      "implementation": "Require approved or explicitly simulated input IDs for commitments.",
+      "minimum_fixture": "Old financial expense total cannot become a new funding target.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Typed verified facts and calculation inputs (A)",
+        "Claim/answer bindings (C)"
+      ]
+    },
+    {
+      "id": "DAT-01",
+      "priority": "P0",
+      "requirement": "Required deadline components are present or explicitly unknown.",
+      "on_failure": "Require review for missing time/timezone or ambiguous dates.",
+      "implementation": "Validate date/time/zone fields; distinguish date-only from exact cutoff.",
+      "minimum_fixture": "Deadline with no timezone remains unknown when time matters.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed cycle/deadline metadata (B)",
+        "Frozen clock and scope context (A/C)"
+      ]
+    },
+    {
+      "id": "DAT-02",
+      "priority": "P0",
+      "requirement": "Compare current time and deadline in the stated timezone.",
+      "on_failure": "Mark closed when supported; retain capture and rule time.",
+      "implementation": "Use frozen evaluation time and IANA-zone conversion with DST handling.",
+      "minimum_fixture": "Before/after exact cutoff tested; a date-only cutoff is not fabricated.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed cycle/deadline metadata (B)",
+        "Frozen clock and scope context (A/C)"
+      ]
+    },
+    {
+      "id": "DAT-03",
+      "priority": "P0",
+      "requirement": "Select the correct cycle and application stage.",
+      "on_failure": "Flag confusion between expression of interest, full application, and project dates.",
+      "implementation": "Bind requirement to funder, stream, cycle and application stage IDs.",
+      "minimum_fixture": "EOI deadline cannot stand in for full-application deadline.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed cycle/deadline metadata (B)",
+        "Frozen clock and scope context (A/C)"
+      ]
+    },
+    {
+      "id": "DAT-04",
+      "priority": "P1",
+      "requirement": "Project dates satisfy explicitly encoded funding-period conditions.",
+      "on_failure": "Explain a mismatch or unknown input.",
+      "implementation": "Compare project start/end to approved funding-window constraints.",
+      "minimum_fixture": "Project ending outside supported funding window fails.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed cycle/deadline metadata (B)",
+        "Frozen clock and scope context (A/C)"
+      ]
+    },
+    {
+      "id": "DAT-05",
+      "priority": "P1",
+      "requirement": "A claim's wording and reporting period match the selected time policy.",
+      "on_failure": "Flag a historical value presented as current.",
+      "implementation": "Match declared temporal claim type to period and explicit freshness policy.",
+      "minimum_fixture": "2016 fact labelled current fails; explicitly historical use may pass.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed cycle/deadline metadata (B)",
+        "Frozen clock and scope context (A/C)"
+      ]
+    },
+    {
+      "id": "ELG-01",
+      "priority": "P0",
+      "requirement": "Every required input for an encoded eligibility rule is present.",
+      "on_failure": "Return unknown instead of assuming eligibility.",
+      "implementation": "Three-valued predicate inputs: satisfied, not satisfied, unknown.",
+      "minimum_fixture": "Absent prior-grant history returns unknown, never eligible by default.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed requirements/request/history fields (A/B/C)"
+      ]
+    },
+    {
+      "id": "ELG-02",
+      "priority": "P1",
+      "requirement": "Apply explicit amount, geography, organization-type, and activity rules.",
+      "on_failure": "Show satisfied/not satisfied/unknown per condition.",
+      "implementation": "Execute reviewed finite predicates over typed organization/request fields.",
+      "minimum_fixture": "Boundary amounts and exact geographic memberships tested.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed requirements/request/history fields (A/B/C)"
+      ]
+    },
+    {
+      "id": "ELG-03",
+      "priority": "P1",
+      "requirement": "Distinguish per-award limits from total funding pool and matching requirements.",
+      "on_failure": "Flag incompatible request or incomplete interpretation.",
+      "implementation": "Check limit_kind and application_type before comparing request.",
+      "minimum_fixture": "Network 250,000 maximum cannot validate standard GOS request.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed requirements/request/history fields (A/B/C)"
+      ]
+    },
+    {
+      "id": "ELG-04",
+      "priority": "P1",
+      "requirement": "Explicit invitation or prior-stage requirements are met.",
+      "on_failure": "Do not mark ready to apply without evidence.",
+      "implementation": "Require evidence-bound invitation/prior-stage status for applicable rules.",
+      "minimum_fixture": "A public Apply button does not satisfy invitation requirement.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Reviewed requirements/request/history fields (A/B/C)"
+      ]
+    },
+    {
+      "id": "APP-01",
+      "priority": "P0",
+      "requirement": "Answers satisfy the funder's specified word/character counting convention.",
+      "on_failure": "Show count and overage; preserve ambiguity in counting rules.",
+      "implementation": "Versioned counter selected per field: words, code points, UTF-16 or portal count.",
+      "minimum_fixture": "Boundary N/N+1, emoji, apostrophes, line breaks and pasted text tested.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Question/limit/attachment contracts (B)",
+        "Authorized evidence/version primitives (A)",
+        "Answer/review workflow (C)"
+      ]
+    },
+    {
+      "id": "APP-02",
+      "priority": "P0",
+      "requirement": "Required questions, fields, and attachments have a recorded status.",
+      "on_failure": "Produce a missing-items list.",
+      "implementation": "Evaluate required and conditional fields against explicit status map.",
+      "minimum_fixture": "Missing required attachment stays incomplete; unknown dependency stays review.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Question/limit/attachment contracts (B)",
+        "Authorized evidence/version primitives (A)",
+        "Answer/review workflow (C)"
+      ]
+    },
+    {
+      "id": "APP-03",
+      "priority": "P0",
+      "requirement": "Generated factual claims carry valid evidence references or an explicit unsupported marker.",
+      "on_failure": "Hold unsupported content for review.",
+      "implementation": "Require claim spans, evidence IDs or explicit unsupported markers; scan uncovered numbers.",
+      "minimum_fixture": "Unbound numeric span blocks reviewed output; citation presence alone is not support.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Question/limit/attachment contracts (B)",
+        "Authorized evidence/version primitives (A)",
+        "Answer/review workflow (C)"
+      ]
+    },
+    {
+      "id": "APP-04",
+      "priority": "P0",
+      "requirement": "Approvals reference the exact answer/content version.",
+      "on_failure": "Invalidate affected approval when content changes.",
+      "implementation": "Match approval to content hash and complete dependency snapshot.",
+      "minimum_fixture": "One character edit or applicable policy change stales approval.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Question/limit/attachment contracts (B)",
+        "Authorized evidence/version primitives (A)",
+        "Answer/review workflow (C)"
+      ]
+    },
+    {
+      "id": "APP-05",
+      "priority": "P0",
+      "requirement": "Retrieval and preview requests satisfy document access rules.",
+      "on_failure": "Exclude unauthorized material before retrieval.",
+      "implementation": "Authorize before retrieval, ranking, snippets, previews, caches and export.",
+      "minimum_fixture": "User without document permission cannot obtain its snippet or page image.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Question/limit/attachment contracts (B)",
+        "Authorized evidence/version primitives (A)",
+        "Answer/review workflow (C)"
+      ]
+    },
+    {
+      "id": "APP-06",
+      "priority": "P1",
+      "requirement": "Evidence changes invalidate dependent checks.",
+      "on_failure": "Queue affected claims for revalidation.",
+      "implementation": "Traverse dependency edges on source/fact/requirement version changes.",
+      "minimum_fixture": "Changed fact stales every dependent answer check, including aggregate status.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Question/limit/attachment contracts (B)",
+        "Authorized evidence/version primitives (A)",
+        "Answer/review workflow (C)"
+      ]
+    },
+    {
+      "id": "APP-07",
+      "priority": "P1",
+      "requirement": "Reviewed-export policy is satisfied.",
+      "on_failure": "Keep working draft distinct from reviewed output.",
+      "implementation": "Apply mode-specific export gate to exact versions and unresolved blockers.",
+      "minimum_fixture": "Working draft exports labelled; reviewed export blocked with unsupported claim.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Question/limit/attachment contracts (B)",
+        "Authorized evidence/version primitives (A)",
+        "Answer/review workflow (C)"
+      ]
+    },
+    {
+      "id": "APP-08",
+      "priority": "P1",
+      "requirement": "Validation records include rule version and reproducible inputs.",
+      "on_failure": "Flag incomplete audit trail.",
+      "implementation": "Require rule version, input snapshot hashes, evaluation time and result payload.",
+      "minimum_fixture": "Missing rule version prevents a validation record from counting as current.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Question/limit/attachment contracts (B)",
+        "Authorized evidence/version primitives (A)",
+        "Answer/review workflow (C)"
+      ]
+    },
+    {
+      "id": "POL-01",
+      "priority": "P0",
+      "requirement": "Apply terminology rules only to their specified program/context.",
+      "on_failure": "Flag generated narrative; preserve quotes and source question text.",
+      "implementation": "Apply scoped phrase/token rules to generated prose, respecting quote spans.",
+      "minimum_fixture": "Tutor in LSW narrative is flagged; same word in a preserved quote is not rewritten.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved scoped policy sources and pack versions (A)",
+        "Answer spans and policy runner (C)"
+      ]
+    },
+    {
+      "id": "POL-02",
+      "priority": "P0",
+      "requirement": "Verify designated protected wording and first-use naming rules.",
+      "on_failure": "Show the changed phrase or missing expansion/mark.",
+      "implementation": "Compare protected text and first-use expansions over configured application scope.",
+      "minimum_fixture": "First program mention missing required name/mark fails; later acronym allowed.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved scoped policy sources and pack versions (A)",
+        "Answer spans and policy runner (C)"
+      ]
+    },
+    {
+      "id": "POL-03",
+      "priority": "P0",
+      "requirement": "Reject missing-data placeholders disguised as historical/current values.",
+      "on_failure": "Keep explicit XXX or missing status; block reviewed-export readiness.",
+      "implementation": "Scan explicit placeholder tokens and missing-input bindings before reviewed export.",
+      "minimum_fixture": "XXX allowed in working draft; old figure cannot fill missing current slot.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved scoped policy sources and pack versions (A)",
+        "Answer spans and policy runner (C)"
+      ]
+    },
+    {
+      "id": "POL-04",
+      "priority": "P1",
+      "requirement": "Check a declared program assessment type against a structured program fact.",
+      "on_failure": "Flag overbroad claims once scope is established.",
+      "implementation": "Check registered program-to-assessment mapping against declared claim scope.",
+      "minimum_fixture": "All-program pre/post claim conflicts with Baby Connections post-only record.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved scoped policy sources and pack versions (A)",
+        "Answer spans and policy runner (C)"
+      ]
+    },
+    {
+      "id": "POL-05",
+      "priority": "P1",
+      "requirement": "Enforce source-use exclusions and provenance labels.",
+      "on_failure": "Exclude EQAO proposal evidence under the supplied policy; retain simulation labels.",
+      "implementation": "Enforce evidence-use exclusions and propagate synthetic-data labels.",
+      "minimum_fixture": "EQAO support or lost simulated label prevents reviewed-real readiness.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved scoped policy sources and pack versions (A)",
+        "Answer spans and policy runner (C)"
+      ]
+    },
+    {
+      "id": "AUT-01",
+      "priority": "P0",
+      "requirement": "Every required question maps to a unique expected form field.",
+      "on_failure": "Flag missing, duplicate, or changed field mapping.",
+      "implementation": "Validate field-map IDs, cardinality and form fingerprint; allow declared groups.",
+      "minimum_fixture": "Missing input or two unexpected matches stops prefill.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Question/form maps (B)",
+        "Exact approval snapshot (C)",
+        "Current access/pack versions (A)"
+      ]
+    },
+    {
+      "id": "AUT-02",
+      "priority": "P0",
+      "requirement": "Prefill uses the exact approved answer version.",
+      "on_failure": "Refuse stale/unapproved input for that action.",
+      "implementation": "Fetch exact approved snapshot server-side immediately before entry.",
+      "minimum_fixture": "Browser job cannot prefill cached answer after staff edits it.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Question/form maps (B)",
+        "Exact approval snapshot (C)",
+        "Current access/pack versions (A)"
+      ]
+    },
+    {
+      "id": "AUT-03",
+      "priority": "P0",
+      "requirement": "Read-back value equals intended entered value.",
+      "on_failure": "Flag truncation, rejection, or unexpected transformation.",
+      "implementation": "Read final DOM value and compare under declared, narrow normalization.",
+      "minimum_fixture": "Maxlength truncation is detected; no silent trimming accepted.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Question/form maps (B)",
+        "Exact approval snapshot (C)",
+        "Current access/pack versions (A)"
+      ]
+    },
+    {
+      "id": "AUT-04",
+      "priority": "P1",
+      "requirement": "Validate required attachment count/type/size against confirmed rules.",
+      "on_failure": "Show missing or rejected attachments.",
+      "implementation": "Compare attachment manifest and target constraints before upload.",
+      "minimum_fixture": "Wrong type, excessive size or missing required file stops that transfer.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Question/form maps (B)",
+        "Exact approval snapshot (C)",
+        "Current access/pack versions (A)"
+      ]
+    },
+    {
+      "id": "PKG-01",
+      "priority": "P0",
+      "requirement": "Validate pack IDs, versions, required fields, and evidence references.",
+      "on_failure": "Reject malformed items with a visible ingestion report.",
+      "implementation": "Strict manifest schema and resolvable same-organization evidence links.",
+      "minimum_fixture": "Duplicate IDs, missing source version or unsupported mapping rejected.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Pack manifests and reverse dependency store (A)",
+        "Draft/skill/approval invalidation (C)",
+        "Browser grant invalidation (B)"
+      ]
+    },
+    {
+      "id": "PKG-02",
+      "priority": "P0",
+      "requirement": "Invalidate dependent outputs when pack facts/policies change.",
+      "on_failure": "Recheck affected drafts and approvals.",
+      "implementation": "Diff structured facts/policies and walk reverse dependency graph.",
+      "minimum_fixture": "Changed policy invalidates affected answer; unrelated answer remains valid.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Pack manifests and reverse dependency store (A)",
+        "Draft/skill/approval invalidation (C)",
+        "Browser grant invalidation (B)"
+      ]
+    },
+    {
+      "id": "PKG-03",
+      "priority": "P0",
+      "requirement": "Verify regenerated output references the active replacement pack.",
+      "on_failure": "Flag stale values, citations, and policy references.",
+      "implementation": "Require active-pack provenance for new bindings; inspect removed/replaced values.",
+      "minimum_fixture": "New answer cannot cite inactive replaced fact, even if numeric value happens to match.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Pack manifests and reverse dependency store (A)",
+        "Draft/skill/approval invalidation (C)",
+        "Browser grant invalidation (B)"
+      ]
+    },
+    {
+      "id": "SKL-01",
+      "priority": "P0",
+      "requirement": "Strict skill schema and format bounds.",
+      "implementation": "Validate name, description, type, scope, trigger fields and schema version; reject unknown fields.",
+      "minimum_fixture": "Missing description or unsupported version cannot become a candidate.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-02",
+      "priority": "P0",
+      "requirement": "Positive file and content-type allowlist.",
+      "implementation": "V1 accepts compiler-produced text/JSON references only; reject scripts, executables, dependencies and install hooks.",
+      "minimum_fixture": "A generated shell file or embedded executable artifact is rejected.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-03",
+      "priority": "P0",
+      "requirement": "Confined references and paths.",
+      "implementation": "Resolve approved relative paths and IDs; reject traversal, absolute paths, symlinks and external include directives.",
+      "minimum_fixture": "A reference escaping the package root is rejected.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-04",
+      "priority": "P0",
+      "requirement": "Safe bounded parsing.",
+      "implementation": "Bound bytes, depth, item count and parse time; reject duplicate keys, YAML object tags/aliases and recursive includes.",
+      "minimum_fixture": "Duplicate capability key or excessive nesting fails before model use.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-05",
+      "priority": "P0",
+      "requirement": "Authority-linked instruction provenance.",
+      "implementation": "Each proposed organizational rule references an approved policy source or explicit administrator-authored practice.",
+      "minimum_fixture": "A grant webpage cannot promote its instructions into organization policy.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-06",
+      "priority": "P0",
+      "requirement": "Fact references remain live and scoped.",
+      "implementation": "Resolve fact selectors through active pack; prohibit generated current-number constants in policy payload.",
+      "minimum_fixture": "Pack swap changes the selected fact without rewriting skill prose.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-07",
+      "priority": "P0",
+      "requirement": "Explicit task and program scope.",
+      "implementation": "Require bounded task types, program IDs and locale; dispatch only inside that scope.",
+      "minimum_fixture": "LSW-only practice rule does not apply to Baby Connections.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-08",
+      "priority": "P0",
+      "requirement": "Suspicious-pattern and hidden-text screening coverage.",
+      "implementation": "Versioned scan over raw metadata/body/references and bounded normalized views; record spans and review flags.",
+      "minimum_fixture": "Known phrase or hidden tag is flagged; flag alone is not a maliciousness verdict.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-09",
+      "priority": "P0",
+      "requirement": "Complete screening records for exact content.",
+      "implementation": "Require current scanner/classifier coverage of all candidate parts, including overlap chunks; errors or truncation mean incomplete.",
+      "minimum_fixture": "Classifier timeout or unread trailing chunk prevents activation.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-10",
+      "priority": "P0",
+      "requirement": "No capability expansion from generated text.",
+      "implementation": "Intersect requested scopes with server-owned role/task grants; skill text cannot add tools, network, file or credential access.",
+      "minimum_fixture": "Candidate asking for a new network destination gets no such permission.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-11",
+      "priority": "P0",
+      "requirement": "Finite rule language only.",
+      "implementation": "Accept enumerated operators/typed operands with limits; disallow code, eval, dynamic imports and arbitrary regex.",
+      "minimum_fixture": "An expression requiring arbitrary execution is rejected.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-12",
+      "priority": "P0",
+      "requirement": "Protected control-policy integrity.",
+      "implementation": "Reject attempts to alter core evidence, authorization, approval or submission controls; preserve conflict records.",
+      "minimum_fixture": "A generated rule disabling claim checks cannot be activated.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-13",
+      "priority": "P0",
+      "requirement": "Activation binds exact reviewed package.",
+      "implementation": "Require authorized reviewer, package hash, source/pack versions, current screening, test report and dependency snapshot.",
+      "minimum_fixture": "Editing one metadata character after approval returns package to review.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-14",
+      "priority": "P0",
+      "requirement": "Revocation and change invalidation.",
+      "implementation": "Check active/revoked status at dispatch and tool boundary; stale source/policy versions invalidate affected skills and outputs.",
+      "minimum_fixture": "Revoked skill cannot start another action; in-flight jobs cancel before next action.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-15",
+      "priority": "P1",
+      "requirement": "Reproducible skill build identity.",
+      "implementation": "Store canonical input manifest, compiler/template versions, package bytes/hash and test corpus version; deterministic compiler output is repeatable.",
+      "minimum_fixture": "Same approved structured input compiles identically; model proposal is not claimed repeatable.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SKL-16",
+      "priority": "P1",
+      "requirement": "Import/export is not automatic trust.",
+      "implementation": "Export sanitized supported format only; imported package enters quarantine and revalidation; no auto-install/auto-update.",
+      "minimum_fixture": "Re-imported edited package does not inherit original activation.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Approved practice sources (A)",
+        "Compiler/screening/release state (C)",
+        "Tool/network restriction tests (B/C)"
+      ]
+    },
+    {
+      "id": "SEC-01",
+      "priority": "P0",
+      "requirement": "Identity and object authorization.",
+      "implementation": "Derive organization/user/role from authenticated context; check ownership and grants on every object/action.",
+      "minimum_fixture": "Replacing org_id in a request cannot access another organization.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-02",
+      "priority": "P0",
+      "requirement": "Provider and data-class routing.",
+      "implementation": "Compare content labels and user policy to approved provider/region/task capability before dispatch.",
+      "minimum_fixture": "Restricted document cannot be sent to a disallowed provider by fallback routing.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-03",
+      "priority": "P0",
+      "requirement": "URL and network destination controls.",
+      "implementation": "Validate schemes and destinations, resolved addresses and every redirect; enforce egress policy outside model/browser.",
+      "minimum_fixture": "Loopback, cloud metadata and redirect to private IP are blocked.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-04",
+      "priority": "P0",
+      "requirement": "Upload and parser containment.",
+      "implementation": "Check file signature/type/size; parse in resource-limited worker with no credentials or outbound network.",
+      "minimum_fixture": "Renamed executable or oversize compressed document is rejected/quarantined.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-05",
+      "priority": "P0",
+      "requirement": "Executable tool-call schema.",
+      "implementation": "Only server-registered tools and typed parameters; no shell/raw SQL/path execution supplied by model.",
+      "minimum_fixture": "Unknown tool name or unexpected argument fails before execution.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-06",
+      "priority": "P0",
+      "requirement": "Credential boundary.",
+      "implementation": "Keep service keys outside prompts/generated skills/browser content; apply configured secret-pattern and synthetic-canary scans.",
+      "minimum_fixture": "Known dummy key in generated payload is caught; scan pass is not proof of no secrets.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-07",
+      "priority": "P0",
+      "requirement": "Safe content rendering.",
+      "implementation": "Escape text and use sanitization/link-scheme allowlists; disable embedded scripts and remote auto-loaded images in evidence views.",
+      "minimum_fixture": "Malicious HTML displayed as inert evidence cannot run or beacon.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-08",
+      "priority": "P0",
+      "requirement": "Exact browser action authorization.",
+      "implementation": "Bind staff-approved prefill action to origin, form fingerprint, fields, answer/attachment hashes and short-lived job grant.",
+      "minimum_fixture": "Origin or field change requires remapping/reapproval; generated text cannot grant it.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-09",
+      "priority": "P0",
+      "requirement": "Final-submit and signing boundary.",
+      "implementation": "Do not expose submit/sign tools in demo; deny those operations in action gateway and fixture endpoints for automation principal.",
+      "minimum_fixture": "Attempted submit call fails even if skill says it is approved.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-10",
+      "priority": "P0",
+      "requirement": "Audit completeness with sensitive-field exclusions.",
+      "implementation": "Require actor/action/object/version/decision/time; redact configured credentials/cookies and restrict trace access.",
+      "minimum_fixture": "Missing action decision fails audit completeness; known dummy secret is excluded.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-11",
+      "priority": "P1",
+      "requirement": "Dependency and artifact release policy.",
+      "implementation": "Pin builds and run maintained dependency/secret/container scanners under an explicit release policy.",
+      "minimum_fixture": "Disallowed known finding blocks release; clean scan is not a security guarantee.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-12",
+      "priority": "P0",
+      "requirement": "Scoped agent communication.",
+      "implementation": "Validate sender/task ID, result schema and evidence permissions before coordinator accepts a message.",
+      "minimum_fixture": "Reviewer cannot grant permissions or overwrite approved facts through result text.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-13",
+      "priority": "P0",
+      "requirement": "Access-aware caches and temporary artifacts.",
+      "implementation": "Key authorization scope and dependency versions; reauthorize reads; expire job grants and clean per-session temporary data.",
+      "minimum_fixture": "Different user cannot reuse a private retrieval or preview cache entry.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "SEC-14",
+      "priority": "P0",
+      "requirement": "Model output remains a proposal.",
+      "implementation": "Allow writes only through typed workflow commands and authorized state transitions; never accept model-created approval/status fields.",
+      "minimum_fixture": "A draft response claiming approved=true cannot approve itself.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Shared identity/action/data-class contracts (A/B/C)",
+        "Every enabled feature action boundary"
+      ]
+    },
+    {
+      "id": "JOB-01",
+      "priority": "P0",
+      "requirement": "Idempotent commands and job deduplication.",
+      "implementation": "Bind idempotency key to actor, operation and request hash; reuse result for same request and reject changed payload.",
+      "minimum_fixture": "Double click creates one job; same key with different answer returns conflict.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Common durable job and snapshot contracts (A/C)",
+        "Worker/consumer enforcement (A/B/C)"
+      ]
+    },
+    {
+      "id": "JOB-02",
+      "priority": "P0",
+      "requirement": "Optimistic version and action-time checks.",
+      "implementation": "Compare expected snapshot before committing or acting; refuse stale input and recheck after long jobs.",
+      "minimum_fixture": "Concurrent edit or pack change prevents stale approval/prefill/export.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Common durable job and snapshot contracts (A/C)",
+        "Worker/consumer enforcement (A/B/C)"
+      ]
+    },
+    {
+      "id": "JOB-03",
+      "priority": "P0",
+      "requirement": "Bounded retries, time and token/tool budgets.",
+      "implementation": "Enforce attempt/time/cost limits in coordinator; retry only classified safe stages; cancel via worker grant.",
+      "minimum_fixture": "Repeated timeouts stop visibly; uncertain browser writes are inspected before retry.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev B",
+      "verification_owner": "Dev C",
+      "integration_dependencies": [
+        "Common durable job and snapshot contracts (A/C)",
+        "Worker/consumer enforcement (A/B/C)"
+      ]
+    },
+    {
+      "id": "JOB-04",
+      "priority": "P1",
+      "requirement": "Durable job lease and checkpoint ownership.",
+      "implementation": "Record lease/heartbeat/checkpoints; reclaim expired read jobs safely and quarantine uncertain write outcomes.",
+      "minimum_fixture": "Worker death does not silently drop job or duplicate a browser write.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev A",
+      "verification_owner": "Dev B",
+      "integration_dependencies": [
+        "Common durable job and snapshot contracts (A/C)",
+        "Worker/consumer enforcement (A/B/C)"
+      ]
+    },
+    {
+      "id": "JOB-05",
+      "priority": "P0",
+      "requirement": "Frozen validation and cache dependencies.",
+      "implementation": "Hash answer, evidence, pack, requirements, skill, rules, counter, permissions and evaluation time policy.",
+      "minimum_fixture": "Old passing check cannot authorize output after its dependency changes.",
+      "on_failure": "Deny the affected action or return needs_review when information is incomplete; preserve the finding.",
+      "status": "planned",
+      "primary_owner": "Dev C",
+      "verification_owner": "Dev A",
+      "integration_dependencies": [
+        "Common durable job and snapshot contracts (A/C)",
+        "Worker/consumer enforcement (A/B/C)"
+      ]
+    }
+  ],
+  "notes": [
+    "Classifier and language-review verdicts are not deterministic checks.",
+    "Unknown input is needs_review, not pass.",
+    "No rule implementation or application test result is asserted by this registry.",
+    "Every planned rule has a primary implementation owner, a cross-review owner and integration dependencies; ownership does not imply implemented status."
+  ],
+  "engineering_plan_version": "1.1",
+  "ownership_status": "Proposed lanes; replace Dev A/B/C with team names at kickoff."
+}

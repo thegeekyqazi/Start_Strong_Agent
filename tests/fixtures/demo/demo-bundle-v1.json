@@ -1,0 +1,646 @@
+{
+  "fixture_schema_version": "1",
+  "fixture_bundle_id": "demo-bundle",
+  "fixture_version": 1,
+  "provenance": {
+    "provenance_class": "simulated",
+    "is_simulated": true,
+    "note": "Synthetic INIT-001 fixture; not partner data."
+  },
+  "organizations": [
+    {
+      "organization_id": "demo-org",
+      "display_name": "Demo Org (synthetic)",
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "Synthetic INIT-001 fixture; not partner data."
+      }
+    }
+  ],
+  "packs": [
+    {
+      "pack_id": "demo-a",
+      "pack_version_id": "demo-a-v1",
+      "organization_id": "demo-org",
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "Synthetic INIT-001 fixture; not partner data."
+      }
+    },
+    {
+      "pack_id": "demo-b",
+      "pack_version_id": "demo-b-v1",
+      "organization_id": "demo-org",
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "Synthetic INIT-001 fixture; not partner data."
+      }
+    }
+  ],
+  "evidence_bundles": [
+    {
+      "schema_version": "1",
+      "bundle_id": "demo-evidence-a-v1",
+      "organization_id": "demo-org",
+      "pack_id": "demo-a",
+      "pack_version_id": "demo-a-v1",
+      "access_context": "fixture:demo-org",
+      "facts": [
+        {
+          "fact_id": "demo-fact-children-served",
+          "metric_id": "children-served",
+          "value": "120",
+          "raw_value": "120",
+          "unit": "children",
+          "scope": "Demo Org, all programs",
+          "population": "children enrolled",
+          "reporting_period": "2025-09/2026-06",
+          "status": "needs_review",
+          "supporting_refs": [
+            {
+              "source_id": "demo-synthetic-metrics",
+              "source_version_id": "demo-synthetic-metrics-v1",
+              "locator": "tests/fixtures/demo/demo-bundle-v1.json#facts",
+              "provenance": {
+                "provenance_class": "simulated",
+                "is_simulated": true,
+                "note": "Synthetic INIT-001 fixture; not partner data."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "known",
+                "value": "2026-07-01"
+              },
+              "reporting_period": "2025-09/2026-06",
+              "content_hash": null,
+              "verification_status": "unverified"
+            }
+          ],
+          "provenance": {
+            "provenance_class": "simulated",
+            "is_simulated": true,
+            "note": "Synthetic INIT-001 fixture; not partner data."
+          }
+        }
+      ],
+      "allowed_fact_ids": [
+        "demo-fact-children-served"
+      ],
+      "coverage_notes": [
+        "Dated synthetic metric; historical period, not a current figure."
+      ]
+    }
+  ],
+  "opportunities": [
+    {
+      "schema_version": "1",
+      "opportunity_id": "demo-gos",
+      "funder_id": "demo-funder",
+      "stream_id": "demo-gos-standard",
+      "cycle_id": "demo-cycle-unknown",
+      "stage_id": null,
+      "title": "Demo GOS-style opportunity (synthetic)",
+      "deadline": {
+        "status": "unknown",
+        "value": null
+      },
+      "source_refs": [
+        {
+          "source_id": "eng-plan",
+          "source_version_id": "eng-plan-v1-1",
+          "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": null,
+          "verification_status": "unverified"
+        }
+      ],
+      "requirement_set_ids": [
+        "demo-gos-req-v1"
+      ],
+      "provenance": {
+        "provenance_class": "engineering_derived",
+        "is_simulated": true,
+        "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+      }
+    }
+  ],
+  "requirement_sets": [
+    {
+      "requirement_set_id": "demo-gos-req-v1",
+      "requirement_version": 1,
+      "opportunity_id": "demo-gos",
+      "conditions": [
+        {
+          "condition_id": "demo-cond-charity-status",
+          "kind": "eligibility",
+          "description": "Applicant registered-charity status (synthetic condition).",
+          "evaluation": "unknown",
+          "missing_inputs": [
+            "organization registered-charity status"
+          ],
+          "source_refs": [
+            {
+              "source_id": "eng-plan",
+              "source_version_id": "eng-plan-v1-1",
+              "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": null,
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "condition_id": "demo-cond-request-range",
+          "kind": "limit",
+          "description": "Standard request 20,000-100,000, no currency symbols/decimals; network maximum 250,000 is separate.",
+          "evaluation": "not_applicable",
+          "missing_inputs": [],
+          "source_refs": [
+            {
+              "source_id": "eng-plan",
+              "source_version_id": "eng-plan-v1-1",
+              "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": null,
+              "verification_status": "unverified"
+            }
+          ]
+        }
+      ],
+      "uncertainty_notes": [
+        "Sample-guide rules, not a verified current open opportunity."
+      ]
+    }
+  ],
+  "question_sets": [
+    {
+      "schema_version": "1",
+      "question_set_id": "demo-gos-questions-v1",
+      "opportunity_id": "demo-gos",
+      "questions": [
+        {
+          "question_id": "mission-q1",
+          "question_version": 1,
+          "original_text": "FIXTURE: Describe your organization's mission.",
+          "order": 1,
+          "section": "Organization",
+          "answer_type": "text",
+          "required": true,
+          "limit": {
+            "maximum": 50,
+            "unit": "words",
+            "counting_convention": null,
+            "source_refs": [
+              {
+                "source_id": "eng-plan",
+                "source_version_id": "eng-plan-v1-1",
+                "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+                "provenance": {
+                  "provenance_class": "engineering_derived",
+                  "is_simulated": true,
+                  "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+                },
+                "captured_at": null,
+                "publication_date": {
+                  "status": "unknown",
+                  "value": null
+                },
+                "reporting_period": null,
+                "content_hash": null,
+                "verification_status": "unverified"
+              }
+            ]
+          },
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "eng-plan",
+              "source_version_id": "eng-plan-v1-1",
+              "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": null,
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "services-q2",
+          "question_version": 1,
+          "original_text": "FIXTURE: Describe your services.",
+          "order": 2,
+          "section": "Programs",
+          "answer_type": "text",
+          "required": true,
+          "limit": {
+            "maximum": 250,
+            "unit": "words",
+            "counting_convention": null,
+            "source_refs": [
+              {
+                "source_id": "eng-plan",
+                "source_version_id": "eng-plan-v1-1",
+                "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+                "provenance": {
+                  "provenance_class": "engineering_derived",
+                  "is_simulated": true,
+                  "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+                },
+                "captured_at": null,
+                "publication_date": {
+                  "status": "unknown",
+                  "value": null
+                },
+                "reporting_period": null,
+                "content_hash": null,
+                "verification_status": "unverified"
+              }
+            ]
+          },
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "eng-plan",
+              "source_version_id": "eng-plan-v1-1",
+              "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": null,
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "partnership-q3",
+          "question_version": 1,
+          "original_text": "FIXTURE: Describe your partnerships.",
+          "order": 3,
+          "section": "Partnerships",
+          "answer_type": "text",
+          "required": null,
+          "limit": null,
+          "conflicts": [
+            {
+              "conflict_id": "partnership-limit-conflict",
+              "description": "Guide states both 350 and 500 words.",
+              "candidate_limits": [
+                {
+                  "maximum": 350,
+                  "unit": "words",
+                  "counting_convention": null,
+                  "source_refs": [
+                    {
+                      "source_id": "eng-plan",
+                      "source_version_id": "eng-plan-v1-1",
+                      "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+                      "provenance": {
+                        "provenance_class": "engineering_derived",
+                        "is_simulated": true,
+                        "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+                      },
+                      "captured_at": null,
+                      "publication_date": {
+                        "status": "unknown",
+                        "value": null
+                      },
+                      "reporting_period": null,
+                      "content_hash": null,
+                      "verification_status": "unverified"
+                    }
+                  ]
+                },
+                {
+                  "maximum": 500,
+                  "unit": "words",
+                  "counting_convention": null,
+                  "source_refs": [
+                    {
+                      "source_id": "eng-plan",
+                      "source_version_id": "eng-plan-v1-1",
+                      "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+                      "provenance": {
+                        "provenance_class": "engineering_derived",
+                        "is_simulated": true,
+                        "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+                      },
+                      "captured_at": null,
+                      "publication_date": {
+                        "status": "unknown",
+                        "value": null
+                      },
+                      "reporting_period": null,
+                      "content_hash": null,
+                      "verification_status": "unverified"
+                    }
+                  ]
+                }
+              ],
+              "resolution": "unresolved"
+            }
+          ],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "eng-plan",
+              "source_version_id": "eng-plan-v1-1",
+              "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": null,
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "pending-q4",
+          "question_version": 1,
+          "original_text": "FIXTURE: List pending applications (Max 300).",
+          "order": 4,
+          "section": "Funding",
+          "answer_type": "text",
+          "required": null,
+          "limit": {
+            "maximum": 300,
+            "unit": "unknown",
+            "counting_convention": null,
+            "source_refs": [
+              {
+                "source_id": "eng-plan",
+                "source_version_id": "eng-plan-v1-1",
+                "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+                "provenance": {
+                  "provenance_class": "engineering_derived",
+                  "is_simulated": true,
+                  "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+                },
+                "captured_at": null,
+                "publication_date": {
+                  "status": "unknown",
+                  "value": null
+                },
+                "reporting_period": null,
+                "content_hash": null,
+                "verification_status": "unverified"
+              }
+            ]
+          },
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "eng-plan",
+              "source_version_id": "eng-plan-v1-1",
+              "locator": "docs/engineering/StrongStart_Engineering_Plan.md s7",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": null,
+              "verification_status": "unverified"
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "provenance_class": "engineering_derived",
+        "is_simulated": true,
+        "note": "Derived from the engineering plan v1.1 s7 summary of the sample guide (U09). The original guide was not available or parsed; this is not an extraction result."
+      }
+    }
+  ],
+  "application_definitions": [
+    {
+      "schema_version": "1",
+      "application_definition_id": "demo-gos-app-v1",
+      "opportunity_id": "demo-gos",
+      "question_set_id": "demo-gos-questions-v1",
+      "form_id": "demo-gos-v1",
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "Synthetic INIT-001 fixture; not partner data."
+      }
+    }
+  ],
+  "form_maps": [
+    {
+      "schema_version": "1",
+      "form_id": "demo-gos-v1",
+      "form_version": 1,
+      "origin": "fixture://demo-gos.local",
+      "fingerprint": null,
+      "fields": [
+        {
+          "field_id": "mission-field",
+          "question_id": "mission-q1",
+          "selector": "#mission",
+          "field_type": "textarea",
+          "max_length": null
+        },
+        {
+          "field_id": "services-field",
+          "question_id": "services-q2",
+          "selector": "#services",
+          "field_type": "textarea",
+          "max_length": null
+        }
+      ],
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "Synthetic INIT-001 fixture; not partner data."
+      }
+    }
+  ],
+  "answer_snapshots": [
+    {
+      "schema_version": "1",
+      "answer_snapshot_id": "demo-answer-mission-v1",
+      "answer_id": "demo-answer-mission",
+      "answer_version": 1,
+      "question_id": "mission-q1",
+      "question_version": 1,
+      "content": "SYNTHETIC FIXTURE: Demo Org supports early learning for families in its community.",
+      "content_sha256": "464d30176db3c067fedc4fb017b1e5a1d03fe3a1bec9dca9ee0247ba276aed2c",
+      "dependencies": [
+        {
+          "kind": "fact",
+          "ref_id": "demo-fact-children-served",
+          "version": "1"
+        },
+        {
+          "kind": "pack",
+          "ref_id": "demo-a-v1",
+          "version": "1"
+        },
+        {
+          "kind": "question",
+          "ref_id": "mission-q1",
+          "version": "1"
+        }
+      ],
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "Synthetic INIT-001 fixture; not partner data."
+      }
+    }
+  ],
+  "approval_snapshots": [
+    {
+      "schema_version": "1",
+      "approval_snapshot_id": "demo-approval-mission-v1",
+      "answer_snapshot_id": "demo-answer-mission-v1",
+      "content_sha256": "464d30176db3c067fedc4fb017b1e5a1d03fe3a1bec9dca9ee0247ba276aed2c",
+      "dependencies": [
+        {
+          "kind": "fact",
+          "ref_id": "demo-fact-children-served",
+          "version": "1"
+        },
+        {
+          "kind": "pack",
+          "ref_id": "demo-a-v1",
+          "version": "1"
+        },
+        {
+          "kind": "question",
+          "ref_id": "mission-q1",
+          "version": "1"
+        }
+      ],
+      "approval_record_ref": "fixture-approval-record-1",
+      "decided_at": null,
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "Synthetic INIT-001 fixture; not partner data."
+      }
+    }
+  ],
+  "change_sets": [
+    {
+      "schema_version": "1",
+      "change_set_id": "demo-change-fact-v2",
+      "changes": [
+        {
+          "kind": "fact",
+          "ref_id": "demo-fact-children-served",
+          "previous_version": "1",
+          "new_version": "2"
+        }
+      ],
+      "affected_refs": [
+        "demo-answer-mission-v1",
+        "demo-approval-mission-v1"
+      ]
+    }
+  ],
+  "job_results": [
+    {
+      "schema_version": "1",
+      "job_id": "demo-job-capture-failed",
+      "state": "failed",
+      "completeness": "none",
+      "output": null,
+      "error": {
+        "schema_version": "1",
+        "code": "capability_unavailable",
+        "message": "CaptureStore is not available",
+        "request_id": null,
+        "details": {
+          "port": "CaptureStore"
+        }
+      }
+    }
+  ],
+  "expectations": {
+    "stale_after_change_set": {
+      "demo-change-fact-v2": [
+        "demo-approval-mission-v1"
+      ]
+    },
+    "unknown_condition_ids": [
+      "demo-cond-charity-status"
+    ],
+    "conflicting_question_ids": [
+      "partnership-q3"
+    ],
+    "typed_failure_job_ids": [
+      "demo-job-capture-failed"
+    ]
+  }
+}

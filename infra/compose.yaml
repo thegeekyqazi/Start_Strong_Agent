@@ -1,0 +1,23 @@
+# Local development PostgreSQL only. Not a deployment configuration.
+# Image pinned to the PostgreSQL 17 major (tested 17.11). B1 coordinates common infra
+# changes; B2 adds browser-specific fragments in a separate file.
+name: strongstart
+services:
+  postgres:
+    image: postgres:17.11-alpine
+    environment:
+      POSTGRES_DB: strongstart
+      POSTGRES_USER: strongstart
+      # Local-only development placeholder, not a secret. Override via infra/.env if desired.
+      POSTGRES_PASSWORD: ${STRONGSTART_LOCAL_DB_PASSWORD:-strongstart_local_dev}
+    ports:
+      - "127.0.0.1:${STRONGSTART_LOCAL_DB_PORT:-55432}:5432"
+    volumes:
+      - strongstart-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U strongstart -d strongstart"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+volumes:
+  strongstart-pgdata:
