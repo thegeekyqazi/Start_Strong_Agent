@@ -103,7 +103,9 @@ Catalog statuses in `StrongStart_Check_Catalog.json` are **unchanged** by this b
 
 1. **PR CI run `42459206191`** (after M1): `ruff format --check` failed on Python code blocks inside the M1 Markdown handoff. It was fixed in the M2 commit.
 2. **PR CI run `42460894616`** (commit `ca3edc6`), browser readiness: `test_funding_page_without_identity` found two "Not signed in" alerts because each new saved-data section raised its own. The fix (`fix(funding): one sign-in notice ...`) mounts those sections only for a signed-in identity. It also makes two pre-existing substring locators (`Search` button, `Geography (optional)` label) `exact=True`, because the spec-named "Run search now" button and the saved-search geography label also matched them. The locators became more precise, not weaker.
-3. Found by tests during M4 and fixed: same-zone `datetime` comparison ignores `fold`, which made a DST-ambiguous cutoff compare wrongly. Deadline instants are now compared in UTC (BND-30 covers both folds).
+3. **PR CI run `42461376244`** (commit `3bb3b37`, M5), browser readiness: the existing fixture-flow e2e hit strict-mode violations on `get_by_label("Geography (optional)")` and `get_by_role("button", name="Search")`. The fix is the same commit as item 2.
+4. Final head CI run `42462167243`: all five jobs passed.
+5. Found by tests during M4 and fixed: same-zone `datetime` comparison ignores `fold`, which made a DST-ambiguous cutoff compare wrongly. Deadline instants are now compared in UTC (BND-30 covers both folds).
 
 ### Local side effects
 
