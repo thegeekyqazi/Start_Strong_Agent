@@ -1,9 +1,13 @@
 // Applications API client (owner: C; C1 spec s6). Types are generated from Python contracts.
 import type {
+  AnswerPlan,
   ApplicationWorkspace,
+  CheckReport,
+  CheckRequest,
   DraftProposal,
   DraftRequest,
   ErrorEnvelope,
+  PlanRequest,
 } from '@strongstart/contracts'
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -35,6 +39,8 @@ async function call<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> 
 export interface ApplicationsClient {
   workspace(): Promise<ApiResult<ApplicationWorkspace>>
   draft(questionId: string, body: DraftRequest): Promise<ApiResult<DraftProposal>>
+  check(questionId: string, body: CheckRequest): Promise<ApiResult<CheckReport>>
+  plan(body: PlanRequest): Promise<ApiResult<AnswerPlan>>
 }
 
 export const httpApplicationsClient: ApplicationsClient = {
@@ -44,6 +50,12 @@ export const httpApplicationsClient: ApplicationsClient = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
+  check: (questionId, body) =>
+    call(`/api/applications/questions/${encodeURIComponent(questionId)}/check`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  plan: (body) => call('/api/applications/plan', { method: 'POST', body: JSON.stringify(body) }),
 }
 
 type Failure = { status: number; error: ErrorEnvelope | null }
