@@ -160,7 +160,7 @@ function Findings({ findings, stale }: { findings: AnswerFinding[]; stale: boole
       <h4 id="findings-heading">Checks on this text</h4>
       {stale && (
         <p role="status" className="hint">
-          Out of date – the text or check mode changed since these checks ran. Re-checking…
+          Out of date: the text or check mode changed since these checks ran. Re-checking…
         </p>
       )}
       {findings.map((f, n) => (

@@ -1,0 +1,25 @@
+{
+  "scanned_at": "2026-11-08",
+  "scope": "full existing React application",
+  "findings": {
+    "fonts": "System UI in the previous global stylesheet",
+    "palette": "Literal gray and status colors split across index.css and automation.css",
+    "motion": "CSS-only interactions with no motion library",
+    "spacing": "Ad hoc rem values without shared role tokens",
+    "framework": "React 19 with Vite 8"
+  },
+  "preserve": [
+    "React and Vite framework",
+    "all existing routes and feature registry entries",
+    "semantic status and provenance labels",
+    "existing capability and data flows",
+    "all existing handlers, test hooks, forms and links"
+  ],
+  "introduce": [
+    "Furrow-derived role tokens",
+    "unified application shell and navigation",
+    "responsive workspace density",
+    "shared accessible interaction states",
+    "Hallmark visual quality gates"
+  ]
+}

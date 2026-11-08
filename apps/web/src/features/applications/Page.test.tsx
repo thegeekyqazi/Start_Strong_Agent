@@ -200,7 +200,7 @@ describe('Applications workspace', () => {
     const checksPanel = screen.getByRole('region', { name: 'Checks on this text' })
     expect(within(checksPanel).getAllByText('Needs your review').length).toBeGreaterThanOrEqual(2)
     fireEvent.change(editor(), { target: { value: 'We served many children.' } })
-    expect(screen.getByText(/Out of date – the text or check mode changed/)).toBeInTheDocument()
+    expect(screen.getByText(/Out of date: the text or check mode changed/)).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByText(/"500" is a number/)).not.toBeInTheDocument())
     expect(checks.at(-1)?.text).toBe('We served many children.')
   })

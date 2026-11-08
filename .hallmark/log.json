@@ -1,0 +1,41 @@
+[
+  {
+    "date": "2026-11-08",
+    "mode": "build",
+    "scope": "app",
+    "shape": "product landing with workflow preview",
+    "theme": "Furrow with trust-blue operational variant",
+    "axes": "warm paper / dark product preview / trust-blue signal",
+    "hero": "value proposition beside the real five-stage workflow",
+    "nav": "wordmark and one workspace action",
+    "footer": "closing workspace action",
+    "imagery": "real product workflow built from existing routes",
+    "photos": [],
+    "entry": "open workspace",
+    "fingerprint": "split hero | workflow preview | feature index | trust principles | close",
+    "sections": ["hero", "feature index", "trust principles", "close"],
+    "signature": "source-to-review workflow preview",
+    "waived": [],
+    "prompt": "make the project presentation-ready with a blue accent and simple landing page"
+  },
+  {
+    "date": "2026-11-08",
+    "mode": "redesign",
+    "depth": "full",
+    "scope": "app",
+    "shape": "guided operations workspace",
+    "theme": "Furrow with Lumen workflow-console variant",
+    "axes": "light workspace / dark operational guide / warm accent",
+    "hero": "route-aware grant workflow console",
+    "nav": "six-route feature grid and stage guide",
+    "footer": "none; authenticated workspace shell",
+    "imagery": "real product UI only",
+    "photos": [],
+    "entry": "grant workflow",
+    "fingerprint": "side rail | dark stage console | route content | contextual actions",
+    "sections": ["operational header", "feature navigation", "workflow guide", "route workspace"],
+    "signature": "visible evidence-to-approval journey",
+    "waived": [],
+    "prompt": "make the dashboard less bare and the user flow feel alive"
+  }
+]

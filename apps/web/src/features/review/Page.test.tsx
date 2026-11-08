@@ -265,6 +265,6 @@ describe('Review page', () => {
     expect(
       await screen.findByText(/Numbers reviewer \(demo, not an AI model\): Confirm the period/),
     ).toBeInTheDocument()
-    expect(screen.getByText(/Suggestions only – they cannot approve anything/)).toBeInTheDocument()
+    expect(screen.getByText(/Suggestions only; they cannot approve anything/)).toBeInTheDocument()
   })
 })

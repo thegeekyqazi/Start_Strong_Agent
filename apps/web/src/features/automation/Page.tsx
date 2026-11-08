@@ -306,8 +306,8 @@ export function AutomationPage() {
           <p className="banner-mode">{result.mode_label}</p>
           <ul className="meta">
             <li>
-              Approval: <strong>{result.approval_status}</strong> · Authority:{' '}
-              {result.authority_status} · Saved:{' '}
+              Approval: <strong>{result.approval_status}</strong>, Authority:{' '}
+              {result.authority_status}, Saved:{' '}
               {result.persisted ? 'yes' : 'no - this result exists only in this response'}
             </li>
             <li>
@@ -315,8 +315,8 @@ export function AutomationPage() {
               {result.coverage.questions_extracted} questions)
             </li>
             <li>
-              Input: {result.input.representation_type} · {result.input.byte_size} bytes · sha256{' '}
-              <code>{result.input.sha256}</code> · parser {result.input.parser_id}/
+              Input: {result.input.representation_type}, {result.input.byte_size} bytes, sha256{' '}
+              <code>{result.input.sha256}</code>, parser {result.input.parser_id}/
               {result.input.parser_version}
             </li>
             {result.input.capture && (
