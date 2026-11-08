@@ -263,3 +263,7 @@ Main advanced to `693f388` (PR #21: remote Google Fonts import removed, self-hos
 deferred). The branch merged main, resolved `index.css` to main's version and removed the
 superseded self-hosted font assets (decision 0006 addendum). The DATA-001 frontend delta
 is again only the functional storage labels. Required checks rerun on the merged tree.
+Rerun on merged tree `6e0257c` (main `693f388` included): `make contracts` 0; `make check` 0
+(808 Python, 103 Vitest, strict mypy 233 files); `make smoke` 0 (114 imports, 86 real
+PostgreSQL, API ready at 0009); `make browser-smoke` 0 (39 Chromium, no-external-request
+assertions unchanged). Hosted verification code is unchanged since `677060e`.
