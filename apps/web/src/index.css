@@ -303,3 +303,29 @@ main {
     grid-row: 1;
   }
 }
+
+/* ---- C2: plan panel, check mode and findings (owner C) ---- */
+.plan-actions {
+  margin: 0.5rem 0 1rem;
+}
+.plan-panel {
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  background: #fff;
+}
+.plan-panel li {
+  margin-bottom: 0.5rem;
+}
+.mode-toggle {
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  margin: 0.5rem 0;
+}
+.mode-toggle label {
+  display: block;
+}
+.findings.stale .finding {
+  opacity: 0.6;
+}
