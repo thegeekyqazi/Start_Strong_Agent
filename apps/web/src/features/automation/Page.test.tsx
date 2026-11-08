@@ -187,11 +187,24 @@ const inspection: Partial<FormInspectionResult> = {
 
 type Handler = (url: string, init?: RequestInit) => { status: number; body: unknown }
 
-function mockFetch(handler: Handler) {
+const EMPTY_DEFINITIONS = {
+  items: [],
+  next_cursor: null,
+  more: false,
+  incomplete: false,
+  limit: 20,
+}
+
+// Routes the saved-definitions panel (DEV-B-BUNDLE-002 M1) calls on mount get a contract-shaped
+// empty list unless a test handles them itself (handleDefinitions: true).
+function mockFetch(handler: Handler, opts: { handleDefinitions?: boolean } = {}) {
   const calls: { url: string; body: unknown }[] = []
   vi.stubGlobal('fetch', async (url: string, init?: RequestInit) => {
     calls.push({ url, body: init?.body ? JSON.parse(String(init.body)) : null })
-    const { status, body } = handler(url, init)
+    const { status, body } =
+      !opts.handleDefinitions && url.endsWith('/api/automation/definitions')
+        ? { status: 200, body: EMPTY_DEFINITIONS }
+        : handler(url, init)
     return new Response(JSON.stringify(body), {
       status,
       headers: { 'Content-Type': 'application/json' },

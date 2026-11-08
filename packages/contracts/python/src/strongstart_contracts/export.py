@@ -43,6 +43,7 @@ from . import (
     ValidationResult,
 )
 from .answers import ANSWERS_PUBLIC_MODELS
+from .application_publication import APPLICATION_PUBLICATION_PUBLIC_MODELS
 from .automation_intake import AUTOMATION_INTAKE_PUBLIC_MODELS
 from .discovery import (
     CaptureContent,
@@ -90,6 +91,8 @@ PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     FundingAvailability,
     # B2-AUTO-001 (owner B2), imported from its module (B1-B2 launch agreement s2)
     *AUTOMATION_INTAKE_PUBLIC_MODELS,
+    # DEV-B-BUNDLE-002 M1 (owner B2): saved definitions / question reader
+    *APPLICATION_PUBLICATION_PUBLIC_MODELS,
     # C1 (owner C), imported from its module like B2's
     *ANSWERS_PUBLIC_MODELS,
 )

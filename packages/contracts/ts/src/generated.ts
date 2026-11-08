@@ -1127,6 +1127,52 @@ export interface CheckRequest {
   text: string
 }
 /**
+ * IDs the source itself declared. Preserved as claims, never treated as authority.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DeclaredContext".
+ */
+export interface DeclaredContext {
+  basis: 'fixture_registry' | 'source_declared_claim' | 'none'
+  cycle_id?: string | null
+  opportunity_id?: string | null
+  stream_id?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DefinitionList".
+ */
+export interface DefinitionList {
+  /**
+   * True when the bounded scan limit was reached.
+   */
+  incomplete: boolean
+  items: DefinitionSummary[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DefinitionSummary".
+ */
+export interface DefinitionSummary {
+  current_version?: number | null
+  definition_id: string
+  detail?: string | null
+  is_fixture?: boolean | null
+  mode_label?: string | null
+  opportunity_id?: string | null
+  question_count?: number | null
+  question_set_id?: string | null
+  raw_input_sha256?: string | null
+  saved_at?: string | null
+  saved_by?: string | null
+  status: 'ok' | 'integrity_failure'
+  title?: string | null
+  unresolved_count?: number | null
+}
+/**
  * Validated model proposal for one question. Not an answer version or approval.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1407,6 +1453,24 @@ export interface ProviderAvailability {
   status: 'available' | 'fixture_only' | 'unavailable'
 }
 /**
+ * An exact, version-pinned funding case selected by staff (M3).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingContextBinding".
+ */
+export interface FundingContextBinding {
+  case_review_status: 'reviewed' | 'unreviewed'
+  cycle_id: string
+  funder_id: string
+  funding_case_digest: string
+  funding_case_id: string
+  funding_case_version: number
+  linked_capture_ids?: string[]
+  opportunity_id: string
+  stage: 'eoi' | 'full_application' | 'single_stage' | 'unknown'
+  stream_id: string
+}
+/**
  * Body of POST /api/automation/intake. No org/approval fields exist to send.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1612,6 +1676,126 @@ export interface PrefillAction {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PublicationContext".
+ */
+export interface PublicationContext {
+  binding?: FundingContextBinding | null
+  declared: DeclaredContext
+  notes?: string[]
+  opportunity_basis: 'funding_case' | 'fixture_registry' | 'source_declared_claim'
+  opportunity_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PublicationIntegrity".
+ */
+export interface PublicationIntegrity {
+  algorithm?: 'dev-b-canonical-json-sha256/1'
+  /**
+   * Digest of the canonical JSON of the published content groups (question_set, application_definition, intake, id_mapping, unresolved, context).
+   */
+  normalized_digest: string
+  raw_input_retained?: 'dev_b_local_blob'
+  raw_input_sha256: string
+  raw_input_size: number
+}
+/**
+ * One immutable saved revision. Saved does not mean reviewed or approved.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PublishedApplicationVersion".
+ */
+export interface PublishedApplicationVersion {
+  added_original_ids?: string[]
+  application_definition: ApplicationDefinition
+  approval_status?: 'not_approved'
+  consumer_notes?: string[]
+  context: PublicationContext
+  definition_id: string
+  id_mapping: QuestionIdMapping[]
+  intake: ApplicationIntakeResult1
+  integrity: PublicationIntegrity
+  is_fixture: boolean
+  mode_label: string
+  /**
+   * Server-derived organization scope.
+   */
+  organization_id: string
+  prefill_permitted?: false
+  provenance: Provenance
+  publication_format?: 'b2-published-definition/1'
+  question_set: QuestionSet
+  question_set_id: string
+  removed_original_ids?: string[]
+  review_status?: 'saved_not_reviewed'
+  revision_of_version?: number | null
+  saved_at: string
+  /**
+   * Server identity actor ID.
+   */
+  saved_by: string
+  schema_version?: '1'
+  /**
+   * Unresolved items keyed by PUBLISHED question IDs.
+   */
+  unresolved?: UnresolvedItem[]
+  version: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "QuestionIdMapping".
+ */
+export interface QuestionIdMapping {
+  order: number
+  /**
+   * ID in the imported source (a claim).
+   */
+  original_question_id: string
+  /**
+   * Namespaced by the stored definition.
+   */
+  published_question_id: string
+  /**
+   * Equals the definition version.
+   */
+  question_version: number
+}
+/**
+ * Typed import result. Nonpersistent; an imported definition is not an approval.
+ */
+export interface ApplicationIntakeResult1 {
+  application_definition?: ApplicationDefinition | null
+  application_definition_id?: string | null
+  approval_status?: 'not_approved'
+  authority_status?: 'imported_provisional_unreviewed'
+  coverage: IntakeCoverage
+  cycle_id?: string | null
+  /**
+   * Read-only text context for unsupported inputs (bounded).
+   */
+  evidence_excerpt?: ExactText | null
+  evidence_excerpt_truncated?: boolean
+  findings?: Finding[]
+  import_id: string
+  input: InputRepresentation
+  intake_format?: 'b2-application-intake/1'
+  is_fixture: boolean
+  mode_label: string
+  opportunity_id?: string | null
+  original_evidence?: {
+    [k: string]: unknown
+  }
+  original_guide_present?: boolean
+  persisted?: false
+  provenance: Provenance
+  question_set?: QuestionSet | null
+  questions?: IntakeQuestion[]
+  schema_version?: '1'
+  stream_id?: string | null
+  title?: ExactText | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "ReadinessCheck".
  */
 export interface ReadinessCheck {
@@ -1626,6 +1810,42 @@ export interface ReadinessCheck {
 export interface ReadinessReport {
   checks: ReadinessCheck[]
   status: 'ready' | 'not_ready'
+}
+/**
+ * Body of POST /api/automation/definitions. Strict: no coercion, no extra fields.
+ *
+ * The server re-runs intake on ``source`` and compares the parsed bytes with
+ * ``expected_input_sha256`` (the preview hash). Organization, actor, approval and
+ * provenance are never accepted from the client.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SaveDefinitionRequest".
+ */
+export interface SaveDefinitionRequest {
+  /**
+   * Existing lineage for a revision (with expected_version).
+   */
+  definition_id?: string | null
+  expected_input_sha256: string
+  expected_version?: number | null
+  /**
+   * Exact funding case (with funding_case_version), M3 context.
+   */
+  funding_case_id?: string | null
+  funding_case_version?: number | null
+  idempotency_key: string
+  source: FixtureIntakeSource | StructuredJsonIntakeSource | HtmlIntakeSource | CaptureIntakeSource
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SaveDefinitionResult".
+ */
+export interface SaveDefinitionResult {
+  publication: PublishedApplicationVersion
+  /**
+   * True when an identical idempotent command was replayed.
+   */
+  replayed: boolean
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
