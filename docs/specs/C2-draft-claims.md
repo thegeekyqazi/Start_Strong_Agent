@@ -1,7 +1,7 @@
 # C2: Plan and draft answers with claim bindings and visible findings
 
 - Task ID: C2 (lane Dev C)
-- Revision: 1.1 (approved by the project owner 2026-11-07 ("go"); s11 decisions recorded; owner focus: APP-03 unbound-number scan first, strict request typing)
+- Revision: 1.2 (rev 1.1 approved by the project owner 2026-11-07; s11 decisions recorded; owner focus: APP-03 scanner first, strict request typing. Rev 1.2 adds s12 implementation notes, commit cf52da5)
 - Branch: `dev-c/c2-draft-claims`, **stacked** on `dev-c/c1-shell-and-adapter` (`94dffc2`; C1 is not yet merged). Integration order: C1 PR first, then rebase C2 onto `main`
 - Engineering baseline: v1.1, s4.2, s7, s8.1-8.3, s9.1-9.2, s10.5 (APP), s10.6 (POL), s13.2 (SEC-12), s14.1, s15, s18, s20.3-20.4 (C2 row)
 - Lane plan: `docs/coordination/dev-c-lane-plan.md` rev 1.0, s3 "C2"
