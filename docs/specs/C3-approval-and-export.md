@@ -144,3 +144,23 @@ Plus the web Vitest tests (review page states, diff, blocked export reasons) and
 3. **Who may approve:** in fixture mode, may the drafting fixture identity also approve? The plan does not specify drafter/approver separation. Recommendation: allow it in fixture mode, labelled, and record the question for real roles.
 4. **Colours:** yellow/green/blue mean something in U01, which is not in the repo. Recommendation: omit the colour coding and use text labels until U01 is supplied, rather than guess.
 5. **Increments:** split C3 into C3a (persistence, gates, resolver, invalidation, review view) and C3b (reviewer roles, export)? Recommendation: yes, two PRs. C3a unblocks B's prefill sooner.
+
+## 12. Owner decisions and implementation notes (2026-11-08; working tree, not committed)
+
+Owner answers to s11:
+1. `python-docx` (with `lxml`) is added. `uv.lock` was regenerated and flagged for Dev B.
+2. C drafts the migration for Dev A.
+3. In fixture mode the demo identity may draft and approve, labelled.
+4. Plain text labels, no colours.
+5. Full C3 (C3a + C3b) in one increment.
+
+| # | Spec text | Implemented | Why |
+| --- | --- | --- | --- |
+| 1 | Migration `0003_answers_and_approvals` | Drafted as **`0004_answers_and_approvals`** (down-revision `0003_artifact_text_ingestion`) in `docs/handoffs/dev-c/c3-migration-request/`, **outside** `migrations/` | A2a already took `0003`, and `migrations/` is A-owned. An active file would change the head and break readiness on `main` |
+| 2 | Postgres `AnswerStore` plus fixture store | **Fixture in-memory store only** (labelled; lost on restart). Outside fixture mode the store is `CapabilityUnavailable` (503) | There are no tables until Dev A sequences 0004. An untested Postgres store would be dead code |
+| 3 | Reviewer roles only | Plus **human review notes** from any signed-in identity, with no approval rights | Owner directive: "secondary reviewers add notes/findings without direct approval rights" |
+| 4 | Blocked reviewed export | `POST /exports` returns **200** with `blocked: true`, `blocked_by` and no artifact | A typed result the UI can explain. No file exists when blocked |
+| 5 | (not specified) | Working DOCX exports list **working-mode** findings; reviewed exports use reviewed mode | s9.2: working drafts allow incomplete work with visible markers |
+| 6 | Fixture ChangeSet injection | `POST /api/applications/fixture/change-sets/{id}/apply` (fixture mode only) records the change set in C's store; staleness is evaluated live | A4 (A's publisher) is not built; nothing of A's is modified |
+| 7 | Resolver for B | `StoreApprovedAnswerResolver` and the provider `review_router.get_c_approved_answer_resolver` | Wiring it into the shared `strongstart_api/ports.py` provider is a shared-host change and was **not** made |
+| 8 | Shell shared files | `StatusDot` covers all seven s15 states | C-owned shell; additive |
