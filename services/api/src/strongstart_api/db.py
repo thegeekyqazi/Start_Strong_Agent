@@ -32,7 +32,7 @@ from strongstart_contracts import ReadinessCheck, ReadinessReport
 from .config import Settings
 
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0009_durable_applications"
+REQUIRED_MIGRATION_REVISION = "0010_practice_skills"
 
 metadata = MetaData()
 
@@ -642,3 +642,40 @@ def check_readiness(
         checks.append(ReadinessCheck(name="database", ok=False, detail=type(exc).__name__))
     status = "ready" if checks and all(c.ok for c in checks) and len(checks) == 2 else "not_ready"
     return ReadinessReport(status=status, checks=checks)
+
+
+# C4-SKL-001 practice skills (owner C). One guarded scope row per organization/context;
+# everything else is an append-only immutable record. Mutation + audit share one commit.
+skl_scope_state = Table(
+    "skl_scope_state",
+    metadata,
+    Column("organization_id", String(128), ForeignKey("organizations.id"), primary_key=True),
+    Column("context_id", String(128), primary_key=True),
+    Column("current_source_version_id", String(128)),
+    Column("active_release_id", String(128)),
+    Column("revision", BigInteger, nullable=False, server_default="0"),
+    CheckConstraint("revision >= 0", name="ck_skl_scope_revision"),
+)
+skl_records = Table(
+    "skl_records",
+    metadata,
+    Column("record_id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("context_id", String(128), nullable=False),
+    Column("kind", String(32), nullable=False),
+    Column("parent_id", String(128)),
+    Column("sha256", String(64), nullable=False),
+    Column("ordinal", BigInteger, Identity(), nullable=False, unique=True),
+    Column("payload", Text, nullable=False),
+    Column("actor_id", String(128), nullable=False),
+    CheckConstraint(
+        "kind IN ('source','authority','candidate','screening','review','release',"
+        "'revocation','supersession','preview','audit')",
+        name="ck_skl_record_kind",
+    ),
+    CheckConstraint("char_length(actor_id)>0", name="ck_skl_record_actor"),
+)
+Index(
+    "ix_skl_records_scope", skl_records.c.organization_id, skl_records.c.kind, skl_records.c.ordinal
+)
+PRACTICE_TABLES = (skl_scope_state, skl_records)

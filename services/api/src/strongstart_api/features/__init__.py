@@ -5,7 +5,8 @@
 | knowledge     | A     | apps/web/src/features/knowledge        |
 | funding       | B1    | apps/web/src/features/funding          |
 | automation    | B2    | apps/web/src/features/automation       |
-| applications  | C     | apps/web/src/features/{applications,review,skills} |
+| applications  | C     | apps/web/src/features/{applications,review}        |
+| skills        | C     | apps/web/src/features/skills (C4-SKL-001)          |
 """
 
 from fastapi import APIRouter
@@ -19,13 +20,14 @@ from ..config import Settings
 from . import automation
 
 # isort: split
-from . import applications, funding, knowledge, validation
+from . import applications, funding, knowledge, skills, validation
 
 FEATURE_ROUTERS: list[APIRouter] = [
     knowledge.router,
     funding.router,
     automation.router,
     applications.router,
+    skills.router,
     validation.router,
 ]
 
@@ -34,6 +36,7 @@ FEATURE_CAPABILITIES: list[Capability] = [
     *funding.CAPABILITIES,
     *automation.CAPABILITIES,
     *applications.CAPABILITIES,
+    *skills.CAPABILITIES,
     *validation.CAPABILITIES,
 ]
 
@@ -43,7 +46,7 @@ def feature_capabilities(settings: Settings) -> list[Capability]:
     to report configuration-dependent status; otherwise its static CAPABILITIES apply.
     """
     out: list[Capability] = []
-    for module in (knowledge, funding, automation, applications, validation):
+    for module in (knowledge, funding, automation, applications, skills, validation):
         provider = getattr(module, "capabilities_for", None)
         out.extend(provider(settings) if provider is not None else module.CAPABILITIES)
     return out
