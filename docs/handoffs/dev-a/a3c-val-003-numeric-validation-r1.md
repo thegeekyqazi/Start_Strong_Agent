@@ -7,7 +7,7 @@
 - Task spec path/revision: `docs/specs/A3-VAL-003_Deterministic_Validation_Runner.md` revision 1.0
 - Engineering version/sections and rule IDs: Engineering Plan v1.1 sections 4, 5, 8.2, 9, 10.1-10.2, 13.2, 14-15, 19-21, 23.2; NUM-01 through NUM-12
 - Branch and exact implementation commit: `dev-a/a3c-val-003-numeric`; `63de972`
-- PR / Issue links, or not published: not published yet
+- PR / Issue links: https://github.com/thegeekyqazi/Start_Strong_Agent/pull/14
 - Supersedes / superseded by: completes the A3 implementation after `a3ab-val-003-source-validation-r1.md`
 
 ## What works
@@ -38,6 +38,7 @@ A4 reverse traversal remains out of scope for A3c. It should index `validation_d
 - Targeted validation/C2/unit/contract suite: 87 passed, 11 DB-marked tests intentionally deselected in that command.
 - PostgreSQL migration `0005 -> 0006`: passed against local Docker PostgreSQL.
 - PostgreSQL DB suite, including numeric persistence/replay and cross-organization isolation: 11 passed.
+- GitHub CI at `66a2418`: all five required jobs passed (Python, contracts, DB smoke, web, browser readiness).
 - Hypothesis properties cover exact unscaled decimal parsing and budget summation.
 
 The repository-wide run completed with 427 passed, 24 deselected and 27 failures. One A3 compatibility failure and contract drift were fixed and their focused reruns pass. The remaining failures are pre-existing/unrelated Windows funding-fixture integrity and directory-fsync behavior, plus one environment-sensitive knowledge test caused by setting the DB URL for the combined run; they are not claimed as passing here.
