@@ -53,7 +53,6 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     caps = {c["feature"]: c for c in body["capabilities"]}
     for feature, owner in [
         ("knowledge", "A"),
-        ("review", "C"),
         ("skills", "C"),
     ]:
         assert caps[feature]["status"] == "not_implemented"
@@ -68,6 +67,9 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     assert caps["applications"]["owner"] == "C"
     assert caps["applications"]["status"] == "unavailable"
     assert caps["applications.model"]["status"] == "fixture_only"
+    # C3: review needs an answer store; only the fixture store exists (fixture mode).
+    assert caps["review"]["owner"] == "C"
+    assert caps["review"]["status"] == "unavailable"
     assert caps["automation"]["owner"] == "B2"
     # B2-AUTO-001: intake + fixture inspection only
     assert caps["automation"]["status"] == "fixture_only"

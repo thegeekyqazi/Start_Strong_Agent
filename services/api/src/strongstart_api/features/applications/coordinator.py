@@ -14,7 +14,12 @@ from dataclasses import dataclass
 
 from .models.base import ModelAdapter, ModelOutputRejected, ModelTimeout, StructuredTask
 
-ROLE_FOR_OPERATION = {"draft_answer": "writer", "plan_application": "planner"}
+ROLE_FOR_OPERATION = {
+    "draft_answer": "writer",
+    "plan_application": "planner",
+    "numerical_review": "numerical_reviewer",
+    "meaning_review": "meaning_reviewer",
+}
 
 
 @dataclass(frozen=True)

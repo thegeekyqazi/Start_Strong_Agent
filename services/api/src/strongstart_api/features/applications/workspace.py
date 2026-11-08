@@ -13,7 +13,12 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Protocol
 
-from strongstart_contracts import CapabilityUnavailable, FixtureBundle, load_fixture_bundle
+from strongstart_contracts import (
+    CapabilityUnavailable,
+    ChangeSet,
+    FixtureBundle,
+    load_fixture_bundle,
+)
 from strongstart_contracts.answers import ApplicationWorkspace
 
 BUNDLE_RELATIVE = Path("tests/fixtures/demo/demo-bundle-v1.json")
@@ -76,6 +81,12 @@ class FixtureWorkspaceSource:
             is_fixture=True,
             data_label=FIXTURE_LABEL,
         )
+
+
+def fixture_change_set(change_set_id: str) -> ChangeSet | None:
+    """A fixture ChangeSet (A's producer, A4, is not built); injected deliberately."""
+    bundle = _load(_bundle_path())
+    return next((c for c in bundle.change_sets if c.change_set_id == change_set_id), None)
 
 
 class UnconfiguredWorkspaceSource:
