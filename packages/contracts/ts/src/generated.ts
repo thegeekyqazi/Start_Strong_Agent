@@ -183,6 +183,192 @@ export interface DateKnowledge {
   value?: string | null
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AnswerHistory".
+ */
+export interface AnswerHistory {
+  answer_id: string | null
+  approvals: ApprovalRecord[]
+  notes: ReviewNote[]
+  /**
+   * Latest version approved and not stale.
+   */
+  prefill_ready: boolean
+  proposals: ReviewerProposal[]
+  question_id: string
+  schema_version?: '1'
+  store_is_fixture: boolean
+  versions: AnswerVersion[]
+}
+/**
+ * Authoritative server-side decision record (ApprovalSnapshot.approval_record_ref).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApprovalRecord".
+ */
+export interface ApprovalRecord {
+  answer_id: string
+  answer_version_id: string
+  approval_id: string
+  content_sha256: string
+  decided_at: string
+  decision: 'approve' | 'reject'
+  is_stale: boolean
+  note: string
+  question_id: string
+  reviewer_id: string
+  reviewer_is_fixture_identity: boolean
+  snapshot_sha256: string
+  stale_reason?: string | null
+}
+/**
+ * A secondary reviewer's note. Carries no approval rights.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ReviewNote".
+ */
+export interface ReviewNote {
+  answer_version_id: string
+  author_id: string
+  created_at: string
+  note_id: string
+  text: string
+}
+/**
+ * Model reviewer output (s8.1): proposed findings only, never an approval.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ReviewerProposal".
+ */
+export interface ReviewerProposal {
+  answer_version_id: string
+  created_at: string
+  findings: ReviewerFinding[]
+  proposal_id: string
+  provenance: Provenance
+  reviewer: ModelRunInfo
+  role: 'numerical_reviewer' | 'meaning_reviewer'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ReviewerFinding".
+ */
+export interface ReviewerFinding {
+  concern: string
+  fact_ids: string[]
+  span_end?: number | null
+  span_start?: number | null
+}
+/**
+ * Which adapter actually produced the proposal (s17: record provider/model).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ModelRunInfo".
+ */
+export interface ModelRunInfo {
+  adapter: 'fake' | 'gemini'
+  is_fixture: boolean
+  model: string
+}
+/**
+ * One frozen answer version. ``state`` is computed live by the server.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AnswerVersion".
+ */
+export interface AnswerVersion {
+  answer_id: string
+  answer_version: number
+  answer_version_id: string
+  check: CheckReport
+  checked_at: string
+  content_sha256: string
+  created_at: string
+  created_by: string
+  dependencies: DependencyRef[]
+  is_latest: boolean
+  question_id: string
+  question_version: number
+  rendered: RenderedAnswer
+  schema_version?: '1'
+  /**
+   * JOB-05 dependency snapshot at save time.
+   */
+  snapshot_sha256: string
+  state:
+    | 'draft'
+    | 'checking'
+    | 'needs_attention'
+    | 'ready_for_review'
+    | 'approved'
+    | 'stale'
+    | 'rejected'
+  text: string
+}
+/**
+ * Reviewed-mode deterministic findings at save time.
+ */
+export interface CheckReport {
+  evidence_bundle_id: string
+  findings: AnswerFinding[]
+  mode: 'working' | 'reviewed'
+  question_id: string
+  question_version: number
+  rendered: RenderedAnswer
+  schema_version?: '1'
+  submitted_text_sha256: string
+}
+/**
+ * The answer as a funder would read it: slot tokens replaced by server-rendered facts.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RenderedAnswer".
+ */
+export interface RenderedAnswer {
+  bindings: ClaimBinding[]
+  text: string
+  text_sha256: string
+  unsupported_markers: UnsupportedMarker[]
+}
+/**
+ * A fact value the server rendered into the answer, with its exact text span (s8.2).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ClaimBinding".
+ */
+export interface ClaimBinding {
+  fact_id: string
+  fact_version?: number
+  /**
+   * Binding key until Fact gains a version (request to Dev A).
+   */
+  pack_version_id: string
+  rendered_text: string
+  span_end: number
+  /**
+   * Code-point offset in RenderedAnswer.text.
+   */
+  span_start: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "UnsupportedMarker".
+ */
+export interface UnsupportedMarker {
+  reason: string
+  span_end: number
+  span_start: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DependencyRef".
+ */
+export interface DependencyRef {
+  kind: 'fact' | 'source_version' | 'requirement_set' | 'pack' | 'policy' | 'question' | 'rule_set'
+  ref_id: string
+  version: string
+}
+/**
  * Planner proposal (s7): evidence per question and missing inputs. Nothing invented.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -209,17 +395,6 @@ export interface PlanItem {
   repeated_with: string[]
 }
 /**
- * Which adapter actually produced the proposal (s17: record provider/model).
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "ModelRunInfo".
- */
-export interface ModelRunInfo {
-  adapter: 'fake' | 'gemini'
-  is_fixture: boolean
-  model: string
-}
-/**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "AnswerSnapshot".
  */
@@ -237,12 +412,17 @@ export interface AnswerSnapshot {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "DependencyRef".
+ * via the `definition` "AnswerVersionCreate".
  */
-export interface DependencyRef {
-  kind: 'fact' | 'source_version' | 'requirement_set' | 'pack' | 'policy' | 'question' | 'rule_set'
-  ref_id: string
-  version: string
+export interface AnswerVersionCreate {
+  evidence_bundle_id: string
+  /**
+   * Latest version the client saw; null only for the first.
+   */
+  expected_answer_version?: number | null
+  question_id: string
+  question_version: number
+  text: string
 }
 /**
  * Reviewed applicability: n/a only when the typed input is known and differs.
@@ -706,6 +886,21 @@ export interface Fact {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApprovalDecisionRequest".
+ */
+export interface ApprovalDecisionRequest {
+  /**
+   * Reviewer confirms they read every needs_review finding.
+   */
+  acknowledge_review_items?: boolean
+  answer_version_id: string
+  decision: 'approve' | 'reject'
+  expected_content_sha256: string
+  expected_snapshot_sha256: string
+  note?: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "ApprovalSnapshot".
  */
 export interface ApprovalSnapshot {
@@ -720,6 +915,33 @@ export interface ApprovalSnapshot {
   dependencies: DependencyRef[]
   provenance: Provenance
   schema_version?: '1'
+}
+/**
+ * SEC-10 event: actor, action, object, version, decision and time. Redacted details.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AuditEvent".
+ */
+export interface AuditEvent {
+  action:
+    | 'answer_version_saved'
+    | 'approval_decided'
+    | 'approval_staled'
+    | 'review_note_added'
+    | 'reviewer_proposal_added'
+    | 'export_created'
+    | 'export_blocked'
+    | 'change_set_applied'
+  actor_id: string
+  at: string
+  decision: string
+  details?: {
+    [k: string]: string
+  }
+  event_id: string
+  object_id: string
+  object_type: string
+  object_version: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1310,7 +1532,7 @@ export interface ChangedVersion {
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "CheckReport".
  */
-export interface CheckReport {
+export interface CheckReport1 {
   evidence_bundle_id: string
   findings: AnswerFinding[]
   mode: 'working' | 'reviewed'
@@ -1319,47 +1541,6 @@ export interface CheckReport {
   rendered: RenderedAnswer
   schema_version?: '1'
   submitted_text_sha256: string
-}
-/**
- * The answer as a funder would read it: slot tokens replaced by server-rendered facts.
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "RenderedAnswer".
- */
-export interface RenderedAnswer {
-  bindings: ClaimBinding[]
-  text: string
-  text_sha256: string
-  unsupported_markers: UnsupportedMarker[]
-}
-/**
- * A fact value the server rendered into the answer, with its exact text span (s8.2).
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "ClaimBinding".
- */
-export interface ClaimBinding {
-  fact_id: string
-  fact_version?: number
-  /**
-   * Binding key until Fact gains a version (request to Dev A).
-   */
-  pack_version_id: string
-  rendered_text: string
-  span_end: number
-  /**
-   * Code-point offset in RenderedAnswer.text.
-   */
-  span_start: number
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "UnsupportedMarker".
- */
-export interface UnsupportedMarker {
-  reason: string
-  span_end: number
-  span_start: number
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1517,7 +1698,7 @@ export interface DraftProposal {
   /**
    * Working-mode findings for the rendered proposal (C2).
    */
-  check?: CheckReport | null
+  check?: CheckReport1 | null
   evidence_bundle_id: string
   fact_ids: string[]
   pack_version_id: string
@@ -1801,6 +1982,15 @@ export interface EvidenceAnchor {
   warnings?: string[]
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ExportBlocker".
+ */
+export interface ExportBlocker {
+  message: string
+  question_id: string
+  reason: string
+}
+/**
  * Body of POST /api/automation/export-definition. Server re-derives everything.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1842,6 +2032,33 @@ export interface HtmlIntakeSource {
   content: string
   filename?: string | null
   mode: 'html'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ExportRequest".
+ */
+export interface ExportRequest {
+  mode: 'working' | 'reviewed'
+  /**
+   * @minItems 1
+   * @maxItems 100
+   */
+  question_ids: [string, ...string[]]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ExportResult".
+ */
+export interface ExportResult {
+  audit_sha256: string | null
+  blocked: boolean
+  blocked_by: ExportBlocker[]
+  created_at: string
+  docx_sha256: string | null
+  export_id: string | null
+  labels: string[]
+  mode: 'working' | 'reviewed'
+  schema_version?: '1'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -3116,6 +3333,22 @@ export interface ReviewCommand {
         string
       ]
   version_digest: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ReviewNoteCreate".
+ */
+export interface ReviewNoteCreate {
+  answer_version_id: string
+  text: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ReviewerProposalRequest".
+ */
+export interface ReviewerProposalRequest {
+  answer_version_id: string
+  role: 'numerical_reviewer' | 'meaning_reviewer'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema

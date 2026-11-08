@@ -266,6 +266,203 @@ class ApplicationWorkspace(ContractModel):
     data_label: str
 
 
+# --- C3 (docs/specs/C3-approval-and-export.md rev 1.0) ------------------------------------
+# Answer versions are immutable. ``state`` and every approval/staleness flag are computed
+# by server gate code; no request model can carry them and model output cannot set them
+# (SEC-14). Approvals bind the exact content hash plus a dependency snapshot hash (APP-04,
+# JOB-05) and are re-evaluated live, so any edit or dependency change makes them stale.
+
+AnswerState = Literal[
+    "draft", "checking", "needs_attention", "ready_for_review", "approved", "stale", "rejected"
+]
+
+
+class AnswerVersionCreate(ContractModel):
+    model_config = _strict_request_config()
+
+    question_id: StableId
+    question_version: int = Field(ge=1)
+    evidence_bundle_id: StableId
+    text: str = Field(min_length=1, max_length=20_000)
+    expected_answer_version: int | None = Field(
+        default=None, ge=1, description="Latest version the client saw; null only for the first."
+    )
+
+
+class AnswerVersion(ContractModel):
+    """One frozen answer version. ``state`` is computed live by the server."""
+
+    model_config = contract_model_config("draft", "C")
+
+    schema_version: Literal["1"] = SCHEMA_VERSION
+    answer_version_id: StableId
+    answer_id: StableId
+    question_id: StableId
+    question_version: int = Field(ge=1)
+    answer_version: int = Field(ge=1)
+    is_latest: bool
+    text: str
+    content_sha256: Sha256Hex
+    rendered: RenderedAnswer
+    dependencies: list[DependencyRef]
+    snapshot_sha256: Sha256Hex = Field(description="JOB-05 dependency snapshot at save time.")
+    check: CheckReport = Field(description="Reviewed-mode deterministic findings at save time.")
+    checked_at: datetime
+    state: AnswerState
+    created_by: str
+    created_at: datetime
+
+
+class ApprovalDecisionRequest(ContractModel):
+    model_config = _strict_request_config()
+
+    answer_version_id: StableId
+    expected_content_sha256: Sha256Hex
+    expected_snapshot_sha256: Sha256Hex
+    decision: Literal["approve", "reject"]
+    note: str = Field(default="", max_length=2000)
+    acknowledge_review_items: bool = Field(
+        default=False, description="Reviewer confirms they read every needs_review finding."
+    )
+
+
+class ApprovalRecord(ContractModel):
+    """Authoritative server-side decision record (ApprovalSnapshot.approval_record_ref)."""
+
+    model_config = contract_model_config("draft", "C")
+
+    approval_id: StableId
+    answer_version_id: StableId
+    answer_id: StableId
+    question_id: StableId
+    decision: Literal["approve", "reject"]
+    content_sha256: Sha256Hex
+    snapshot_sha256: Sha256Hex
+    reviewer_id: str
+    reviewer_is_fixture_identity: bool
+    note: str
+    decided_at: datetime
+    is_stale: bool
+    stale_reason: str | None = None
+
+
+class ReviewNoteCreate(ContractModel):
+    model_config = _strict_request_config()
+
+    answer_version_id: StableId
+    text: str = Field(min_length=1, max_length=2000)
+
+
+class ReviewNote(ContractModel):
+    """A secondary reviewer's note. Carries no approval rights."""
+
+    model_config = contract_model_config("draft", "C")
+
+    note_id: StableId
+    answer_version_id: StableId
+    author_id: str
+    text: str
+    created_at: datetime
+
+
+class ReviewerProposalRequest(ContractModel):
+    model_config = _strict_request_config()
+
+    answer_version_id: StableId
+    role: Literal["numerical_reviewer", "meaning_reviewer"]
+
+
+class ReviewerFinding(ContractModel):
+    model_config = contract_model_config("draft", "C")
+
+    concern: str
+    span_start: int | None = Field(default=None, ge=0)
+    span_end: int | None = Field(default=None, ge=0)
+    fact_ids: list[StableId]
+
+
+class ReviewerProposal(ContractModel):
+    """Model reviewer output (s8.1): proposed findings only, never an approval."""
+
+    model_config = contract_model_config("draft", "C")
+
+    proposal_id: StableId
+    answer_version_id: StableId
+    role: Literal["numerical_reviewer", "meaning_reviewer"]
+    findings: list[ReviewerFinding]
+    reviewer: ModelRunInfo
+    provenance: Provenance
+    created_at: datetime
+
+
+class AnswerHistory(ContractModel):
+    model_config = contract_model_config("draft", "C")
+
+    schema_version: Literal["1"] = SCHEMA_VERSION
+    question_id: StableId
+    answer_id: StableId | None
+    versions: list[AnswerVersion]
+    approvals: list[ApprovalRecord]
+    notes: list[ReviewNote]
+    proposals: list[ReviewerProposal]
+    prefill_ready: bool = Field(description="Latest version approved and not stale.")
+    store_is_fixture: bool
+
+
+class ExportRequest(ContractModel):
+    model_config = _strict_request_config()
+
+    mode: Literal["working", "reviewed"]
+    question_ids: list[StableId] = Field(min_length=1, max_length=100)
+
+
+class ExportBlocker(ContractModel):
+    model_config = contract_model_config("draft", "C")
+
+    question_id: StableId
+    reason: str
+    message: str
+
+
+class ExportResult(ContractModel):
+    model_config = contract_model_config("draft", "C")
+
+    schema_version: Literal["1"] = SCHEMA_VERSION
+    export_id: StableId | None
+    mode: Literal["working", "reviewed"]
+    blocked: bool
+    blocked_by: list[ExportBlocker]
+    labels: list[str]
+    docx_sha256: Sha256Hex | None
+    audit_sha256: Sha256Hex | None
+    created_at: datetime
+
+
+class AuditEvent(ContractModel):
+    """SEC-10 event: actor, action, object, version, decision and time. Redacted details."""
+
+    model_config = contract_model_config("draft", "C")
+
+    event_id: StableId
+    actor_id: str
+    action: Literal[
+        "answer_version_saved",
+        "approval_decided",
+        "approval_staled",
+        "review_note_added",
+        "reviewer_proposal_added",
+        "export_created",
+        "export_blocked",
+        "change_set_applied",
+    ]
+    object_type: str
+    object_id: str
+    object_version: str
+    decision: str
+    at: datetime
+    details: dict[str, str] = Field(default_factory=dict)
+
+
 ANSWERS_PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     DraftRequest,
     DraftProposal,
@@ -274,4 +471,16 @@ ANSWERS_PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     CheckReport,
     PlanRequest,
     AnswerPlan,
+    AnswerVersionCreate,
+    AnswerVersion,
+    ApprovalDecisionRequest,
+    ApprovalRecord,
+    ReviewNoteCreate,
+    ReviewNote,
+    ReviewerProposalRequest,
+    ReviewerProposal,
+    AnswerHistory,
+    ExportRequest,
+    ExportResult,
+    AuditEvent,
 )

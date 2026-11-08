@@ -35,6 +35,8 @@ class FakeAdapter:
     async def complete(self, task: StructuredTask) -> str:
         if task.operation == "plan_application":
             return self._plan(task)
+        if task.operation in ("numerical_review", "meaning_review"):
+            return self._review(task)
         facts: list[dict[str, Any]] = list(task.payload.get("allowed_facts", []))
         fact_ids = sorted(str(f["fact_id"]) for f in facts)[:1]
         text = (
@@ -73,3 +75,30 @@ class FakeAdapter:
                 }
             )
         return json.dumps({"items": items}, sort_keys=True, separators=(",", ":"))
+
+    @staticmethod
+    def _review(task: StructuredTask) -> str:
+        """Deterministic reviewer proposals (s8.1). Concerns only; never a verdict."""
+        bindings: list[dict[str, Any]] = list(task.payload.get("bindings", []))
+        if task.operation == "numerical_review":
+            findings = [
+                {
+                    "concern": "Confirm this linked figure answers the question for the period "
+                    "and population it covers.",
+                    "span_start": b["span_start"],
+                    "span_end": b["span_end"],
+                    "fact_ids": [b["fact_id"]],
+                }
+                for b in bindings
+            ]
+        else:
+            findings = [
+                {
+                    "concern": "Check that the wording keeps the meaning of approved material "
+                    "and makes no claim the evidence does not support.",
+                    "span_start": None,
+                    "span_end": None,
+                    "fact_ids": [],
+                }
+            ]
+        return json.dumps({"findings": findings}, sort_keys=True, separators=(",", ":"))

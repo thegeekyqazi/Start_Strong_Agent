@@ -15,7 +15,7 @@ const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 export type ApiResult<T> =
   { ok: true; data: T } | { ok: false; status: number; error: ErrorEnvelope | null }
 
-async function call<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
+export async function call<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
   let res: Response
   try {
     res = await fetch(`${BASE}${path}`, {

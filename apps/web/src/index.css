@@ -329,3 +329,58 @@ main {
 .findings.stale .finding {
   opacity: 0.6;
 }
+
+/* ---- C3: review workspace (owner C). Status always has text, never colour alone. ---- */
+.review-layout {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: 1fr;
+  margin-top: 1rem;
+}
+@media (min-width: 64rem) {
+  .review-layout {
+    grid-template-columns: 16rem 1fr;
+  }
+}
+.versions ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.versions button {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid #ccc;
+  border-radius: 0.25rem;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+.versions button[aria-current='true'] {
+  border: 2px solid var(--c-info);
+}
+.stale-banner {
+  background: #fdecea;
+  border: 2px solid #a11a1a;
+  padding: 0.5rem;
+  font-weight: 600;
+}
+.prefill {
+  font-weight: 600;
+}
+.diff ins {
+  background: #e6f4ea;
+  text-decoration: underline;
+}
+.diff del {
+  background: #fdecea;
+  text-decoration: line-through;
+}
+.decide,
+.export,
+.save-version {
+  margin-top: 1rem;
+}

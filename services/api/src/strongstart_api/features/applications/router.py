@@ -11,7 +11,7 @@ from typing import Annotated, NoReturn
 
 from fastapi import APIRouter, Depends
 
-from strongstart_contracts import Capability, CapabilityUnavailable, ErrorCode
+from strongstart_contracts import Capability, ErrorCode
 from strongstart_contracts.answers import (
     AnswerPlan,
     ApplicationWorkspace,
@@ -25,41 +25,39 @@ from strongstart_contracts.answers import (
 from ...config import Settings, get_settings
 from ...errors import ApiError, not_implemented
 from ...identity import Identity
-from .models.base import (
-    DataClassNotPermitted,
-    ModelAdapter,
-    ModelError,
-    ModelOutputRejected,
-    ModelTimeout,
-    ModelTransportError,
-    StructuredTask,
+from .deps import (
+    LOOKUP_ERRORS,
+    get_answer_store,
+    get_model_adapter,
+    get_policy,
+    get_workspace_source,
+    lookup_error,
+    model_error,
 )
-from .models.fake import FakeAdapter
-from .models.gemini import GeminiAdapter
-from .rules.policy import WritingPolicy, fixture_policy
-from .service import (
-    EvidenceBundleNotFound,
-    QuestionNotFound,
-    QuestionVersionConflict,
-    check_answer,
-    draft_answer,
-    plan_application,
-)
-from .workspace import (
-    FixtureWorkspaceSource,
-    UnconfiguredWorkspaceSource,
-    WorkspaceNotFound,
-    WorkspaceSource,
-)
+from .models.base import ModelAdapter, ModelError
+from .review_router import review_router
+from .rules.policy import WritingPolicy
+from .service import check_answer, draft_answer, plan_application
+from .workspace import WorkspaceNotFound, WorkspaceSource
+
+__all__ = [
+    "CAPABILITIES",
+    "capabilities_for",
+    "get_answer_store",
+    "get_model_adapter",
+    "get_policy",
+    "get_workspace_source",
+    "router",
+]
 
 FEATURE = "applications"
 router = APIRouter(prefix="/api/applications", tags=["applications"])
 
-_REVIEW = Capability(
+_REVIEW_STATIC = Capability(
     feature="review",
     owner="C",
-    status="not_implemented",
-    detail="Review and exact-version approval planned (C3).",
+    status="unavailable",
+    detail="Review needs an answer store (fixture mode only until the C3 migration is sequenced).",
 )
 _SKILLS = Capability(
     feature="skills",
@@ -76,7 +74,7 @@ CAPABILITIES: list[Capability] = [
         status="unavailable",
         detail="Workspace needs a configured question/evidence producer.",
     ),
-    _REVIEW,
+    _REVIEW_STATIC,
     _SKILLS,
 ]
 
@@ -122,80 +120,23 @@ def capabilities_for(settings: Settings) -> list[Capability]:
             else "Workspace needs a configured question/evidence producer."
         ),
     )
-    return [workspace, _model_capability(settings), _REVIEW, _SKILLS]
-
-
-def get_workspace_source(settings: Annotated[Settings, Depends(get_settings)]) -> WorkspaceSource:
-    return FixtureWorkspaceSource() if settings.fixture_mode else UnconfiguredWorkspaceSource()
-
-
-class _FixtureAdapterForbidden:
-    """Production with model_provider=fake: explicitly unavailable, never a fixture draft."""
-
-    is_fixture = False
-
-    def capabilities(self) -> NoReturn:
-        raise CapabilityUnavailable("ModelAdapter.fake", "fixture adapter disabled in production")
-
-    async def complete(self, task: StructuredTask) -> NoReturn:
-        raise CapabilityUnavailable("ModelAdapter.fake", "fixture adapter disabled in production")
-
-
-def get_model_adapter(settings: Annotated[Settings, Depends(get_settings)]) -> ModelAdapter:
-    if settings.model_provider == "gemini":
-        return GeminiAdapter(
-            settings.gemini_api_key, settings.gemini_model, settings.model_timeout_seconds
-        )
-    if settings.environment == "production":
-        return _FixtureAdapterForbidden()
-    return FakeAdapter()
-
-
-def get_policy(settings: Annotated[Settings, Depends(get_settings)]) -> WritingPolicy | None:
-    """Synthetic demo policy in fixture mode only; otherwise none (POL rules say so)."""
-    return fixture_policy() if settings.fixture_mode else None
-
-
-def _lookup_error(exc: Exception) -> ApiError:
-    if isinstance(exc, EvidenceBundleNotFound):
-        return ApiError(
-            404,
-            ErrorCode.VALIDATION_FAILED,
-            "unknown evidence bundle",
-            {"reason": "unknown_evidence_bundle"},
-        )
-    if isinstance(exc, QuestionVersionConflict):
-        return ApiError(
-            409,
-            ErrorCode.VERSION_CONFLICT,
-            "question version changed",
-            {"current_question_version": exc.current},
-        )
-    return ApiError(
-        404, ErrorCode.VALIDATION_FAILED, "unknown question", {"reason": "unknown_question"}
+    review = Capability(
+        feature="review",
+        owner="C",
+        status="fixture_only" if settings.fixture_mode else "unavailable",
+        detail=(
+            "Saved versions, exact-version approval, staleness, resolver and DOCX/audit export "
+            "over an in-memory FIXTURE store (C3 migration pending Dev A)."
+            if settings.fixture_mode
+            else _REVIEW_STATIC.detail
+        ),
     )
+    return [workspace, _model_capability(settings), review, _SKILLS]
 
 
-_LOOKUP_ERRORS = (
-    QuestionNotFound,
-    WorkspaceNotFound,
-    EvidenceBundleNotFound,
-    QuestionVersionConflict,
-)
-
-
-def _model_error(exc: ModelError) -> ApiError:
-    details: dict[str, object] = {"reason": exc.reason}
-    if isinstance(exc, ModelOutputRejected):
-        details["issues"] = exc.issues
-        return ApiError(502, ErrorCode.VALIDATION_FAILED, "model output rejected", details)
-    if isinstance(exc, ModelTimeout):
-        return ApiError(504, ErrorCode.DEPENDENCY_UNAVAILABLE, "model call timed out", details)
-    if isinstance(exc, DataClassNotPermitted):
-        return ApiError(403, ErrorCode.FORBIDDEN, "data class not permitted for adapter", details)
-    if isinstance(exc, ModelTransportError) and exc.reason == "rate_limited":
-        return ApiError(429, ErrorCode.DEPENDENCY_UNAVAILABLE, "model provider busy", details)
-    return ApiError(502, ErrorCode.DEPENDENCY_UNAVAILABLE, "model provider error", details)
+_lookup_error = lookup_error
+_model_error = model_error
+_LOOKUP_ERRORS = LOOKUP_ERRORS
 
 
 @router.get("/status", response_model=list[Capability])
@@ -288,3 +229,6 @@ async def plan(
 def placeholder_operation(identity: Identity) -> NoReturn:
     """Durable draft jobs need a JobStore (engineering s14); still not implemented."""
     raise not_implemented(FEATURE, "draft-jobs")
+
+
+router.include_router(review_router)
