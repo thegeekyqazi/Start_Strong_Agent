@@ -27,6 +27,7 @@ OBJECT_ID = re.compile(r"^[a-z][a-z0-9]{1,15}-[0-9a-f]{26}$")
 DERIVED_ID = re.compile(r"^[a-z][a-z0-9-]{0,40}\.[a-z0-9.-]{1,80}$")
 COLLECTION = re.compile(r"^[a-z][a-z0-9-]{1,40}$")
 SHA = re.compile(r"^[0-9a-f]{64}$")
+CAPTURE_SCOPE = re.compile(r"^cap-[0-9a-f]{32}$")
 VERSION_FILE = re.compile(r"^v([0-9]{6})\.json$")
 
 Durability = Literal["full_posix", "reduced_windows"]
@@ -250,7 +251,7 @@ class LocalVersionStore:
     ) -> VersionCollection:
         if not COLLECTION.fullmatch(name):
             raise ValueError("invalid collection name")
-        if scope is not None and not valid_object_id(scope):
+        if scope is not None and not (valid_object_id(scope) or CAPTURE_SCOPE.fullmatch(scope)):
             raise NotFound("invalid scope")
         return VersionCollection(self, organization_id, name, scope)
 

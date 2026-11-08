@@ -127,6 +127,15 @@ function client(overrides: Partial<FundingClient> = {}): FundingClient {
         integrity_verified: true,
       },
     }),
+    listCases: async () => ({
+      ok: true,
+      data: { items: [], next_cursor: null, more: false, incomplete: false, limit: 20 },
+    }),
+    getCase: async () => fail(404, 'forbidden', 'case_not_found'),
+    saveCase: async () => fail(503, 'capability_unavailable', 'store_unavailable'),
+    reviewCase: async () => fail(503, 'capability_unavailable', 'store_unavailable'),
+    evaluateCase: async () => fail(503, 'capability_unavailable', 'store_unavailable'),
+    listEvaluations: async () => fail(503, 'capability_unavailable', 'store_unavailable'),
     listCaptures: async () => ({
       ok: true,
       data: {

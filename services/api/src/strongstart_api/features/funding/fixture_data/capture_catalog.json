@@ -51,6 +51,19 @@
       "url": "https://demo-funder.example/blocked",
       "markdown_file": "awards.md",
       "metadata": {"url": "https://demo-funder.example/blocked", "statusCode": 403, "contentType": "text/html"}
+    },
+    {
+      "url": "https://demo-funder.example/programs/community-grants/guidelines",
+      "markdown_file": "guidelines.md",
+      "html_file": "guidelines.main.html",
+      "raw_html_file": "guidelines.raw.html",
+      "metadata": {
+        "title": "FIXTURE Community Grants Program - 2026 Guidelines",
+        "url": "https://demo-funder.example/programs/community-grants/guidelines",
+        "statusCode": 200,
+        "contentType": "text/html; charset=utf-8",
+        "language": "en"
+      }
     }
   ]
 }

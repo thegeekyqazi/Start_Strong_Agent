@@ -1,5 +1,232 @@
 {
   "$defs": {
+    "ActivitySpec": {
+      "additionalProperties": false,
+      "properties": {
+        "allowed": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Allowed",
+          "type": "array"
+        },
+        "kind": {
+          "const": "activity",
+          "title": "Kind",
+          "type": "string"
+        },
+        "mode": {
+          "description": "any: at least one applicant activity is allowed; all: every one is.",
+          "enum": [
+            "any",
+            "all"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "allowed",
+        "mode"
+      ],
+      "title": "ActivitySpec",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "AmountInput": {
+      "additionalProperties": false,
+      "properties": {
+        "amount": {
+          "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+          "title": "Amount",
+          "type": "string"
+        },
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "provenance": {
+          "enum": [
+            "staff_asserted",
+            "simulated"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "scale": {
+          "default": "units",
+          "enum": [
+            "units",
+            "thousands",
+            "millions"
+          ],
+          "title": "Scale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "amount",
+        "currency",
+        "provenance"
+      ],
+      "title": "AmountInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "AmountRangeSpec": {
+      "additionalProperties": false,
+      "description": "Exact Decimal bounds. A pool or matching ratio is never a per-award cap.",
+      "properties": {
+        "currency": {
+          "pattern": "^[A-Z]{3}$",
+          "title": "Currency",
+          "type": "string"
+        },
+        "kind": {
+          "const": "amount_range",
+          "title": "Kind",
+          "type": "string"
+        },
+        "limit_kind": {
+          "enum": [
+            "per_award",
+            "total_pool",
+            "matching_ratio"
+          ],
+          "title": "Limit Kind",
+          "type": "string"
+        },
+        "max_boundary": {
+          "default": "inclusive",
+          "enum": [
+            "inclusive",
+            "exclusive"
+          ],
+          "title": "Max Boundary",
+          "type": "string"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum"
+        },
+        "min_boundary": {
+          "default": "inclusive",
+          "enum": [
+            "inclusive",
+            "exclusive"
+          ],
+          "title": "Min Boundary",
+          "type": "string"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minimum"
+        },
+        "scale": {
+          "default": "units",
+          "enum": [
+            "units",
+            "thousands",
+            "millions"
+          ],
+          "title": "Scale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "limit_kind",
+        "currency"
+      ],
+      "title": "AmountRangeSpec",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "AnchorInput": {
+      "additionalProperties": false,
+      "description": "Staff selection of an exact passage. The server verifies it; it is not proof itself.",
+      "properties": {
+        "anchor_key": {
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$",
+          "title": "Anchor Key",
+          "type": "string"
+        },
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "capture_id": {
+          "pattern": "^cap-[0-9a-f]{32}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "expected_artifact_sha256": {
+          "description": "Hash of the representation staff read; a different stored hash is 409.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Expected Artifact Sha256",
+          "type": "string"
+        },
+        "quote": {
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "anchor_key",
+        "capture_id",
+        "artifact_id",
+        "expected_artifact_sha256",
+        "quote",
+        "start",
+        "end"
+      ],
+      "title": "AnchorInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "AnswerFinding": {
       "additionalProperties": false,
       "description": "Plain-language wrapper around a shared ValidationResult (s8.3, s9.1, s18).",
@@ -203,6 +430,31 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "C"
+    },
+    "ApplicabilityCondition": {
+      "additionalProperties": false,
+      "description": "Reviewed applicability: n/a only when the typed input is known and differs.",
+      "properties": {
+        "equals": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Equals",
+          "type": "string"
+        },
+        "input_field": {
+          "const": "application_type",
+          "title": "Input Field",
+          "type": "string"
+        }
+      },
+      "required": [
+        "input_field",
+        "equals"
+      ],
+      "title": "ApplicabilityCondition",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "ApplicationDefinition": {
       "additionalProperties": false,
@@ -1468,6 +1720,162 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "CaptureLink": {
+      "additionalProperties": false,
+      "description": "A capture the case relies on, resolved through the org-scoped capture reader.",
+      "properties": {
+        "authority_review": {
+          "title": "Authority Review",
+          "type": "string"
+        },
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "coverage": {
+          "enum": [
+            "complete",
+            "partial",
+            "empty"
+          ],
+          "title": "Coverage",
+          "type": "string"
+        },
+        "declared_cycle_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Cycle Id"
+        },
+        "declared_opportunity_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Opportunity Id"
+        },
+        "declared_stream_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Declared Stream Id"
+        },
+        "final_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Final Url"
+        },
+        "is_simulated": {
+          "title": "Is Simulated",
+          "type": "boolean"
+        },
+        "page_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Title"
+        },
+        "provider_mode": {
+          "enum": [
+            "live",
+            "fixture"
+          ],
+          "title": "Provider Mode",
+          "type": "string"
+        },
+        "requested_url": {
+          "title": "Requested Url",
+          "type": "string"
+        },
+        "source_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capture_id",
+        "source_id",
+        "source_version_id",
+        "requested_url",
+        "coverage",
+        "provider_mode",
+        "is_simulated",
+        "authority_review"
+      ],
+      "title": "CaptureLink",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "CaptureLinkInput": {
+      "additionalProperties": false,
+      "properties": {
+        "capture_id": {
+          "pattern": "^cap-[0-9a-f]{32}$",
+          "title": "Capture Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capture_id"
+      ],
+      "title": "CaptureLinkInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "CaptureRequest": {
       "additionalProperties": false,
       "properties": {
@@ -2061,6 +2469,318 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "CaseReview": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "requirement_keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Requirement Keys",
+          "type": "array"
+        },
+        "reviewed_at": {
+          "format": "date-time",
+          "title": "Reviewed At",
+          "type": "string"
+        },
+        "reviewer": {
+          "description": "Server identity actor ID.",
+          "title": "Reviewer",
+          "type": "string"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        },
+        "version_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Version Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "case_id",
+        "version",
+        "version_digest",
+        "reviewer",
+        "reviewed_at",
+        "requirement_keys",
+        "statement"
+      ],
+      "title": "CaseReview",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "ChangeObservation": {
+      "additionalProperties": false,
+      "properties": {
+        "comparisons": {
+          "items": {
+            "$ref": "#/$defs/RepresentationComparison"
+          },
+          "title": "Comparisons",
+          "type": "array"
+        },
+        "created_by": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "downstream_effects": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Downstream Effects",
+          "type": "array"
+        },
+        "explanation": {
+          "title": "Explanation",
+          "type": "string"
+        },
+        "failure_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Failure Reason"
+        },
+        "linked_case_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linked Case Id"
+        },
+        "linked_case_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Linked Case Version"
+        },
+        "new_capture_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "New Capture Id"
+        },
+        "new_options": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "title": "New Options",
+          "type": "object"
+        },
+        "observation_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Observation Id",
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "old_capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Old Capture Id",
+          "type": "string"
+        },
+        "old_options": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "title": "Old Options",
+          "type": "object"
+        },
+        "options_comparable": {
+          "title": "Options Comparable",
+          "type": "boolean"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "overall": {
+          "enum": [
+            "unchanged",
+            "changed",
+            "partial",
+            "failed",
+            "not_comparable"
+          ],
+          "title": "Overall",
+          "type": "string"
+        },
+        "requested_url": {
+          "title": "Requested Url",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "text_diff": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Bounded unified diff to help staff; not authoritative.",
+          "title": "Text Diff"
+        },
+        "text_diff_truncated": {
+          "default": false,
+          "title": "Text Diff Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "organization_id",
+        "observation_id",
+        "old_capture_id",
+        "requested_url",
+        "observed_at",
+        "options_comparable",
+        "overall",
+        "explanation",
+        "created_by"
+      ],
+      "title": "ChangeObservation",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "ChangeObservationList": {
+      "additionalProperties": false,
+      "properties": {
+        "incomplete": {
+          "title": "Incomplete",
+          "type": "boolean"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/ChangeObservation"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "limit": {
+          "title": "Limit",
+          "type": "integer"
+        },
+        "more": {
+          "title": "More",
+          "type": "boolean"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Cursor"
+        }
+      },
+      "required": [
+        "items",
+        "more",
+        "incomplete",
+        "limit"
+      ],
+      "title": "ChangeObservationList",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "ChangeSet": {
       "additionalProperties": false,
       "properties": {
@@ -2411,6 +3131,32 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "DateInput": {
+      "additionalProperties": false,
+      "properties": {
+        "provenance": {
+          "enum": [
+            "staff_asserted",
+            "simulated"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "value": {
+          "format": "date",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "provenance"
+      ],
+      "title": "DateInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "DateKnowledge": {
       "additionalProperties": false,
       "description": "A date that may be unknown. Unknown is explicit; it is never a fabricated value.",
@@ -2445,6 +3191,121 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "shared"
+    },
+    "DeadlineSpec": {
+      "additionalProperties": false,
+      "description": "Submission cutoff as reviewed. Unknown components stay null; nothing is guessed.",
+      "properties": {
+        "boundary": {
+          "default": "unstated",
+          "enum": [
+            "inclusive",
+            "exclusive",
+            "unstated"
+          ],
+          "title": "Boundary",
+          "type": "string"
+        },
+        "date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Date"
+        },
+        "fold": {
+          "anyOf": [
+            {
+              "enum": [
+                0,
+                1
+              ],
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Disambiguates a repeated local time at a DST fall-back (0 first, 1 second).",
+          "title": "Fold"
+        },
+        "kind": {
+          "const": "deadline",
+          "title": "Kind",
+          "type": "string"
+        },
+        "local_time": {
+          "anyOf": [
+            {
+              "format": "time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Local Time"
+        },
+        "original_wording": {
+          "maxLength": 500,
+          "minLength": 1,
+          "title": "Original Wording",
+          "type": "string"
+        },
+        "precision": {
+          "enum": [
+            "exact",
+            "date_only",
+            "rolling",
+            "unknown"
+          ],
+          "title": "Precision",
+          "type": "string"
+        },
+        "timezone": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "IANA zone, e.g. America/Toronto.",
+          "title": "Timezone"
+        },
+        "utc_offset": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Explicit offset like -05:00.",
+          "title": "Utc Offset"
+        }
+      },
+      "required": [
+        "kind",
+        "original_wording",
+        "precision"
+      ],
+      "title": "DeadlineSpec",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "DeclaredContext": {
       "additionalProperties": false,
@@ -2996,6 +3857,466 @@
       "x-contract-status": "frozen",
       "x-owner": "shared"
     },
+    "EvaluateCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "case_version": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Case Version",
+          "type": "integer"
+        },
+        "clock": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Aware evaluation instant; default is the server clock.",
+          "title": "Clock"
+        },
+        "idempotency_key": {
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ScenarioInputs"
+        },
+        "scope": {
+          "$ref": "#/$defs/EvaluationScope"
+        }
+      },
+      "required": [
+        "idempotency_key",
+        "case_version"
+      ],
+      "title": "EvaluateCommand",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "EvaluationEntry": {
+      "additionalProperties": false,
+      "description": "A stored report plus its present-day staleness (computed at read, never rewritten).",
+      "properties": {
+        "report": {
+          "$ref": "#/$defs/EvaluationReport"
+        },
+        "stale": {
+          "title": "Stale",
+          "type": "boolean"
+        },
+        "stale_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Stale Reasons",
+          "type": "array"
+        }
+      },
+      "required": [
+        "report",
+        "stale"
+      ],
+      "title": "EvaluationEntry",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "EvaluationList": {
+      "additionalProperties": false,
+      "properties": {
+        "incomplete": {
+          "title": "Incomplete",
+          "type": "boolean"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/EvaluationEntry"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "limit": {
+          "title": "Limit",
+          "type": "integer"
+        },
+        "more": {
+          "title": "More",
+          "type": "boolean"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Cursor"
+        }
+      },
+      "required": [
+        "items",
+        "more",
+        "incomplete",
+        "limit"
+      ],
+      "title": "EvaluationList",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "EvaluationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "case_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Case Digest",
+          "type": "string"
+        },
+        "case_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "case_version": {
+          "title": "Case Version",
+          "type": "integer"
+        },
+        "clock": {
+          "format": "date-time",
+          "title": "Clock",
+          "type": "string"
+        },
+        "clock_source": {
+          "enum": [
+            "request",
+            "server"
+          ],
+          "title": "Clock Source",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "eligibility_group_outcome": {
+          "anyOf": [
+            {
+              "enum": [
+                "met",
+                "not_met",
+                "unknown",
+                "not_applicable",
+                "at_cutoff_needs_review"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "All-of over reviewed eligibility predicates (ELG-01 logic).",
+          "title": "Eligibility Group Outcome"
+        },
+        "evaluation_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evaluation Id",
+          "type": "string"
+        },
+        "evaluator_version": {
+          "const": "b1-rules/1",
+          "default": "b1-rules/1",
+          "title": "Evaluator Version",
+          "type": "string"
+        },
+        "excluded": {
+          "items": {
+            "$ref": "#/$defs/ExcludedRequirement"
+          },
+          "title": "Excluded",
+          "type": "array"
+        },
+        "inputs": {
+          "$ref": "#/$defs/ScenarioInputs"
+        },
+        "inputs_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Inputs Digest",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "readiness_at_evaluation": {
+          "title": "Readiness At Evaluation",
+          "type": "string"
+        },
+        "reliance_explanation": {
+          "title": "Reliance Explanation",
+          "type": "string"
+        },
+        "reliance_status": {
+          "const": "not_confirmed",
+          "default": "not_confirmed",
+          "title": "Reliance Status",
+          "type": "string"
+        },
+        "results": {
+          "items": {
+            "$ref": "#/$defs/RequirementEvaluation"
+          },
+          "title": "Results",
+          "type": "array"
+        },
+        "review_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Digest"
+        },
+        "scenario_summary": {
+          "title": "Scenario Summary",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/EvaluationScope"
+        }
+      },
+      "required": [
+        "evaluation_id",
+        "organization_id",
+        "case_id",
+        "case_version",
+        "case_digest",
+        "clock",
+        "clock_source",
+        "scope",
+        "inputs",
+        "inputs_digest",
+        "readiness_at_evaluation",
+        "results",
+        "scenario_summary",
+        "reliance_explanation",
+        "created_by",
+        "created_at"
+      ],
+      "title": "EvaluationReport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "EvaluationScope": {
+      "additionalProperties": false,
+      "properties": {
+        "cycle_label": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Label"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "enum": [
+                "eoi",
+                "full_application",
+                "single_stage",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stage"
+        },
+        "stream_label": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Label"
+        }
+      },
+      "title": "EvaluationScope",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "EvidenceAnchor": {
+      "additionalProperties": false,
+      "description": "A server-verified exact quote inside one immutable stored representation.",
+      "properties": {
+        "anchor_key": {
+          "title": "Anchor Key",
+          "type": "string"
+        },
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "artifact_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Artifact Sha256",
+          "type": "string"
+        },
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "coverage": {
+          "enum": [
+            "complete",
+            "partial",
+            "empty"
+          ],
+          "title": "Coverage",
+          "type": "string"
+        },
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "is_simulated": {
+          "title": "Is Simulated",
+          "type": "boolean"
+        },
+        "locator_scheme": {
+          "const": "unicode_code_points_in_utf8_decoded_representation",
+          "default": "unicode_code_points_in_utf8_decoded_representation",
+          "title": "Locator Scheme",
+          "type": "string"
+        },
+        "provider_mode": {
+          "enum": [
+            "live",
+            "fixture"
+          ],
+          "title": "Provider Mode",
+          "type": "string"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        },
+        "representation": {
+          "title": "Representation",
+          "type": "string"
+        },
+        "source_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "verification": {
+          "const": "quote_matched_hash_verified_bytes",
+          "default": "quote_matched_hash_verified_bytes",
+          "title": "Verification",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "anchor_key",
+        "capture_id",
+        "artifact_id",
+        "source_id",
+        "source_version_id",
+        "artifact_sha256",
+        "representation",
+        "start",
+        "end",
+        "quote",
+        "coverage",
+        "provider_mode",
+        "is_simulated"
+      ],
+      "title": "EvidenceAnchor",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "EvidenceBundle": {
       "additionalProperties": false,
       "properties": {
@@ -3104,6 +4425,27 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "ExcludedRequirement": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "requirement_key": {
+          "title": "Requirement Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "requirement_key",
+        "reason"
+      ],
+      "title": "ExcludedRequirement",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "ExportDefinitionRequest": {
       "additionalProperties": false,
@@ -4240,6 +5582,617 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "FundingCaseCommand": {
+      "additionalProperties": false,
+      "description": "Create (no expected_version) or revise (expected_version) a case. Strict.",
+      "properties": {
+        "anchors": {
+          "items": {
+            "$ref": "#/$defs/AnchorInput"
+          },
+          "title": "Anchors",
+          "type": "array"
+        },
+        "capture_links": {
+          "items": {
+            "$ref": "#/$defs/CaptureLinkInput"
+          },
+          "maxItems": 20,
+          "title": "Capture Links",
+          "type": "array"
+        },
+        "context": {
+          "$ref": "#/$defs/FundingContextInput"
+        },
+        "expected_version": {
+          "anyOf": [
+            {
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Version"
+        },
+        "idempotency_key": {
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/RequirementInput"
+          },
+          "title": "Requirements",
+          "type": "array"
+        }
+      },
+      "required": [
+        "idempotency_key",
+        "context"
+      ],
+      "title": "FundingCaseCommand",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "FundingCaseEnvelope": {
+      "additionalProperties": false,
+      "description": "Consistent read: exact version, digest, review, source status and projections.",
+      "properties": {
+        "current_version": {
+          "title": "Current Version",
+          "type": "integer"
+        },
+        "is_current": {
+          "title": "Is Current",
+          "type": "boolean"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "opportunity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Opportunity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Emitted only when funder, stream and cycle are established."
+        },
+        "opportunity_missing": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Opportunity Missing",
+          "type": "array"
+        },
+        "readiness": {
+          "enum": [
+            "ready_for_evaluation",
+            "not_reviewed",
+            "requires_re_review",
+            "no_rules"
+          ],
+          "title": "Readiness",
+          "type": "string"
+        },
+        "requirement_set": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RequirementSet"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Reviewed finite conditions; every evaluation stays 'unknown' (no verified organizational facts). Never a confirmed eligibility pass."
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaseReview"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "review_status": {
+          "enum": [
+            "reviewed",
+            "unreviewed"
+          ],
+          "title": "Review Status",
+          "type": "string"
+        },
+        "source_findings": {
+          "items": {
+            "$ref": "#/$defs/SourceFinding"
+          },
+          "title": "Source Findings",
+          "type": "array"
+        },
+        "source_status": {
+          "enum": [
+            "current",
+            "requires_re_review"
+          ],
+          "title": "Source Status",
+          "type": "string"
+        },
+        "version": {
+          "$ref": "#/$defs/FundingCaseVersion"
+        },
+        "version_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Version Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "version",
+        "version_digest",
+        "current_version",
+        "is_current",
+        "review_status",
+        "source_status",
+        "readiness"
+      ],
+      "title": "FundingCaseEnvelope",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "FundingCaseList": {
+      "additionalProperties": false,
+      "properties": {
+        "incomplete": {
+          "title": "Incomplete",
+          "type": "boolean"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/FundingCaseSummary"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "limit": {
+          "title": "Limit",
+          "type": "integer"
+        },
+        "more": {
+          "title": "More",
+          "type": "boolean"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Cursor"
+        }
+      },
+      "required": [
+        "items",
+        "more",
+        "incomplete",
+        "limit"
+      ],
+      "title": "FundingCaseList",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "FundingCaseSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "current_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Version"
+        },
+        "cycle_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Label"
+        },
+        "funder_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funder Label"
+        },
+        "requirement_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requirement Count"
+        },
+        "review_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "reviewed",
+                "unreviewed"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Review Status"
+        },
+        "source_status": {
+          "anyOf": [
+            {
+              "enum": [
+                "current",
+                "requires_re_review"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Status"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "enum": [
+                "eoi",
+                "full_application",
+                "single_stage",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stage"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "integrity_failure"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "stream_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Label"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "case_id",
+        "status"
+      ],
+      "title": "FundingCaseSummary",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "FundingCaseVersion": {
+      "additionalProperties": false,
+      "description": "One immutable case revision. Review status lives in separate review records.",
+      "properties": {
+        "anchors": {
+          "items": {
+            "$ref": "#/$defs/EvidenceAnchor"
+          },
+          "title": "Anchors",
+          "type": "array"
+        },
+        "capture_links": {
+          "items": {
+            "$ref": "#/$defs/CaptureLink"
+          },
+          "title": "Capture Links",
+          "type": "array"
+        },
+        "case_format": {
+          "const": "b1-funding-case/1",
+          "default": "b1-funding-case/1",
+          "title": "Case Format",
+          "type": "string"
+        },
+        "case_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Case Id",
+          "type": "string"
+        },
+        "case_kind_label": {
+          "const": "staff_selected_context_not_certified",
+          "default": "staff_selected_context_not_certified",
+          "title": "Case Kind Label",
+          "type": "string"
+        },
+        "context": {
+          "$ref": "#/$defs/FundingContext"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "requirements": {
+          "items": {
+            "$ref": "#/$defs/Requirement"
+          },
+          "title": "Requirements",
+          "type": "array"
+        },
+        "revision_of_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Revision Of Version"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "version": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "organization_id",
+        "case_id",
+        "version",
+        "created_by",
+        "created_at",
+        "context",
+        "capture_links",
+        "anchors",
+        "requirements"
+      ],
+      "title": "FundingCaseVersion",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "FundingContext": {
+      "additionalProperties": false,
+      "properties": {
+        "cycle_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Id"
+        },
+        "cycle_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Label"
+        },
+        "funder_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Server-derived from the label.",
+          "title": "Funder Id"
+        },
+        "funder_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funder Label"
+        },
+        "opportunity_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opportunity Title"
+        },
+        "stage": {
+          "enum": [
+            "eoi",
+            "full_application",
+            "single_stage",
+            "unknown"
+          ],
+          "title": "Stage",
+          "type": "string"
+        },
+        "stream_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Id"
+        },
+        "stream_label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Label"
+        },
+        "unknown_fields": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unknown Fields",
+          "type": "array"
+        }
+      },
+      "required": [
+        "stage"
+      ],
+      "title": "FundingContext",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "FundingContextBinding": {
       "additionalProperties": false,
       "description": "An exact, version-pinned funding case selected by staff (M3).",
@@ -4334,6 +6287,83 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "FundingContextInput": {
+      "additionalProperties": false,
+      "description": "Staff-entered labels. Missing labels stay unknown; nothing is guessed from a page.",
+      "properties": {
+        "cycle_label": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Label"
+        },
+        "funder_label": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funder Label"
+        },
+        "opportunity_title": {
+          "anyOf": [
+            {
+              "maxLength": 200,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opportunity Title"
+        },
+        "stage": {
+          "default": "unknown",
+          "enum": [
+            "eoi",
+            "full_application",
+            "single_stage",
+            "unknown"
+          ],
+          "title": "Stage",
+          "type": "string"
+        },
+        "stream_label": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Label"
+        }
+      },
+      "title": "FundingContextInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "HtmlIntakeSource": {
       "additionalProperties": false,
       "properties": {
@@ -4369,6 +6399,67 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "IdInput": {
+      "additionalProperties": false,
+      "properties": {
+        "provenance": {
+          "enum": [
+            "staff_asserted",
+            "simulated"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "provenance"
+      ],
+      "title": "IdInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "IdListInput": {
+      "additionalProperties": false,
+      "properties": {
+        "provenance": {
+          "enum": [
+            "staff_asserted",
+            "simulated"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 50,
+          "minItems": 1,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "values",
+        "provenance"
+      ],
+      "title": "IdListInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "ImportApplicationRequest": {
       "additionalProperties": false,
@@ -5016,6 +7107,77 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "InvitationInput": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_note": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Staff note of the invitation evidence (not verified by B).",
+          "title": "Evidence Note"
+        },
+        "provenance": {
+          "enum": [
+            "staff_asserted",
+            "simulated"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "invited",
+            "not_invited"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "provenance"
+      ],
+      "title": "InvitationInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "InvitationSpec": {
+      "additionalProperties": false,
+      "description": "Invitation / prior-stage requirement. An Apply button is not an invitation.",
+      "properties": {
+        "evidence_required": {
+          "default": true,
+          "title": "Evidence Required",
+          "type": "boolean"
+        },
+        "kind": {
+          "const": "invitation",
+          "title": "Kind",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "kind",
+        "required"
+      ],
+      "title": "InvitationSpec",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "JobBudget": {
       "additionalProperties": false,
       "properties": {
@@ -5488,6 +7650,33 @@
       "x-contract-status": "draft",
       "x-owner": "A1"
     },
+    "LabelInput": {
+      "additionalProperties": false,
+      "properties": {
+        "provenance": {
+          "enum": [
+            "staff_asserted",
+            "simulated"
+          ],
+          "title": "Provenance",
+          "type": "string"
+        },
+        "value": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "provenance"
+      ],
+      "title": "LabelInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "LimitConflict": {
       "additionalProperties": false,
       "properties": {
@@ -5603,6 +7792,40 @@
       "type": "object",
       "x-contract-status": "frozen",
       "x-owner": "shared"
+    },
+    "MembershipSpec": {
+      "additionalProperties": false,
+      "description": "Exact membership in a reviewed finite set (no substring or geocoding guesses).",
+      "properties": {
+        "allowed": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Allowed",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "geography",
+            "organization_type"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "allowed"
+      ],
+      "title": "MembershipSpec",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "ModelRunInfo": {
       "additionalProperties": false,
@@ -6365,6 +8588,67 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "ProjectWindowSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "earliest_start": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Earliest Start"
+        },
+        "end_boundary": {
+          "default": "inclusive",
+          "enum": [
+            "inclusive",
+            "exclusive"
+          ],
+          "title": "End Boundary",
+          "type": "string"
+        },
+        "kind": {
+          "const": "project_window",
+          "title": "Kind",
+          "type": "string"
+        },
+        "latest_end": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latest End"
+        },
+        "start_boundary": {
+          "default": "inclusive",
+          "enum": [
+            "inclusive",
+            "exclusive"
+          ],
+          "title": "Start Boundary",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ProjectWindowSpec",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "Provenance": {
       "additionalProperties": false,
       "properties": {
@@ -7068,6 +9352,50 @@
       "x-contract-status": "frozen",
       "x-owner": "shared"
     },
+    "RecheckCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "funding_case_id": {
+          "anyOf": [
+            {
+              "pattern": "^case-[0-9a-f]{26}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funding Case Id"
+        },
+        "funding_case_version": {
+          "anyOf": [
+            {
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funding Case Version"
+        },
+        "idempotency_key": {
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+          "title": "Idempotency Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "idempotency_key"
+      ],
+      "title": "RecheckCommand",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "RenderedAnswer": {
       "additionalProperties": false,
       "description": "The answer as a funder would read it: slot tokens replaced by server-rendered facts.",
@@ -7106,6 +9434,148 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "C"
+    },
+    "RepresentationComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "new_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "New Sha256"
+        },
+        "old_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Old Sha256"
+        },
+        "outcome": {
+          "enum": [
+            "match",
+            "changed",
+            "missing_in_new",
+            "missing_in_old"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "representation": {
+          "title": "Representation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "representation",
+        "outcome"
+      ],
+      "title": "RepresentationComparison",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "Requirement": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor_keys": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Anchor Keys",
+          "type": "array"
+        },
+        "applicability": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApplicabilityCondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interpretation": {
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "requirement_key": {
+          "title": "Requirement Key",
+          "type": "string"
+        },
+        "rule_ids": {
+          "description": "Catalog rules this kind implements a subset of.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Rule Ids",
+          "type": "array"
+        },
+        "scope": {
+          "$ref": "#/$defs/RequirementScope"
+        },
+        "spec": {
+          "discriminator": {
+            "mapping": {
+              "activity": "#/$defs/ActivitySpec",
+              "amount_range": "#/$defs/AmountRangeSpec",
+              "deadline": "#/$defs/DeadlineSpec",
+              "geography": "#/$defs/MembershipSpec",
+              "invitation": "#/$defs/InvitationSpec",
+              "organization_type": "#/$defs/MembershipSpec",
+              "project_window": "#/$defs/ProjectWindowSpec"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DeadlineSpec"
+            },
+            {
+              "$ref": "#/$defs/ProjectWindowSpec"
+            },
+            {
+              "$ref": "#/$defs/AmountRangeSpec"
+            },
+            {
+              "$ref": "#/$defs/MembershipSpec"
+            },
+            {
+              "$ref": "#/$defs/ActivitySpec"
+            },
+            {
+              "$ref": "#/$defs/InvitationSpec"
+            }
+          ],
+          "title": "Spec"
+        }
+      },
+      "required": [
+        "requirement_key",
+        "spec",
+        "anchor_keys",
+        "scope",
+        "interpretation",
+        "rule_ids"
+      ],
+      "title": "Requirement",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "RequirementCondition": {
       "additionalProperties": false,
@@ -7171,6 +9641,263 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "RequirementEvaluation": {
+      "additionalProperties": false,
+      "description": "Four plain-language answers per finding, from deterministic templates.",
+      "properties": {
+        "compared": {
+          "description": "What code compared.",
+          "title": "Compared",
+          "type": "string"
+        },
+        "found": {
+          "description": "What it found, with exact values.",
+          "title": "Found",
+          "type": "string"
+        },
+        "inputs_used": {
+          "description": "Typed inputs used, with provenance.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Inputs Used",
+          "type": "array"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "missing_inputs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Missing Inputs",
+          "type": "array"
+        },
+        "next_action": {
+          "title": "Next Action",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "met",
+            "not_met",
+            "unknown",
+            "not_applicable",
+            "at_cutoff_needs_review"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "requirement_key": {
+          "title": "Requirement Key",
+          "type": "string"
+        },
+        "rule_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Rule Ids",
+          "type": "array"
+        },
+        "support": {
+          "description": "Exact saved source support used.",
+          "items": {
+            "$ref": "#/$defs/SupportExcerpt"
+          },
+          "title": "Support",
+          "type": "array"
+        },
+        "uncertainty": {
+          "description": "What remains uncertain.",
+          "title": "Uncertainty",
+          "type": "string"
+        },
+        "validation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ValidationResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "requirement_key",
+        "kind",
+        "rule_ids",
+        "outcome",
+        "compared",
+        "support",
+        "inputs_used",
+        "found",
+        "uncertainty",
+        "next_action"
+      ],
+      "title": "RequirementEvaluation",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "RequirementInput": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor_keys": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$",
+            "type": "string"
+          },
+          "maxItems": 10,
+          "minItems": 1,
+          "title": "Anchor Keys",
+          "type": "array"
+        },
+        "applicability": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApplicabilityCondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "interpretation": {
+          "description": "Staff rationale, stored separately from the raw passage.",
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Interpretation",
+          "type": "string"
+        },
+        "requirement_key": {
+          "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$",
+          "title": "Requirement Key",
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/RequirementScope"
+        },
+        "spec": {
+          "discriminator": {
+            "mapping": {
+              "activity": "#/$defs/ActivitySpec",
+              "amount_range": "#/$defs/AmountRangeSpec",
+              "deadline": "#/$defs/DeadlineSpec",
+              "geography": "#/$defs/MembershipSpec",
+              "invitation": "#/$defs/InvitationSpec",
+              "organization_type": "#/$defs/MembershipSpec",
+              "project_window": "#/$defs/ProjectWindowSpec"
+            },
+            "propertyName": "kind"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/DeadlineSpec"
+            },
+            {
+              "$ref": "#/$defs/ProjectWindowSpec"
+            },
+            {
+              "$ref": "#/$defs/AmountRangeSpec"
+            },
+            {
+              "$ref": "#/$defs/MembershipSpec"
+            },
+            {
+              "$ref": "#/$defs/ActivitySpec"
+            },
+            {
+              "$ref": "#/$defs/InvitationSpec"
+            }
+          ],
+          "title": "Spec"
+        }
+      },
+      "required": [
+        "requirement_key",
+        "spec",
+        "anchor_keys",
+        "interpretation"
+      ],
+      "title": "RequirementInput",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "RequirementScope": {
+      "additionalProperties": false,
+      "description": "Which stream/stage/cycle the requirement applies to. Null = the case's own context.",
+      "properties": {
+        "application_type": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Application Type"
+        },
+        "cycle_label": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Label"
+        },
+        "stage": {
+          "anyOf": [
+            {
+              "enum": [
+                "eoi",
+                "full_application",
+                "single_stage",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stage"
+        },
+        "stream_label": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Label"
+        }
+      },
+      "title": "RequirementScope",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "RequirementSet": {
       "additionalProperties": false,
       "properties": {
@@ -7215,6 +9942,134 @@
         "conditions"
       ],
       "title": "RequirementSet",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "ReviewCommand": {
+      "additionalProperties": false,
+      "description": "'Review these requirements': names the exact version digest and every requirement.",
+      "properties": {
+        "idempotency_key": {
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "requirement_keys": {
+          "items": {
+            "pattern": "^[a-z0-9][a-z0-9_-]{0,39}$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Requirement Keys",
+          "type": "array"
+        },
+        "version_digest": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Version Digest",
+          "type": "string"
+        }
+      },
+      "required": [
+        "idempotency_key",
+        "version_digest",
+        "requirement_keys"
+      ],
+      "title": "ReviewCommand",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "RunComparison": {
+      "additionalProperties": false,
+      "properties": {
+        "base_run_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Base Run Id",
+          "type": "string"
+        },
+        "newly_seen": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Newly Seen",
+          "type": "array"
+        },
+        "not_seen_in_this_result_set": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Not Seen In This Result Set",
+          "type": "array"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "profile_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "profile_version": {
+          "title": "Profile Version",
+          "type": "integer"
+        },
+        "run_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "seen_again": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Seen Again",
+          "type": "array"
+        }
+      },
+      "required": [
+        "profile_id",
+        "profile_version",
+        "base_run_id",
+        "run_id",
+        "newly_seen",
+        "seen_again",
+        "not_seen_in_this_result_set",
+        "note"
+      ],
+      "title": "RunComparison",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "RunSearchCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "idempotency_key": {
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "profile_version": {
+          "maximum": 20,
+          "minimum": 1,
+          "title": "Profile Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "idempotency_key",
+        "profile_version"
+      ],
+      "title": "RunSearchCommand",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
@@ -7346,6 +10201,104 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "ScenarioInputs": {
+      "additionalProperties": false,
+      "description": "Per-evaluation typed inputs. Not a knowledge base; nothing is written to A's store.",
+      "properties": {
+        "activities": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IdListInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "application_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LabelInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "invitation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/InvitationInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "organization_type": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IdInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "project_end": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "project_start": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DateInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "region": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/IdInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "request_amount": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AmountInput"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "ScenarioInputs",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "SearchCandidate": {
       "additionalProperties": false,
@@ -7572,6 +10525,161 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "SearchProfileCommand": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_version": {
+          "anyOf": [
+            {
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Version"
+        },
+        "idempotency_key": {
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "label": {
+          "maxLength": 80,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/$defs/SearchProfile"
+        }
+      },
+      "required": [
+        "idempotency_key",
+        "label",
+        "profile"
+      ],
+      "title": "SearchProfileCommand",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SearchProfileList": {
+      "additionalProperties": false,
+      "properties": {
+        "incomplete": {
+          "title": "Incomplete",
+          "type": "boolean"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/SearchProfileVersion"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "limit": {
+          "title": "Limit",
+          "type": "integer"
+        },
+        "more": {
+          "title": "More",
+          "type": "boolean"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Cursor"
+        }
+      },
+      "required": [
+        "items",
+        "more",
+        "incomplete",
+        "limit"
+      ],
+      "title": "SearchProfileList",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SearchProfileVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "label": {
+          "description": "Inert staff label; never sent to a provider.",
+          "title": "Label",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "profile": {
+          "$ref": "#/$defs/SearchProfile"
+        },
+        "profile_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "public_fields_used": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Public Fields Used",
+          "type": "array"
+        },
+        "query_preview": {
+          "description": "Exactly the public query text a run would send.",
+          "title": "Query Preview",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "organization_id",
+        "profile_id",
+        "version",
+        "label",
+        "profile",
+        "query_preview",
+        "public_fields_used",
+        "created_by",
+        "created_at"
+      ],
+      "title": "SearchProfileVersion",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "SearchQueryRecord": {
       "additionalProperties": false,
       "properties": {
@@ -7775,6 +10883,185 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "SearchRunList": {
+      "additionalProperties": false,
+      "properties": {
+        "incomplete": {
+          "title": "Incomplete",
+          "type": "boolean"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/SearchRunRecord"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "limit": {
+          "title": "Limit",
+          "type": "integer"
+        },
+        "more": {
+          "title": "More",
+          "type": "boolean"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Cursor"
+        }
+      },
+      "required": [
+        "items",
+        "more",
+        "incomplete",
+        "limit"
+      ],
+      "title": "SearchRunList",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SearchRunRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "completed_at": {
+          "format": "date-time",
+          "title": "Completed At",
+          "type": "string"
+        },
+        "created_by": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "error_message": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Message"
+        },
+        "error_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Error Reason"
+        },
+        "normalized_urls": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Normalized Urls",
+          "type": "array"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "success",
+            "failed",
+            "unavailable"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "profile_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Profile Id",
+          "type": "string"
+        },
+        "profile_version": {
+          "title": "Profile Version",
+          "type": "integer"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "provider_mode": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Mode"
+        },
+        "result": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SearchResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "run_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "organization_id",
+        "run_id",
+        "profile_id",
+        "profile_version",
+        "started_at",
+        "completed_at",
+        "outcome",
+        "created_by"
+      ],
+      "title": "SearchRunRecord",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "SectionLocator": {
       "additionalProperties": false,
       "description": "Character-offset range within the exact stored (UTF-8 decoded) representation.",
@@ -7850,6 +11137,49 @@
       "type": "object",
       "x-contract-status": "frozen",
       "x-owner": "shared"
+    },
+    "SourceFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "observation_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Observation Id",
+          "type": "string"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "overall": {
+          "title": "Overall",
+          "type": "string"
+        }
+      },
+      "required": [
+        "observation_id",
+        "capture_id",
+        "overall",
+        "observed_at",
+        "message"
+      ],
+      "title": "SourceFinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "SourceLocator": {
       "additionalProperties": false,
@@ -8038,6 +11368,56 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "SupportExcerpt": {
+      "additionalProperties": false,
+      "properties": {
+        "anchor_key": {
+          "title": "Anchor Key",
+          "type": "string"
+        },
+        "artifact_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Artifact Sha256",
+          "type": "string"
+        },
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "coverage": {
+          "title": "Coverage",
+          "type": "string"
+        },
+        "end": {
+          "title": "End",
+          "type": "integer"
+        },
+        "quote": {
+          "title": "Quote",
+          "type": "string"
+        },
+        "start": {
+          "title": "Start",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "anchor_key",
+        "capture_id",
+        "artifact_sha256",
+        "start",
+        "end",
+        "quote",
+        "coverage"
+      ],
+      "title": "SupportExcerpt",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "TextSegment": {
       "additionalProperties": false,

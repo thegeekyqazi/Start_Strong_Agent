@@ -54,6 +54,7 @@ from .discovery import (
     SearchRequest,
     SearchResult,
 )
+from .funding_review import FUNDING_REVIEW_PUBLIC_MODELS
 
 PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     SourceReference,
@@ -91,6 +92,8 @@ PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     CaptureContent,
     FundingAvailability,
     CaptureCatalogPage,  # DEV-B-BUNDLE-002 M2 (owner B1/funding)
+    # DEV-B-BUNDLE-002 M3-M5 (owner B1/funding): cases, evaluations, saved research
+    *FUNDING_REVIEW_PUBLIC_MODELS,
     # B2-AUTO-001 (owner B2), imported from its module (B1-B2 launch agreement s2)
     *AUTOMATION_INTAKE_PUBLIC_MODELS,
     # DEV-B-BUNDLE-002 M1 (owner B2): saved definitions / question reader

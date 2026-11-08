@@ -144,7 +144,36 @@ def capabilities_for(settings: Settings) -> list[Capability]:
     else:
         status = "available"
     detail = "; ".join(f"{p.operation}={p.status}" for p in providers)
-    return [Capability(feature=FEATURE, owner="B1", status=status, detail=detail)]
+    local = settings.environment != "production"
+    dev = "fixture_only" if local else "unavailable"
+    where = (
+        "development-only local repository (not a supported deployment store)"
+        if local
+        else "disabled in production (no supported repository)"
+    )
+    return [
+        Capability(feature=FEATURE, owner="B1", status=status, detail=detail),
+        Capability(
+            feature="funding.capture_library",
+            owner="B1",
+            status=dev,
+            detail=f"Saved capture catalog with bounded listing/backfill; {where}.",
+        ),
+        Capability(
+            feature="funding.reviewed_requirements",
+            owner="B1",
+            status=dev,
+            detail="Funding cases with server-verified evidence anchors and explicit, "
+            f"version-bound staff review; {where}. Not funder certification.",
+        ),
+        Capability(
+            feature="funding.evaluations",
+            owner="B1",
+            status=dev,
+            detail="Deterministic deadline/eligibility rules over reviewed requirements and "
+            "staff scenario inputs; reliance is never confirmed (no verified A facts).",
+        ),
+    ]
 
 
 CAPABILITIES: list[Capability] = [
@@ -315,3 +344,9 @@ def get_capture_content(
 def placeholder_operation(identity: Identity) -> NoReturn:
     """Durable discovery jobs are future work; this stays explicitly not implemented."""
     raise not_implemented(FEATURE, "discovery-jobs")
+
+
+# DEV-B-BUNDLE-002 M3/M4: funding case routes under /api/funding/cases.
+from .cases_router import router as _cases_router  # noqa: E402
+
+router.include_router(_cases_router)

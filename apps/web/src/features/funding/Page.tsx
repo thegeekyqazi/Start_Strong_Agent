@@ -11,6 +11,7 @@ import type {
 } from '@strongstart/contracts'
 import { describeError, httpFundingClient, type FundingClient } from './client'
 import { IntakeReferences, SavedCaptures } from './library'
+import { FundingCases } from './cases'
 
 type Phase<T> =
   | { kind: 'idle' }
@@ -389,6 +390,8 @@ export function FundingPage({ client = httpFundingClient }: { client?: FundingCl
         client={client}
         renderCapture={(doc) => <CapturePanel doc={doc} client={client} />}
       />
+
+      <FundingCases client={client} />
     </section>
   )
 }

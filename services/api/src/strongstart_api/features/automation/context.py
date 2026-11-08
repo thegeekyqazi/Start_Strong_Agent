@@ -10,12 +10,20 @@ from __future__ import annotations
 
 from strongstart_contracts import ErrorCode, SessionIdentity
 from strongstart_contracts.application_publication import (
+    FundingContextBinding,
     PublicationContext,
     SaveDefinitionRequest,
 )
 from strongstart_contracts.automation_intake import ApplicationIntakeResult
+from strongstart_contracts.funding_review import (
+    FundingCaseEnvelope,
+    FundingCaseIntegrityError,
+    FundingCaseNotFound,
+)
+from strongstart_contracts.ports import CapabilityUnavailable
 
 from ...config import Settings
+from ..funding.public import build_funding_case_reader  # supported public factory only
 from .definitions import blocked, declared_context
 from .intake_errors import intake_error
 
@@ -27,12 +35,9 @@ def resolve_publication_context(
     settings: Settings,
 ) -> PublicationContext:
     declared = declared_context(intake)
-    if cmd.funding_case_id is not None:
-        raise intake_error(
-            503,
-            ErrorCode.CAPABILITY_UNAVAILABLE,
-            "context_unavailable",
-            "funding-case context selection is not available yet",
+    if cmd.funding_case_id is not None and cmd.funding_case_version is not None:
+        return _case_context(
+            cmd.funding_case_id, cmd.funding_case_version, intake, identity, settings, declared
         )
     if declared.opportunity_id is None:
         raise blocked(
@@ -50,5 +55,109 @@ def resolve_publication_context(
         opportunity_id=declared.opportunity_id,
         opportunity_basis=basis,
         declared=declared,
+        notes=notes,
+    )
+
+
+def _case_context(
+    case_id: str,
+    version: int,
+    intake: ApplicationIntakeResult,
+    identity: SessionIdentity,
+    settings: Settings,
+    declared: object,
+) -> PublicationContext:
+    """Bind one exact, staff-selected case version. Disagreement is held, never overwritten."""
+    from strongstart_contracts.application_publication import DeclaredContext
+
+    assert isinstance(declared, DeclaredContext)
+    org = identity.organization_id
+    reader = build_funding_case_reader(settings)
+    try:
+        env: FundingCaseEnvelope = reader.get_version(org, case_id, version)
+        current = reader.get_current(org, case_id)
+    except FundingCaseNotFound:
+        raise intake_error(
+            404, ErrorCode.FORBIDDEN, "context_not_found", "funding case not found"
+        ) from None
+    except FundingCaseIntegrityError:
+        raise intake_error(
+            409,
+            ErrorCode.VERSION_CONFLICT,
+            "integrity_failure",
+            "the funding case failed verification; nothing was saved",
+        ) from None
+    except CapabilityUnavailable:
+        raise intake_error(
+            503,
+            ErrorCode.CAPABILITY_UNAVAILABLE,
+            "context_unavailable",
+            "no funding case repository is available",
+        ) from None
+    if current.version.version != version:
+        raise intake_error(
+            409,
+            ErrorCode.VERSION_CONFLICT,
+            "context_changed",
+            "the selected funding case has a newer version; select it explicitly",
+            current_version=current.version.version,
+        )
+    opp = env.opportunity
+    if opp is None:
+        raise intake_error(
+            422,
+            ErrorCode.VALIDATION_FAILED,
+            "context_incomplete",
+            "the funding case does not establish funder, stream, cycle and a source yet",
+            missing=env.opportunity_missing,
+        )
+    v = env.version
+    linked = {link.capture_id for link in v.capture_links} | {a.capture_id for a in v.anchors}
+    conflicts: list[str] = []
+    lineage = intake.input.capture
+    if lineage is not None:
+        if lineage.capture_id not in linked:
+            conflicts.append("this capture is not linked to the selected funding case")
+        link = next((x for x in v.capture_links if x.capture_id == lineage.capture_id), None)
+        if link is not None:
+            for name, claimed, chosen in (
+                ("opportunity", link.declared_opportunity_id, opp.opportunity_id),
+                ("stream", link.declared_stream_id, opp.stream_id),
+                ("cycle", link.declared_cycle_id, opp.cycle_id),
+            ):
+                if claimed is not None and claimed != chosen:
+                    conflicts.append(
+                        f"the capture declares {name} {claimed!r}; the case selects {chosen!r}"
+                    )
+    if conflicts:
+        raise intake_error(
+            409,
+            ErrorCode.VERSION_CONFLICT,
+            "context_conflict",
+            "the source and the selected funding case disagree; held for staff review",
+            conflicts=conflicts,
+        )
+    notes = ["Opportunity identity comes from the exact staff-selected funding case version."]
+    if declared.opportunity_id is not None and lineage is None:
+        notes.append(
+            f"The source also declares opportunity {declared.opportunity_id!r}; kept as a claim "
+            "(different ID namespace), not used as authority."
+        )
+    return PublicationContext(
+        opportunity_id=opp.opportunity_id,
+        opportunity_basis="funding_case",
+        declared=declared,
+        binding=FundingContextBinding(
+            funding_case_id=case_id,
+            funding_case_version=version,
+            funding_case_digest=env.version_digest,
+            opportunity_id=opp.opportunity_id,
+            funder_id=opp.funder_id,
+            stream_id=opp.stream_id,
+            cycle_id=opp.cycle_id,
+            stage=v.context.stage,
+            case_review_status=env.review_status,
+            linked_capture_ids=sorted(linked),
+        ),
         notes=notes,
     )

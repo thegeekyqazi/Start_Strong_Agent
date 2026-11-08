@@ -103,9 +103,13 @@ def test_bnd21_unsupported_platform_refuses_before_any_write(tmp_path: Path) -> 
     store = LocalVersionStore(tmp_path / "v", os_name="nt")
     with pytest.raises(StoreUnavailable):
         store.collection("demo-org", "definitions").commit(
-            idempotency_key="k" * 8, command_hash="x", object_id=None, expected_version=0,
-            build=lambda o, v, p: {}, id_prefix="def",
-        )  # fmt: skip
+            idempotency_key="k" * 8,
+            command_hash="x",
+            object_id=None,
+            expected_version=0,
+            build=lambda o, v, p: {},
+            id_prefix="def",
+        )
     assert not [p for p in tmp_path.rglob("*") if p.is_file()]
 
 
