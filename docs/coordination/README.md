@@ -20,6 +20,7 @@ GitHub is the shared source of record. Repository Markdown stores durable decisi
 | docs/handoffs/TEMPLATE.md | Source-linked task handoff and consumer acknowledgment fields. |
 | docs/coordination/README.md | This workflow and runtime-loading notes. |
 | docs/specs/README.md | Where future per-feature development specs belong. No feature spec has been generated yet. |
+| docs/coordination/ownership.md, dev-b-single-agent-plan.md | Added after INIT-001: current path/contract owners and the Dev B single-agent arrangement (decision 0004). `dev-b-two-agent-plan.md` and `b1-b2-parallel-launch.md` are kept as partly superseded history. |
 
 The kit is documentation and templates. It does not initialize the repo, install agents, configure GitHub protections, create Issues/PRs or run a message service. Copy the files into the repo you initialize, preserving any existing guidance and reconciling conflicts through a small documentation PR. No raw partner source documents or secrets are bundled.
 

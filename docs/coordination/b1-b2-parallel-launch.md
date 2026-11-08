@@ -1,5 +1,7 @@
 # Dev B first parallel increment: launch and shared agreement
 
+> **Superseded in part (2026-11-07, decision 0004).** Both tasks in this agreement (B1-DISC-001, PR #1; B2-AUTO-001, PR #2) are merged, and the two-session arrangement has ended (see `dev-b-single-agent-plan.md`). The capture-to-intake seam semantics (s3) and execution and safety defaults (s4) remain in force. Separate sessions/worktrees, shared-resource ownership between agents (s2) and the "no remote" publication limits (s5) are superseded. The body below is preserved unchanged as the historical record.
+
 **Revision:** 1.0  
 **Tasks:** B1-DISC-001 and B2-AUTO-001.  
 **Reported foundation:** local main commit ad5b8dd, subject to verification in the actual checkout.  

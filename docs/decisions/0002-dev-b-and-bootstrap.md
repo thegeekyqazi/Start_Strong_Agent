@@ -7,7 +7,7 @@
 - Engineering path/version/sections: `docs/engineering/StrongStart_Engineering_Plan.md` v1.1, s3, s20, s23
 - Feature spec path/revision: `docs/specs/INIT-001_Repo_Initialization.md`, revision 1.0
 - PR / Issue: not published (no remote configured)
-- Supersedes / superseded by: extends 0001; supersedes none
+- Supersedes / superseded by: extends 0001; supersedes none. Item 3 (two Dev B agents) superseded by `0004-dev-b-single-agent.md` (2026-11-07)
 
 ## Original requirement
 
