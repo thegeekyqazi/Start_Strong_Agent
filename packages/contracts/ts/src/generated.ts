@@ -46,6 +46,7 @@ export interface AnswerFinding {
  * via the `definition` "ValidationResult".
  */
 export interface ValidationResult {
+  evaluator_id?: string | null
   evidence?: SourceReference[]
   expected?: {
     [k: string]: unknown
@@ -53,10 +54,12 @@ export interface ValidationResult {
   inputs?: {
     [k: string]: unknown
   }
+  next_action?: string | null
   observed?: {
     [k: string]: unknown
   }
   outcome: 'pass' | 'fail' | 'needs_review' | 'not_applicable'
+  reason_code?: string | null
   reasons?: string[]
   rule_id: string
   rule_version: string
@@ -1629,6 +1632,26 @@ export interface ReadinessReport {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RuleCapability".
+ */
+export interface RuleCapability {
+  priority: 'P0' | 'P1'
+  rule_id:
+    | 'SRC-01'
+    | 'SRC-02'
+    | 'SRC-03'
+    | 'SRC-04'
+    | 'SRC-05'
+    | 'SRC-06'
+    | 'SRC-07'
+    | 'SRC-08'
+    | 'SRC-09'
+    | 'SRC-10'
+  rule_version: string
+  state: 'planned' | 'implemented' | 'verified' | 'unavailable'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "SearchCandidate".
  */
 export interface SearchCandidate {
@@ -1743,6 +1766,733 @@ export interface SessionIdentity {
   label: string
   organization_id: string
   roles: string[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SourceValidationReport".
+ */
+export interface SourceValidationReport {
+  dependencies: ValidationDependency[]
+  evaluation_id: string
+  evaluator_build: string
+  frozen_time: string
+  input_sha256: string
+  organization_id: string
+  results: ValidationResult[]
+  schema_version?: '1'
+  source_version_id: string
+}
+/**
+ * Minimal exact dependency identity; never embeds private evidence content.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ValidationDependency".
+ */
+export interface ValidationDependency {
+  content_hash?: string | null
+  kind:
+    | 'subject'
+    | 'source_version'
+    | 'artifact_hash'
+    | 'passage_locator'
+    | 'normalization_policy'
+    | 'permission_snapshot'
+  ref_id: string
+  version: string
+}
+/**
+ * Strict source-check request; identity and organization are server-derived.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SourceValidationRequest".
+ */
+export interface SourceValidationRequest {
+  claimed_quote?: string | null
+  locator?: string | null
+  /**
+   * @maxItems 10
+   */
+  rule_ids?:
+    | []
+    | [
+        | 'SRC-01'
+        | 'SRC-02'
+        | 'SRC-03'
+        | 'SRC-04'
+        | 'SRC-05'
+        | 'SRC-06'
+        | 'SRC-07'
+        | 'SRC-08'
+        | 'SRC-09'
+        | 'SRC-10'
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+    | [
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        ),
+        (
+          | 'SRC-01'
+          | 'SRC-02'
+          | 'SRC-03'
+          | 'SRC-04'
+          | 'SRC-05'
+          | 'SRC-06'
+          | 'SRC-07'
+          | 'SRC-08'
+          | 'SRC-09'
+          | 'SRC-10'
+        )
+      ]
+  source_version_id: string
 }
 /**
  * Bounded plain-text input; authorization and provenance are server-derived.
