@@ -129,12 +129,13 @@ The full sample (record plus exact artifact bytes) is in `tests/fixtures/funding
 **Storage/read adapter usage (B2, in-process)**
 
 ```python
-from strongstart_api.features.funding.deps import get_capture_store   # FastAPI dependency
-store = get_capture_store(settings)            # LocalCaptureStore | None (None in production)
-record = store.get_record(identity.organization_id, capture_id)      # CapturedDocument
+from strongstart_api.features.funding.deps import get_capture_store  # FastAPI dependency
+
+store = get_capture_store(settings)  # LocalCaptureStore | None (None in production)
+record = store.get_record(identity.organization_id, capture_id)  # CapturedDocument
 art = next(a for a in record.artifacts if a.representation == "provider_html")
 verified = store.read_artifact(identity.organization_id, capture_id, art.artifact_id)
-html_bytes = verified.content   # sha256 already re-verified; raises CaptureIntegrityError otherwise
+html_bytes = verified.content  # sha256 already re-verified; raises CaptureIntegrityError otherwise
 ```
 
 Always pass the **server-derived** organization. A client-attested record is only a pointer: re-read it through the port.
