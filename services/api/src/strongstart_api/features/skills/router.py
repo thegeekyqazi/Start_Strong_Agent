@@ -42,6 +42,7 @@ from ..applications.public import (
     preview_model_error,
     staff_can_decide,
 )
+from . import display
 from .demo import DEMO_CONTEXT, DEMO_SOURCES
 from .repository import PracticeRepository, ScopeConflict
 from .service import SkillError, SkillsService
@@ -172,18 +173,20 @@ def _screening_live(svc: SkillsService) -> bool:
 
 @router.get("", response_model=PracticeOverview)
 def overview(svc: Service) -> PracticeOverview:
-    return _run(lambda: svc.overview(_screening_live(svc)))
+    return display.overview(_run(lambda: svc.overview(_screening_live(svc))))
 
 
 @router.post("/sources", response_model=PracticeSourceVersion, status_code=201)
 def create_source(body: PracticeSourceCreate, svc: Service) -> PracticeSourceVersion:
-    return _run(
-        lambda: svc.create_source(
-            body.title,
-            body.text,
-            "administrator_authored",
-            body.expected_current_source_version_id,
-            check_cas=True,
+    return display.source(
+        _run(
+            lambda: svc.create_source(
+                body.title,
+                body.text,
+                "administrator_authored",
+                body.expected_current_source_version_id,
+                check_cas=True,
+            )
         )
     )
 
@@ -198,22 +201,24 @@ def create_fixture_source(key: str, svc: Service) -> PracticeSourceVersion:
             {"reason": "unknown_fixture_source"},
         )
     title, text = DEMO_SOURCES[key]
-    return _run(lambda: svc.create_source(title, text, "synthetic_demo", None, check_cas=False))
+    return display.source(
+        _run(lambda: svc.create_source(title, text, "synthetic_demo", None, check_cas=False))
+    )
 
 
 @router.post("/sources/{source_version_id}/authority", response_model=PracticeSourceVersion)
 def approve_authority(source_version_id: str, svc: Service) -> PracticeSourceVersion:
-    return _run(lambda: svc.approve_authority(source_version_id))
+    return display.source(_run(lambda: svc.approve_authority(source_version_id)))
 
 
 @router.post("/candidates", response_model=PracticeCandidate, status_code=201)
 async def generate(body: PracticeGenerateRequest, svc: Service) -> PracticeCandidate:
-    return await _arun(lambda: svc.generate(body.source_version_id))
+    return display.candidate(await _arun(lambda: svc.generate(body.source_version_id)))
 
 
 @router.get("/candidates/{candidate_id}", response_model=PracticeCandidate)
 def read_candidate(candidate_id: str, svc: Service) -> PracticeCandidate:
-    return _run(lambda: svc.candidate(candidate_id))
+    return display.candidate(_run(lambda: svc.candidate(candidate_id)))
 
 
 @router.get("/candidates/{candidate_id}/package", response_model=CompiledPracticePackage)
@@ -223,12 +228,12 @@ def export_package(candidate_id: str, svc: Service) -> CompiledPracticePackage:
 
 @router.post("/candidates/{candidate_id}/screening", response_model=PracticeCandidate)
 async def run_screening(candidate_id: str, svc: Service) -> PracticeCandidate:
-    return await _arun(lambda: svc.run_screening(candidate_id))
+    return display.candidate(await _arun(lambda: svc.run_screening(candidate_id)))
 
 
 @router.post("/candidates/{candidate_id}/review", response_model=PracticeCandidate)
 def review(candidate_id: str, body: PracticeReviewRequest, svc: Service) -> PracticeCandidate:
-    return _run(lambda: svc.review(candidate_id, body))
+    return display.candidate(_run(lambda: svc.review(candidate_id, body)))
 
 
 @router.post("/candidates/{candidate_id}/activate", response_model=PracticeRelease)

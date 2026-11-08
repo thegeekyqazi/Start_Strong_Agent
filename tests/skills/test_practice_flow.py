@@ -55,15 +55,20 @@ def env(data_db, tmp_path):
     with data_db.engine.begin() as conn:
         conn.execute(
             insert(organizations).values(
-                id="other-org", display_name="SYNTHETIC other org",
-                provenance_class="simulated", is_simulated=True,
+                id="other-org",
+                display_name="SYNTHETIC other org",
+                provenance_class="simulated",
+                is_simulated=True,
             )
         )
 
     def make(adapter: Any = None, identity: Any = FIXTURE_IDENTITY, auth: str = "fixture"):
         settings = Settings(
-            _env_file=None, auth_mode=auth, answer_store_backend="postgres",
-            database_url=data_db.url, dev_b_store_dir=tmp_path / "b",
+            _env_file=None,
+            auth_mode=auth,
+            answer_store_backend="postgres",
+            database_url=data_db.url,
+            dev_b_store_dir=tmp_path / "b",
         )
         app = create_app(settings)
         if adapter is not None:
@@ -91,7 +96,9 @@ def _candidate(c: TestClient, key: str = "demo") -> dict[str, Any]:
     sid = src.json()["source_version_id"]
     # Candidate generation is refused until the source is explicitly reviewed as authority.
     early = c.post("/api/skills/candidates", json={"source_version_id": sid})
-    assert early.status_code == 422 and early.json()["details"]["reason"] == "source_authority_missing"
+    assert (
+        early.status_code == 422 and early.json()["details"]["reason"] == "source_authority_missing"
+    )
     assert c.post(f"/api/skills/sources/{sid}/authority").status_code == 200
     cand = c.post("/api/skills/candidates", json={"source_version_id": sid})
     assert cand.status_code == 201, cand.text
@@ -122,7 +129,9 @@ def test_source_to_candidate_to_activation_to_draft_preview(env):
     assert [r["operator"] for r in cand["rules"]] == ["preferred_term", "protected_name"]
     assert cand["proposer"]["is_fixture"] is True and cand["tests"]["passed"]
     assert {f["path"] for f in cand["package"]["files"]} == {
-        "SKILL.md", "rules.json", "references/policy-excerpts.md"
+        "SKILL.md",
+        "rules.json",
+        "references/policy-excerpts.md",
     }
     release = _activate(c, cand)
     assert release["effective_state"] == "active"
@@ -147,7 +156,8 @@ def test_source_to_candidate_to_activation_to_draft_preview(env):
 
     def fails(report: dict[str, Any], rule: str) -> list[dict[str, Any]]:
         return [
-            f for f in report["findings"]
+            f
+            for f in report["findings"]
             if f["result"]["outcome"] == "fail" and rule in f["result"]["reasons"]
         ]
 
@@ -167,8 +177,9 @@ def test_source_to_candidate_to_activation_to_draft_preview(env):
 
     rules = RULES.validate_python(cand["rules"])
     src = c.get("/api/skills").json()["sources"][-1]
-    a = compile_package(DEMO_CONTEXT, src["source_version_id"], src["text_sha256"],
-                        src["provenance"]["note"], rules)
+    a = compile_package(
+        DEMO_CONTEXT, src["source_version_id"], src["text_sha256"], src["provenance"]["note"], rules
+    )
     assert a.package_sha256 == cand["package"]["package_sha256"]
 
 
@@ -179,11 +190,15 @@ def test_tampered_hash_incomplete_screening_and_hostile_candidate_cannot_activat
     screened = c.post(f"/api/skills/candidates/{cid}/screening").json()
     assert screened["screening"]["complete"] is False
     assert any(h.startswith("screening_incomplete_missing:") for h in screened["hold_reasons"])
-    review = c.post(f"/api/skills/candidates/{cid}/review",
-                    json={"package_sha256": sha, "source_supported": True})
+    review = c.post(
+        f"/api/skills/candidates/{cid}/review",
+        json={"package_sha256": sha, "source_supported": True},
+    )
     assert review.status_code == 422 and review.json()["details"]["reason"] == "gates_not_passed"
-    act = c.post(f"/api/skills/candidates/{cid}/activate",
-                 json={"package_sha256": sha, "idempotency_key": "k1"})
+    act = c.post(
+        f"/api/skills/candidates/{cid}/activate",
+        json={"package_sha256": sha, "idempotency_key": "k1"},
+    )
     assert act.status_code == 422
 
     c = env(Recording())
@@ -191,33 +206,47 @@ def test_tampered_hash_incomplete_screening_and_hostile_candidate_cannot_activat
     tampered = good["package"]["package_sha256"][::-1]
     gid = good["candidate_id"]
     c.post(f"/api/skills/candidates/{gid}/screening")
-    bad_review = c.post(f"/api/skills/candidates/{gid}/review",
-                        json={"package_sha256": tampered, "source_supported": True})
+    bad_review = c.post(
+        f"/api/skills/candidates/{gid}/review",
+        json={"package_sha256": tampered, "source_supported": True},
+    )
     assert bad_review.status_code == 409
-    bad_act = c.post(f"/api/skills/candidates/{gid}/activate",
-                     json={"package_sha256": tampered, "idempotency_key": "k2"})
+    bad_act = c.post(
+        f"/api/skills/candidates/{gid}/activate",
+        json={"package_sha256": tampered, "idempotency_key": "k2"},
+    )
     assert bad_act.status_code in (409, 422)
-    no_review = c.post(f"/api/skills/candidates/{gid}/activate",
-                       json={"package_sha256": good["package"]["package_sha256"],
-                             "idempotency_key": "k3"})
+    no_review = c.post(
+        f"/api/skills/candidates/{gid}/activate",
+        json={"package_sha256": good["package"]["package_sha256"], "idempotency_key": "k3"},
+    )
     assert no_review.json()["details"]["reason"] == "review_missing_or_stale"
 
     adapter = Recording()
     c = env(adapter)
     hostile = _candidate(c, "hostile")
     cats = {f["category"] for f in hostile["scan"]["findings"]}
-    assert {"instruction_override", "exfiltration", "secret_canary", "hidden_control",
-            "unregistered_name"} <= cats
+    assert {
+        "instruction_override",
+        "exfiltration",
+        "secret_canary",
+        "hidden_control",
+        "unregistered_name",
+    } <= cats
     assert hostile["status"] == "held"
-    assert all("sk-canary" not in f["excerpt"] for f in hostile["scan"]["findings"])
+    # No client-facing response carries the planted secret (source, quotes, package, scan).
+    # Includes truncated prefixes: an excerpt window must never expose part of a secret.
+    assert "sk-can" not in json.dumps(hostile)
+    assert "sk-can" not in c.get("/api/skills").text
     hid = hostile["candidate_id"]
     screened = c.post(f"/api/skills/candidates/{hid}/screening").json()
     assert screened["screening"]["hold_reason"] == "quarantined_secret_not_sent_to_model"
     assert not [t for t in adapter.tasks if t.operation == "screen_practice"]
     assert c.get(f"/api/skills/candidates/{hid}/package").status_code == 422
-    act = c.post(f"/api/skills/candidates/{hid}/activate",
-                 json={"package_sha256": hostile["package"]["package_sha256"],
-                       "idempotency_key": "k4"})
+    act = c.post(
+        f"/api/skills/candidates/{hid}/activate",
+        json={"package_sha256": hostile["package"]["package_sha256"], "idempotency_key": "k4"},
+    )
     assert act.status_code == 422
 
     conflict = _candidate(c, "conflict")
@@ -229,8 +258,10 @@ def test_revocation_and_source_change_prevent_subsequent_use(env):
     target = _target(c)
     release = _activate(c, _candidate(c))
     assert c.post("/api/skills/preview", json=target).json()["current"] is True
-    revoked = c.post("/api/skills/releases/revoke",
-                     json={"release_id": release["release_id"], "reason": "demo revoke"})
+    revoked = c.post(
+        "/api/skills/releases/revoke",
+        json={"release_id": release["release_id"], "reason": "demo revoke"},
+    )
     assert revoked.json()["effective_state"] == "revoked"
     after = c.post("/api/skills/preview", json=target).json()
     assert after["applied"] is None and after["hold_reason"] == "no_active_practice"
@@ -242,7 +273,9 @@ def test_revocation_and_source_change_prevent_subsequent_use(env):
     assert c.post("/api/skills/fixture-sources/demo").status_code == 201
     stale = c.post("/api/skills/preview", json=target).json()
     assert stale["applied"] is None and stale["hold_reason"] == "release_stale_source"
-    assert c.get(f"/api/skills/candidates/{second['candidate_id']}").json()["status"] == "stale_source"
+    assert (
+        c.get(f"/api/skills/candidates/{second['candidate_id']}").json()["status"] == "stale_source"
+    )
     # A fresh app instance (new pool) sees the same durable state; history stays readable.
     fresh = env(Recording())
     overview = fresh.get("/api/skills").json()
@@ -258,14 +291,24 @@ def test_missing_identity_and_other_organization_cannot_bypass_access(env):
 
     anonymous = env(Recording(), auth="none")
     assert anonymous.get("/api/skills").status_code == 401
-    assert anonymous.post(f"/api/skills/candidates/{cid}/activate",
-                          json={"package_sha256": sha, "idempotency_key": "x"}).status_code == 401
+    assert (
+        anonymous.post(
+            f"/api/skills/candidates/{cid}/activate",
+            json={"package_sha256": sha, "idempotency_key": "x"},
+        ).status_code
+        == 401
+    )
 
     other_identity = FIXTURE_IDENTITY.model_copy(update={"organization_id": "other-org"})
     other = env(Recording(), identity=other_identity)
     assert other.get(f"/api/skills/candidates/{cid}").status_code == 404
-    assert other.post(f"/api/skills/candidates/{cid}/activate",
-                      json={"package_sha256": sha, "idempotency_key": "x"}).status_code == 404
+    assert (
+        other.post(
+            f"/api/skills/candidates/{cid}/activate",
+            json={"package_sha256": sha, "idempotency_key": "x"},
+        ).status_code
+        == 404
+    )
     assert other.get("/api/skills").json()["candidates"] == []
 
     not_staff = FIXTURE_IDENTITY.model_copy(update={"is_fixture": False})

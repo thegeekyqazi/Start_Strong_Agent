@@ -60,7 +60,9 @@ _BLOCK: tuple[tuple[str, re.Pattern[str], str], ...] = (
         "References a file path.",
     ),
 )
-_SECRET = re.compile(r"\bsk-[a-z0-9_-]{8,}|\bakia[0-9a-z]{16}\b|-----begin [a-z ]*private key")
+_SECRET = re.compile(
+    r"\bsk-[a-z0-9_-]{8,}|\bakia[0-9a-z]{16}\b|-----begin [a-z ]*private key", re.IGNORECASE
+)
 _REVIEW: tuple[tuple[str, re.Pattern[str], str], ...] = (
     (
         "instruction_override",
@@ -77,6 +79,19 @@ def normalize(text: str) -> str:
 
 def redact(text: str) -> str:
     return _SECRET.sub("[REDACTED SECRET]", text)
+
+
+_FRAGMENT = re.compile(r"\b(sk-[a-z0-9_-]*|akia[0-9a-z]*)$", re.IGNORECASE)
+
+
+def _strip_fragment(text: str) -> str:
+    """A window edge can cut a secret so it no longer matches; drop any trailing prefix."""
+    return _FRAGMENT.sub("[REDACTED]", redact(text))
+
+
+def window(text: str, start: int, end: int) -> str:
+    """Context excerpt taken from fully redacted text, so a cut never exposes a secret part."""
+    return _strip_fragment(redact(text)[max(0, start - 30) : end + 30])
 
 
 def _hidden(text: str) -> list[int]:
@@ -115,7 +130,7 @@ def scan_package(
                 part=part,
                 location=location,
                 message=message,
-                excerpt=redact(ex)[:160],
+                excerpt=_strip_fragment(ex[:160]),
             )
         )
 
@@ -134,7 +149,7 @@ def scan_package(
                         part,
                         f"normalized:{m.start()}-{m.end()}",
                         message,
-                        view[max(0, m.start() - 30) : m.end() + 30],
+                        window(view, m.start(), m.end()),
                     )
         secret = _SECRET.search(view)
         if secret:
@@ -144,7 +159,7 @@ def scan_package(
                 part,
                 f"normalized:{secret.start()}-{secret.end()}",
                 "Contains a credential-like value; package quarantined and never sent to a model.",
-                view[max(0, secret.start() - 30) : secret.end() + 30],
+                window(view, secret.start(), secret.end()),
             )
         hidden = _hidden(raw)
         if hidden:
@@ -154,7 +169,9 @@ def scan_package(
                 part,
                 f"raw:{hidden[0]}",
                 f"Contains {len(hidden)} hidden/format control character(s).",
-                raw[max(0, hidden[0] - 30) : hidden[0] + 30].encode("unicode_escape").decode(),
+                redact(raw)[max(0, hidden[0] - 30) : hidden[0] + 30]
+                .encode("unicode_escape")
+                .decode(),
             )
     for rule in rules:
         operands = (
@@ -193,3 +210,7 @@ def scan_package(
 
 def quarantined(report: ScanReport) -> bool:
     return any(f.category == "secret_canary" for f in report.findings)
+
+
+def has_secret(text: str) -> bool:
+    return bool(_SECRET.search(text) or _SECRET.search(normalize(text)))
