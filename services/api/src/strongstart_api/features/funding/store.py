@@ -11,8 +11,15 @@ Properties:
 - capture records are immutable (never overwritten); artifact bytes are content-addressed
   per organization, so identical bytes captured from two URLs share one blob while each
   capture keeps its own origin record (SRC-06);
-- writes are atomic (temp file + fsync + rename); reads re-hash bytes and fail closed
-  on mismatch (SRC-02).
+- writes are atomic and no-clobber (temp file + fsync + ``os.link``; DEV-B-BUNDLE-002 s6),
+  so two concurrent captures can never overwrite each other's record; reads re-hash bytes
+  and fail closed on mismatch (SRC-02);
+- durability follows the Dev B platform policy: POSIX full (file + directory fsync);
+  Windows only with an explicit reduced-durability opt-in; otherwise writes are refused
+  before success (``StoreUnavailable``);
+- a catalog index (``catalog/<captured_at ms>-<capture_id>``) is created atomically after
+  each record so staff can list captures without scanning blobs; older records without an
+  index entry are backfilled in bounded steps and reported as pending until complete.
 
 It does not implement the shared ``CaptureStore.put/get`` protocol, because that
 signature has no organization scope; B2 consumes ``CapturedDocumentReader`` instead.
@@ -23,18 +30,34 @@ from __future__ import annotations
 import hashlib
 import os
 import re
-import tempfile
 from pathlib import Path
 
+from pydantic import ValidationError
+
 from strongstart_contracts.discovery import (
+    CaptureCatalogPage,
     CapturedDocument,
     CaptureIntegrityError,
     CaptureNotFoundError,
+    CaptureSummary,
+    ImportableArtifactRef,
     VerifiedArtifact,
+)
+
+from ..dev_b_store.core import (
+    MAX_SCAN_ENTRIES,
+    Durability,
+    StoreUnavailable,
+    atomic_create,
+    durability_mode,
 )
 
 CAPTURE_ID_PATTERN = re.compile(r"^cap-[0-9a-f]{32}$")
 SHA256_PATTERN = re.compile(r"^[0-9a-f]{64}$")
+CATALOG_KEY = re.compile(r"^([0-9]{13})-(cap-[0-9a-f]{32})$")
+BACKFILL_PER_CALL = 50
+
+__all__ = ["CaptureStoreError", "LocalCaptureStore", "StoreUnavailable"]
 
 
 class CaptureStoreError(Exception):
@@ -45,8 +68,15 @@ class LocalCaptureStore:
     is_fixture = False
     capability = "development_local_store"
 
-    def __init__(self, root: Path) -> None:
+    def __init__(
+        self, root: Path, *, allow_reduced_durability: bool = False, os_name: str | None = None
+    ) -> None:
         self.root = root.resolve()
+        self.allow_reduced_durability = allow_reduced_durability
+        self._os_name = os_name
+
+    def durability(self) -> Durability:
+        return durability_mode(self.allow_reduced_durability, self._os_name)
 
     # -- paths ---------------------------------------------------------------------
 
@@ -70,29 +100,22 @@ class LocalCaptureStore:
             raise CaptureIntegrityError("invalid artifact hash")
         return self._confined(self._org_dir(organization_id) / "blobs" / sha256)
 
+    def _catalog_dir(self, organization_id: str) -> Path:
+        return self._confined(self._org_dir(organization_id) / "catalog")
+
     @staticmethod
-    def _atomic_write(path: Path, data: bytes) -> None:
-        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
-        fd, tmp = tempfile.mkstemp(dir=path.parent, prefix=".tmp-")
-        try:
-            with os.fdopen(fd, "wb") as handle:
-                handle.write(data)
-                handle.flush()
-                os.fsync(handle.fileno())
-            os.replace(tmp, path)
-        except BaseException:
-            Path(tmp).unlink(missing_ok=True)
-            raise
-        dir_fd = os.open(path.parent, os.O_RDONLY)
-        try:
-            os.fsync(dir_fd)
-        finally:
-            os.close(dir_fd)
+    def catalog_key(record: CapturedDocument) -> str:
+        ms = int(record.captured_at.timestamp() * 1000)
+        return f"{ms:013d}-{record.capture_id}"
 
     # -- writes --------------------------------------------------------------------
 
     def save(self, record: CapturedDocument, blobs: dict[str, bytes]) -> None:
+        durability = self.durability()  # refuse unsupported platforms before any write
         org = record.organization_id
+        record_path = self._record_path(org, record.capture_id)
+        if record_path.exists():
+            raise CaptureStoreError("capture records are immutable")
         for artifact in record.artifacts:
             data = blobs[artifact.sha256]
             if (
@@ -101,15 +124,19 @@ class LocalCaptureStore:
             ):
                 raise CaptureIntegrityError("artifact bytes do not match their metadata")
             blob_path = self._blob_path(org, artifact.sha256)
-            if blob_path.exists():
+            if not atomic_create(blob_path, data, durability):
                 if hashlib.sha256(blob_path.read_bytes()).hexdigest() != artifact.sha256:
                     raise CaptureIntegrityError("existing blob failed integrity verification")
-            else:
-                self._atomic_write(blob_path, data)
-        record_path = self._record_path(org, record.capture_id)
-        if record_path.exists():
+        data = record.model_dump_json(indent=2).encode("utf-8")
+        if not atomic_create(record_path, data, durability):
             raise CaptureStoreError("capture records are immutable")
-        self._atomic_write(record_path, record.model_dump_json(indent=2).encode("utf-8"))
+        self._index(org, record, durability)
+
+    def _index(
+        self, organization_id: str, record: CapturedDocument, durability: Durability
+    ) -> None:
+        path = self._confined(self._catalog_dir(organization_id) / self.catalog_key(record))
+        atomic_create(path, record.capture_id.encode("ascii"), durability)
 
     # -- reads (CapturedDocumentReader) ----------------------------------------------
 
@@ -119,7 +146,10 @@ class LocalCaptureStore:
             raw = path.read_bytes()
         except FileNotFoundError:
             raise CaptureNotFoundError(capture_id) from None
-        record = CapturedDocument.model_validate_json(raw)
+        try:
+            record = CapturedDocument.model_validate_json(raw)
+        except ValidationError:
+            raise CaptureIntegrityError("stored capture record is corrupt") from None
         if record.organization_id != organization_id or record.capture_id != capture_id:
             raise CaptureNotFoundError(capture_id)
         return record
@@ -138,3 +168,109 @@ class LocalCaptureStore:
         if len(data) != artifact.size_bytes or hashlib.sha256(data).hexdigest() != artifact.sha256:
             raise CaptureIntegrityError("artifact bytes failed integrity verification")
         return VerifiedArtifact(artifact=artifact, content=data)
+
+    # -- catalog (CaptureCatalogReader) ----------------------------------------------
+
+    @staticmethod
+    def _bounded_names(directory: Path) -> tuple[list[str], bool]:
+        names: list[str] = []
+        try:
+            with os.scandir(directory) as it:
+                for n, entry in enumerate(it):
+                    if n >= MAX_SCAN_ENTRIES:
+                        return names, True
+                    if not entry.is_symlink() and entry.is_file():
+                        names.append(entry.name)
+        except FileNotFoundError:
+            pass
+        return names, False
+
+    def _backfill(self, organization_id: str, indexed: set[str]) -> tuple[str, int]:
+        """Index up to BACKFILL_PER_CALL older records; report what remains honestly."""
+        names, truncated = self._bounded_names(self._org_dir(organization_id) / "records")
+        missing = [
+            n.removesuffix(".json")
+            for n in names
+            if n.endswith(".json")
+            and CAPTURE_ID_PATTERN.match(n.removesuffix(".json"))
+            and n.removesuffix(".json") not in indexed
+        ]
+        done = 0
+        durability: Durability | None = None
+        for capture_id in missing[:BACKFILL_PER_CALL]:
+            try:
+                record = self.get_record(organization_id, capture_id)
+            except (CaptureNotFoundError, CaptureIntegrityError):
+                continue  # corrupt records stay unindexed; never hidden as complete
+            try:
+                durability = durability or self.durability()
+            except StoreUnavailable:
+                break
+            self._index(organization_id, record, durability)
+            done += 1
+        pending = len(missing) - done
+        if truncated:
+            return "incomplete_scan", pending
+        return ("complete" if pending == 0 else "pending"), pending
+
+    def list_captures(
+        self, organization_id: str, cursor: str | None, limit: int
+    ) -> CaptureCatalogPage:
+        if cursor is not None and not CATALOG_KEY.fullmatch(cursor):
+            raise CaptureNotFoundError("invalid cursor")
+        catalog_dir = self._catalog_dir(organization_id)
+        names, _ = self._bounded_names(catalog_dir)
+        indexed = {m.group(2) for n in names if (m := CATALOG_KEY.fullmatch(n))}
+        backfill, pending = self._backfill(organization_id, indexed)
+        names, catalog_truncated = self._bounded_names(catalog_dir)  # includes new entries
+        keys = sorted({n for n in names if CATALOG_KEY.fullmatch(n)}, reverse=True)
+        if cursor is not None:
+            keys = [k for k in keys if k < cursor]
+        page, more = keys[:limit], len(keys) > limit
+        items = [self._summary(organization_id, k) for k in page]
+        return CaptureCatalogPage(
+            items=items,
+            next_cursor=page[-1] if more and page else None,
+            more=more,
+            incomplete=catalog_truncated,
+            backfill_status=backfill,
+            backfill_pending=pending,
+            limit=limit,
+        )
+
+    def _summary(self, organization_id: str, key: str) -> CaptureSummary:
+        match = CATALOG_KEY.fullmatch(key)
+        if match is None:  # pragma: no cover - keys are filtered by the caller
+            raise CaptureNotFoundError(key)
+        capture_id = match.group(2)
+        try:
+            r = self.get_record(organization_id, capture_id)
+        except (CaptureNotFoundError, CaptureIntegrityError):
+            return CaptureSummary(
+                capture_id=capture_id,
+                status="corrupt",
+                detail="The stored record is missing or failed validation; no content shown.",
+            )
+        return CaptureSummary(
+            capture_id=r.capture_id,
+            status="ok",
+            page_title=r.page_title,
+            requested_url=r.requested_url,
+            final_url=r.final_url,
+            captured_at=r.captured_at,
+            provider=r.provider,
+            provider_mode=r.provider_mode,
+            coverage=r.coverage,
+            representation_count=len(r.artifacts),
+            importable_artifacts=[
+                ImportableArtifactRef(
+                    artifact_id=a.artifact_id,
+                    representation=a.representation,
+                    intake_reference=f"{r.capture_id}:{a.artifact_id}",
+                )
+                for a in r.artifacts
+                if a.representation in r.supported_import_representations
+            ],
+            authority_review=r.authority_review,
+            is_simulated=r.provenance.is_simulated,
+        )

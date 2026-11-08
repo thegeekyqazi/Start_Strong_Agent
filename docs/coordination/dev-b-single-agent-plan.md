@@ -81,3 +81,20 @@ Post these on the named PRs at the next checkpoint. They have not been posted by
 | B2-AUTO-003: browser failure recovery, stale-snapshot rejection, pack-change response | B3/B4 | A4 ChangeSet, C3 approvals |
 
 Engineering gate G1 (s20.7: "real B questions render with limits/conflicts" in C's editor) is **not** yet met. The Dev B "G1" in r2 is the internal funding→automation capture seam. The B+C seam is joined when C2 consumes `AutomationHandoffExport`.
+
+## 8. Update 2026-11-08: DEV-B-BUNDLE-002 delivered (rev 1.1 of this plan)
+
+Sections 1-7 above are kept as written (rev 1.0). This section records what DEV-B-BUNDLE-002 rev 1.0 delivered on draft PR #12. That PR is **not merged**; see `docs/handoffs/dev-b/dev-b-bundle-002-r1.md`.
+
+| Area | Delivered (tested subsets) | Still open |
+| --- | --- | --- |
+| Automation (B2-AUTO-001A, superseded) | Immutable saved definitions, public `ApplicationDefinitionReader`, case-context binding for captured HTML forms | C2b consumption (B+C G1) |
+| Funding (B1-DISC-002, bounded) | Capture library; funding cases with verified anchors and version-bound review; DAT-01..04 / ELG-01..04 predicates with scenario reports; saved searches, manual reruns, rechecks and change observations | Durable scheduled monitoring (needs a JobStore); evidence-backed inputs (needs an A fact mapping); A3 registration of B predicates (A-side extension point); DAT-05 |
+| Portability (B1-OPS, scoped) | No-clobber writes, explicit durability policy, `.gitattributes` for hash-sensitive fixtures | Deployment/release hardening (B1-OPS-001); a real Windows run |
+| B2-AUTO-002 | **Not started** | Needs C3's real `ApprovedAnswerResolver` and action gates |
+
+Check-table update: DAT-01..04 and ELG-01..04 now have implemented and tested **subsets** behind B-owned rule functions. Catalog statuses are unchanged. AUT-01..04, SEC-03/08/09/11 and JOB-03 are as listed in s3, except that saved searches and rechecks reuse the existing JOB-03 budgets (one request, no retry).
+
+Dependencies changed since rev 1.0:
+- A3's runner merged (PR #13) with a closed source-rule registry;
+- C3 (PR #10) is open but not merged, so the resolver is still unavailable.

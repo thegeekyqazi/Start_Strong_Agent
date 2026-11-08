@@ -9,6 +9,13 @@ Routes (all under /api/automation):
 - POST /export-definition   server-derived versioned JSON handoff (not approved)
 - GET  /fixtures/portal/{fixture_id}  view the fixture portal (sandboxed, fixture mode only)
 
+DEV-B-BUNDLE-002 M1 (saved definitions; development/test repository, disabled in production):
+
+- POST /definitions                 save an immutable version (201 first, 200 identical replay)
+- GET  /definitions                 bounded summary list (cursor, more, incomplete)
+- GET  /definitions/{definition_id} current saved version
+- GET  /question-sets/{question_set_id}  exact immutable version
+
 The identity dependency runs before any body is read, any fixture/capture byte is
 accessed or a browser is launched. No route accepts org_id/approved/authorization from
 the client, and no route fills, uploads, submits or signs anything.
@@ -20,12 +27,18 @@ import time
 from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Request
+from fastapi import APIRouter, Depends, Query, Request, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel, ValidationError
 
 from strongstart_contracts import Capability, ErrorCode
+from strongstart_contracts.application_publication import (
+    DefinitionList,
+    PublishedApplicationVersion,
+    SaveDefinitionRequest,
+    SaveDefinitionResult,
+)
 from strongstart_contracts.automation_intake import (
     ApplicationIntakeResult,
     AutomationAvailability,
@@ -48,8 +61,16 @@ from .capture import (
     UnconfiguredCaptureSource,
     load_fixture_capture_source,
 )
+from .context import publication_guard, resolve_publication_context
+from .definitions import (
+    DefinitionRepository,
+    check_publishable,
+    intake_with_input_bytes,
+    store_error,
+)
 from .inspector import InspectorConfig
 from .intake_errors import fixture_not_allowed, intake_error, too_large
+from .public import build_definition_repository
 from .registry import PORTAL_FIXTURES, fixture_entries, portal_page
 from .service import (
     MAX_CAPTURE_BYTES,
@@ -119,6 +140,24 @@ CAPABILITIES: list[Capability] = [
 SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 
+def capabilities_for(settings: Settings) -> list[Capability]:
+    saved = settings.environment != "production"
+    return [
+        *CAPABILITIES,
+        Capability(
+            feature="automation.saved_definitions",
+            owner="B2",
+            status="fixture_only" if saved else "unavailable",
+            detail=(
+                "Saved definitions and the ApplicationDefinitionReader use a development-only "
+                "local repository (not a supported deployment store); saved is not reviewed."
+                if saved
+                else "Disabled in production: no supported saved-definition repository."
+            ),
+        ),
+    ]
+
+
 def get_capture_source(settings: SettingsDep) -> CaptureSource:
     """B1's org-scoped capture store first (development-only, None in production), then the
     labelled B2 fixture producer in local fixture mode. Fails closed when neither exists."""
@@ -138,6 +177,13 @@ def get_inspector_config() -> InspectorConfig:
 
 
 CaptureDep = Annotated[CaptureSource, Depends(get_capture_source)]
+
+
+def get_definition_repository(settings: SettingsDep) -> DefinitionRepository | None:
+    return build_definition_repository(settings)
+
+
+RepoDep = Annotated[DefinitionRepository | None, Depends(get_definition_repository)]
 InspectorDep = Annotated[InspectorConfig, Depends(get_inspector_config)]
 
 _browser_cache: tuple[float, tuple[Any, str]] | None = None
@@ -306,6 +352,109 @@ async def export_definition(
         return build_export(result, inspection)
 
     return await run_in_threadpool(work)
+
+
+# --------------------------------------------------------------------------- saved definitions
+
+
+def _require_repo(repo: DefinitionRepository | None) -> DefinitionRepository:
+    if repo is None:
+        raise intake_error(
+            503,
+            ErrorCode.CAPABILITY_UNAVAILABLE,
+            "store_unavailable",
+            "no saved-definition repository is configured in this environment",
+        )
+    return repo
+
+
+@router.post("/definitions", response_model=SaveDefinitionResult, status_code=201)
+async def save_definition(
+    request: Request,
+    response: Response,
+    identity: Identity,
+    settings: SettingsDep,
+    capture: CaptureDep,
+    repo: RepoDep,
+) -> SaveDefinitionResult:
+    store = _require_repo(repo)
+    body = _validated(SaveDefinitionRequest, await _read_bounded_json(request))
+
+    def work() -> SaveDefinitionResult:
+        # 1. A completed idempotent command replays first, before intake or context checks,
+        #    so a lost-response retry succeeds even if the bound case changed since.
+        try:
+            done = store.replay(identity.organization_id, body)
+        except Exception as exc:
+            raise store_error(exc) from None
+        if done is not None:
+            return SaveDefinitionResult(replayed=True, publication=done)
+        intake_result, raw = intake_with_input_bytes(body.source, identity, settings, capture)
+        if intake_result.input.sha256 != body.expected_input_sha256:
+            raise intake_error(
+                409,
+                ErrorCode.VERSION_CONFLICT,
+                "input_changed",
+                "the source no longer matches the previewed input; nothing was saved",
+                actual_input_sha256=intake_result.input.sha256,
+            )
+        check_publishable(intake_result)
+        context = resolve_publication_context(body, intake_result, identity, settings)
+        # 2. Re-validate the bound case version under the case lock and commit inside it.
+        with publication_guard(context, identity, settings):
+            try:
+                pub, replayed = store.save(
+                    organization_id=identity.organization_id,
+                    actor=identity.actor_id,
+                    cmd=body,
+                    intake=intake_result,
+                    raw=raw,
+                    context=context,
+                )
+            except Exception as exc:
+                raise store_error(exc) from None
+        return SaveDefinitionResult(replayed=replayed, publication=pub)
+
+    result = await run_in_threadpool(work)
+    if result.replayed:
+        response.status_code = 200
+    return result
+
+
+@router.get("/definitions", response_model=DefinitionList)
+def list_definitions(
+    identity: Identity,
+    repo: RepoDep,
+    cursor: Annotated[str | None, Query(pattern=r"^def-[0-9a-f]{26}$")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> DefinitionList:
+    store = _require_repo(repo)
+    try:
+        return store.list(identity.organization_id, cursor, limit)
+    except Exception as exc:
+        raise store_error(exc) from None
+
+
+@router.get("/definitions/{definition_id}", response_model=PublishedApplicationVersion)
+def get_definition(
+    definition_id: str, identity: Identity, repo: RepoDep
+) -> PublishedApplicationVersion:
+    store = _require_repo(repo)
+    try:
+        return store.get_current(identity.organization_id, definition_id)
+    except Exception as exc:
+        raise store_error(exc) from None
+
+
+@router.get("/question-sets/{question_set_id}", response_model=PublishedApplicationVersion)
+def get_question_set(
+    question_set_id: str, identity: Identity, repo: RepoDep
+) -> PublishedApplicationVersion:
+    store = _require_repo(repo)
+    try:
+        return store.get_version(identity.organization_id, question_set_id)
+    except Exception as exc:
+        raise store_error(exc) from None
 
 
 PORTAL_CSP = (

@@ -146,8 +146,8 @@ def test_funding_page_fixture_flow_against_real_api(tmp_path: Path) -> None:
             page.goto(f"{base}/#/funding")
             page.get_by_text("LOCAL FIXTURE identity").wait_for()
             assert page.get_by_text("FIXTURE (synthetic)").count() >= 2
-            page.get_by_label("Geography (optional)").fill("Demo Region")
-            page.get_by_role("button", name="Search").click()
+            page.get_by_label("Geography (optional)", exact=True).fill("Demo Region")
+            page.get_by_role("button", name="Search", exact=True).click()
             page.get_by_text(
                 "FIXTURE Demo Funder - Community Grants Program", exact=True
             ).wait_for()
@@ -184,7 +184,7 @@ def test_funding_page_live_mode_without_keys(tmp_path: Path) -> None:
             page.goto(f"{base}/#/funding")
             page.get_by_text("STRONGSTART_TAVILY_API_KEY not set", exact=False).wait_for()
             assert page.get_by_text("Mode: live").count() >= 2
-            page.get_by_role("button", name="Search").click()
+            page.get_by_role("button", name="Search", exact=True).click()
             page.get_by_text("Provider unavailable (missing credentials)", exact=False).wait_for()
             assert page.get_by_text("FIXTURE Demo Funder").count() == 0
         finally:
@@ -203,7 +203,7 @@ def test_funding_page_without_identity(tmp_path: Path) -> None:
             page = browser.new_page()
             page.goto(f"{base}/#/funding")
             page.get_by_text("Not signed in: search and capture will be denied.").wait_for()
-            page.get_by_role("button", name="Search").click()
+            page.get_by_role("button", name="Search", exact=True).click()
             page.get_by_role("alert").filter(has_text="Not signed in").wait_for()
         finally:
             browser.close()
