@@ -1384,10 +1384,90 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "ApprovedKnowledgeBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "active_revision": {
+          "minimum": 1,
+          "title": "Active Revision",
+          "type": "integer"
+        },
+        "application_context": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Application Context",
+          "type": "string"
+        },
+        "c_dependencies_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "C Dependencies Sha256",
+          "type": "string"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/ValidationDependency"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "mapping_version": {
+          "const": "c-a4-pack-root/1",
+          "default": "c-a4-pack-root/1",
+          "title": "Mapping Version",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "pack_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Pack Version Id",
+          "type": "string"
+        },
+        "projection_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Projection Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "organization_id",
+        "application_context",
+        "pack_version_id",
+        "active_revision",
+        "c_dependencies_sha256",
+        "dependencies",
+        "projection_sha256"
+      ],
+      "title": "ApprovedKnowledgeBinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
     "ApprovedPrefillContent": {
       "additionalProperties": false,
       "description": "One consistent approved-content envelope (requested from Dev C; s5.1).\n\nC guarantees these properties. B recomputes the hashes and checks every identity.",
       "properties": {
+        "a4_binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApprovedKnowledgeBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "answer_version": {
           "minimum": 1,
           "title": "Answer Version",
@@ -4777,6 +4857,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"
@@ -4798,6 +4879,33 @@
     "DependencyTargetState": {
       "additionalProperties": false,
       "properties": {
+        "active_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Active Revision"
+        },
+        "application_context": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Application Context"
+        },
         "dependencies": {
           "items": {
             "$ref": "#/$defs/ValidationDependency"
@@ -4811,6 +4919,34 @@
           "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
           "title": "Organization Id",
           "type": "string"
+        },
+        "pack_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pack Version Id"
+        },
+        "projection_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Projection Sha256"
         },
         "revision": {
           "minimum": 1,
@@ -4854,6 +4990,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"
@@ -9009,6 +9146,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"
@@ -9397,6 +9535,44 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "A1"
+    },
+    "KnowledgeRegistration": {
+      "additionalProperties": false,
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/ApprovedKnowledgeBinding"
+        },
+        "target_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "target_kind": {
+          "enum": [
+            "browser_plan",
+            "browser_grant"
+          ],
+          "title": "Target Kind",
+          "type": "string"
+        },
+        "target_revision": {
+          "minimum": 1,
+          "title": "Target Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "target_kind",
+        "target_id",
+        "target_revision",
+        "binding"
+      ],
+      "title": "KnowledgeRegistration",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
     },
     "KnowledgeRetrievalHit": {
       "additionalProperties": false,
@@ -10834,6 +11010,17 @@
     "PlannedFieldAction": {
       "additionalProperties": false,
       "properties": {
+        "a4_binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApprovedKnowledgeBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "action_index": {
           "minimum": 0,
           "title": "Action Index",
@@ -11326,6 +11513,17 @@
       "additionalProperties": false,
       "description": "Single-use, short-lived authorization derived by the server from one exact plan.",
       "properties": {
+        "a4_registration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgeRegistration"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "actor_id": {
           "title": "Actor Id",
           "type": "string"
@@ -11366,6 +11564,15 @@
           "minimum": 1,
           "title": "Form Version",
           "type": "integer"
+        },
+        "grant_format": {
+          "default": "b2-prefill-grant/1",
+          "enum": [
+            "b2-prefill-grant/1",
+            "b2-prefill-grant/2"
+          ],
+          "title": "Grant Format",
+          "type": "string"
         },
         "grant_id": {
           "maxLength": 128,
@@ -11464,6 +11671,17 @@
     "PrefillPlan": {
       "additionalProperties": false,
       "properties": {
+        "a4_registration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgeRegistration"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "actions": {
           "items": {
             "$ref": "#/$defs/PlannedFieldAction"
@@ -11493,6 +11711,13 @@
         },
         "definition": {
           "$ref": "#/$defs/PlanDefinitionRef"
+        },
+        "dependency_union": {
+          "items": {
+            "$ref": "#/$defs/DependencyRef"
+          },
+          "title": "Dependency Union",
+          "type": "array"
         },
         "executable": {
           "title": "Executable",
@@ -11540,8 +11765,11 @@
           "type": "string"
         },
         "plan_format": {
-          "const": "b2-approved-prefill/1",
-          "default": "b2-approved-prefill/1",
+          "default": "b2-approved-prefill/2",
+          "enum": [
+            "b2-approved-prefill/1",
+            "b2-approved-prefill/2"
+          ],
           "title": "Plan Format",
           "type": "string"
         },
@@ -11633,10 +11861,37 @@
             "expired",
             "runtime_epoch_changed",
             "claimed",
-            "empty"
+            "empty",
+            "stale",
+            "dependency_unavailable",
+            "prepare_new_plan"
           ],
           "title": "Availability",
           "type": "string"
+        },
+        "availability_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Availability Reason"
+        },
+        "next_action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Action"
         },
         "plan": {
           "$ref": "#/$defs/PrefillPlan"
@@ -12873,6 +13128,12 @@
           },
           "title": "Bindings",
           "type": "array"
+        },
+        "renderer_version": {
+          "const": "c-fact-renderer/1",
+          "default": "c-fact-renderer/1",
+          "title": "Renderer Version",
+          "type": "string"
         },
         "text": {
           "title": "Text",

@@ -53,10 +53,14 @@ def platform_capabilities(settings: Settings) -> list[Capability]:
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
-    app = FastAPI(title="Strong Start API", version="0.1.0")
+    app = FastAPI(title="Strong Start Agent API", version="0.1.0")
     if settings is not None:
         app.dependency_overrides[get_settings] = lambda: settings
     cors_settings = settings or get_settings()
+    if cors_settings.fixture_mode:
+        from .features.applications.store import InMemoryAnswerStore
+
+        app.state.c3_answer_store = InMemoryAnswerStore()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_settings.cors_origins,

@@ -21,16 +21,18 @@ from typing import Protocol
 from strongstart_contracts import (
     CapabilityUnavailable,
     ChangeSet,
+    EvidenceBundle,
     FixtureBundle,
     load_fixture_bundle,
 )
-from strongstart_contracts.answers import ApplicationWorkspace, QuestionSetRef
+from strongstart_contracts.answers import ApplicationWorkspace, DependencyRef, QuestionSetRef
 from strongstart_contracts.application_publication import (
     ApplicationDefinitionIntegrityError,
     ApplicationDefinitionNotFound,
     ApplicationDefinitionReader,
     PublishedApplicationVersion,
 )
+from strongstart_contracts.knowledge_binding import ApprovedKnowledgeBinding
 
 BUNDLE_RELATIVE = Path("tests/fixtures/demo/demo-bundle-v1.json")
 APPLICATION_DEFINITION_ID = "demo-gos-app-v1"
@@ -200,3 +202,18 @@ class UnconfiguredWorkspaceSource:
         raise CapabilityUnavailable(
             "ApplicationWorkspace", "no question/evidence producer configured (fixture mode off)"
         )
+
+
+def knowledge_binding_for(
+    source: WorkspaceSource, organization_id: str, bundle: EvidenceBundle, refs: list[DependencyRef]
+) -> ApprovedKnowledgeBinding | None:
+    """Optional server-owned managed workspace boundary. No default synthetic binding.
+
+    A TigerData workspace must return its exact saved active-context projection here.
+    INT-001's managed tests implement this with the real knowledge public facade.
+    """
+    binder = getattr(source, "knowledge_binding_for", None)
+    if binder is None:
+        return None
+    binding = binder(organization_id, bundle, refs)
+    return ApprovedKnowledgeBinding.model_validate(binding)

@@ -25,6 +25,7 @@ from strongstart_contracts.application_publication import (
     PublishedApplicationVersion,
     QuestionIdMapping,
 )
+from strongstart_contracts.approval_integrity import approval_snapshot_sha256
 from strongstart_contracts.automation_intake import IntakeQuestion
 from strongstart_contracts.automation_prefill import (
     PLAN_TTL_SECONDS,
@@ -49,8 +50,15 @@ from strongstart_contracts.automation_prefill import (
     UnselectedRequirement,
 )
 from strongstart_contracts.fixture_adapters import ApprovalNotUsable
+from strongstart_contracts.knowledge_binding import (
+    binding_digest,
+    c_dependency_digest,
+    dependency_union,
+    merge_bindings,
+)
 
 from ..dev_b_store.core import canonical_json, sha256_hex
+from ..knowledge.public import KnowledgeCurrentness
 from .registry import (
     INTAKE_FIXTURES,
     PREFILL_FORM_VERSIONS,
@@ -139,6 +147,28 @@ def content_problem(
         return "approval_integrity_mismatch", "rendered text does not match its rendered hash"
     if [d.model_dump() for d in content.dependencies] != [d.model_dump() for d in a.dependencies]:
         return "approval_integrity_mismatch", "dependency list differs from the approval snapshot"
+    if (
+        approval_snapshot_sha256(template, organization_id, content.dependencies)
+        != content.dependency_snapshot_sha256
+        or not content.producer_id
+        or not content.producer_epoch
+        or content.currentness_checked_at.tzinfo is None
+    ):
+        return (
+            "approval_integrity_mismatch",
+            "dependency snapshot or producer identity failed verification",
+        )
+    if content.a4_binding is not None:
+        binding = content.a4_binding
+        if (
+            binding.organization_id != organization_id
+            or binding_digest(binding) != binding.projection_sha256
+            or c_dependency_digest(content.dependencies) != binding.c_dependencies_sha256
+        ):
+            return (
+                "approval_integrity_mismatch",
+                "managed dependency projection failed verification",
+            )
     if content.unresolved_marker_count != 0 or TOKEN.search(content.rendered_text):
         return "unresolved_fact_token", "rendered text still contains an unresolved fact slot"
     return None
@@ -523,6 +553,7 @@ def build_plan(
             rendered_sha256=content.rendered_sha256,
             dependency_snapshot_sha256=content.dependency_snapshot_sha256,
             dependencies=list(content.dependencies),
+            a4_binding=content.a4_binding,
             intended_value=value.value,
             intended_choices=value.choices,
             intended_sha256=intended_sha,
@@ -551,6 +582,40 @@ def build_plan(
     ]
     attachments, attachment_basis = _attachments(pub, mapping, attachment_reader, organization_id)
     binding = pub.context.binding
+    union = dependency_union([d for action in actions for d in action.dependencies])
+    managed = [a.a4_binding for a in actions if a.a4_binding is not None]
+    registration = None
+    currentness_label = "not_integrated"
+    if managed:
+        if len(managed) != len(actions):
+            raise PlanRejected(
+                409,
+                "mixed_evidence_context",
+                "Select answers from one evidence context, then prepare a new plan.",
+            )
+        if not isinstance(currentness, KnowledgeCurrentness):
+            raise PlanRejected(
+                503,
+                "managed_verifier_unavailable",
+                "Managed source verification is unavailable. Try again when it is connected.",
+            )
+        try:
+            projection = merge_bindings(managed, union)
+            registration = currentness.register(
+                organization_id, "browser_plan", plan_id, projection
+            )
+            if currentness.check_registration(organization_id, registration).status != "current":
+                raise ValueError("registration not current")
+        except Exception:
+            raise PlanRejected(
+                409,
+                "managed_registration_failed",
+                "The source pack changed or could not be verified. "
+                "Review the answer and prepare a new plan.",
+            ) from None
+        currentness_label = "a4_adapter"
+    elif currentness is not None and not isinstance(currentness, KnowledgeCurrentness):
+        currentness_label = "explicit_test_provider"
     draft = {
         "plan_id": plan_id,
         "plan_sha256": "0" * 64,
@@ -571,6 +636,8 @@ def build_plan(
         ),
         "portal": binding_for(pub, portal, mapping),
         "actions": actions,
+        "dependency_union": union,
+        "a4_registration": registration,
         "held": held,
         "unselected_requirements": unselected,
         "attachments": attachments,
@@ -580,9 +647,7 @@ def build_plan(
         "producers": ProducerLabel(
             approval_reader=approval_reader_label,
             approval_reader_is_fixture=reader.is_fixture,
-            dependency_currentness="not_integrated"
-            if currentness is None
-            else "explicit_test_provider",
+            dependency_currentness=currentness_label,
             attachment_evidence=attachment_basis,
         ),
         "budgets": PrefillBudgets(),

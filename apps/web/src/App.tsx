@@ -38,7 +38,7 @@ export default function App({ load = loadApiState }: { load?: () => Promise<ApiS
   return (
     <div className="shell">
       <header>
-        <h1>Strong Start grant workspace</h1>
+        <h1>Strong Start Agent</h1>
         <ApiStatus state={api} />
         {caps?.fixture_mode && (
           <p className="banner-fixture" role="alert">

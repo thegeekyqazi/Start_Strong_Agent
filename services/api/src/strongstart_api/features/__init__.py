@@ -13,7 +13,13 @@ from fastapi import APIRouter
 from strongstart_contracts import Capability
 
 from ..config import Settings
-from . import applications, automation, funding, knowledge, validation
+
+# Load B before C: their supported factories now compose both directions. C's
+# workspace imports B's public definition reader; B's prefill imports C's reader.
+from . import automation
+
+# isort: split
+from . import applications, funding, knowledge, validation
 
 FEATURE_ROUTERS: list[APIRouter] = [
     knowledge.router,

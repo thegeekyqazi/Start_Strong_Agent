@@ -26,12 +26,13 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Any
 
-from strongstart_contracts import CapabilityUnavailable, Provenance, ProvenanceClass
+from strongstart_contracts import Provenance, ProvenanceClass
 from strongstart_contracts.application_publication import (
     ApplicationDefinitionReader,
     QuestionIdMapping,
 )
 from strongstart_contracts.automation_prefill import (
+    PLAN_FORMAT,
     ApprovedPrefillReader,
     CurrentnessCheck,
     ExecutePrefillRequest,
@@ -51,8 +52,14 @@ from strongstart_contracts.automation_prefill import (
 )
 from strongstart_contracts.fixture_adapters import ApprovalNotUsable
 from strongstart_contracts.funding_review import FundingCaseReader
+from strongstart_contracts.knowledge_binding import (
+    KnowledgeRegistration,
+    dependency_union,
+    merge_bindings,
+)
 
 from ..dev_b_store.core import canonical_json, sha256_hex
+from ..knowledge.public import KnowledgeCurrentness
 from . import prefill_browser
 from .prefill_browser import BrowserAction, BrowserOutcome, FieldOutcome
 from .prefill_deps import Clock, PrefillBrowserConfig
@@ -92,8 +99,19 @@ def command_hash(plan: PrefillPlan) -> str:
 
 
 def derive_grant(plan: PrefillPlan, actor_id: str, now: datetime) -> PrefillGrant:
+    grant_id = "grant-" + secrets.token_hex(12)
+    registration = None
+    if plan.a4_registration is not None:
+        registration = KnowledgeRegistration(
+            target_kind="browser_grant",
+            target_id=grant_id,
+            target_revision=1,
+            binding=plan.a4_registration.binding,
+        )
     body: dict[str, Any] = {
-        "grant_id": "grant-" + secrets.token_hex(12),
+        "grant_id": grant_id,
+        "grant_format": "b2-prefill-grant/2",
+        "a4_registration": registration,
         "grant_sha256": "0" * 64,
         "plan_id": plan.plan_id,
         "plan_sha256": plan.plan_sha256,
@@ -133,6 +151,20 @@ def derive_grant(plan: PrefillPlan, actor_id: str, now: datetime) -> PrefillGran
 
 def grant_problem(grant: PrefillGrant, plan: PrefillPlan) -> str | None:
     """Every action-critical value of the grant must still equal the plan (AUTO2-09)."""
+    if grant.grant_format != "b2-prefill-grant/2" or plan.plan_format != PLAN_FORMAT:
+        return "prepare_new_plan"
+    if plan.a4_registration is not None:
+        reg = grant.a4_registration
+        if (
+            reg is None
+            or reg.target_id != grant.grant_id
+            or reg.target_kind != "browser_grant"
+            or reg.target_revision != 1
+            or reg.binding != plan.a4_registration.binding
+        ):
+            return "grant_registration_mismatch"
+    elif grant.a4_registration is not None:
+        return "grant_registration_mismatch"
     record = grant.model_dump(mode="json")
     record.pop("grant_sha256")
     if sha256_hex(canonical_json(record)) != grant.grant_sha256:
@@ -268,7 +300,7 @@ def _approval_problem(deps: ExecutionDeps, plan: PrefillPlan, a: PlannedFieldAct
         content = deps.reader.resolve_for_prefill(plan.organization_id, a.approval_snapshot_id)
     except ApprovalNotUsable as exc:
         return f"approval_not_usable:{exc.reason}"
-    except CapabilityUnavailable:
+    except Exception:
         return "approval_reader_unavailable"
     mapping = QuestionIdMapping(
         original_question_id=a.original_question_id,
@@ -289,7 +321,8 @@ def _approval_problem(deps: ExecutionDeps, plan: PrefillPlan, a: PlannedFieldAct
     if problem is not None:
         return f"approval_changed:{problem[0]}"
     if (
-        content.answer_version_id != a.answer_version_id
+        content.a4_binding != a.a4_binding
+        or content.answer_version_id != a.answer_version_id
         or content.template_sha256 != a.template_sha256
         or content.rendered_sha256 != a.rendered_sha256
         or content.dependency_snapshot_sha256 != a.dependency_snapshot_sha256
@@ -304,11 +337,62 @@ def _approval_problem(deps: ExecutionDeps, plan: PrefillPlan, a: PlannedFieldAct
             a.intended_choices
         ):
             return "approval_changed:typed_value"
-    if deps.currentness is not None:
-        state = deps.currentness.check(plan.organization_id, plan.plan_id, list(a.dependencies))
+    if deps.currentness is not None and not isinstance(deps.currentness, KnowledgeCurrentness):
+        state = deps.currentness.check(plan.organization_id, plan.plan_id, plan.dependency_union)
         if state.status != "current":
             return f"dependency_{state.status}"
     return None
+
+
+def managed_problem(
+    deps: ExecutionDeps, plan: PrefillPlan, grant: PrefillGrant | None = None
+) -> str | None:
+    union = dependency_union([d for action in plan.actions for d in action.dependencies])
+    if plan.plan_format != PLAN_FORMAT or union != plan.dependency_union:
+        return "prepare_new_plan"
+    bindings = [a.a4_binding for a in plan.actions if a.a4_binding is not None]
+    reg = plan.a4_registration
+    if not bindings:
+        return "managed_binding_missing" if reg is not None else None
+    if reg is None or len(bindings) != len(plan.actions):
+        return "managed_registration_missing"
+    try:
+        expected = merge_bindings(bindings, union)
+    except ValueError:
+        return "managed_binding_mismatch"
+    if (
+        reg.binding != expected
+        or reg.target_id != plan.plan_id
+        or reg.target_kind != "browser_plan"
+        or reg.target_revision != 1
+    ):
+        return "managed_binding_mismatch"
+    if not isinstance(deps.currentness, KnowledgeCurrentness):
+        return "dependency_unavailable"
+    registrations = [reg]
+    if grant is not None:
+        if grant.a4_registration is None:
+            return "grant_registration_missing"
+        registrations.append(grant.a4_registration)
+    for registration in registrations:
+        try:
+            state = deps.currentness.check_registration(plan.organization_id, registration)
+        except Exception:
+            return "dependency_unavailable"
+        if state.status != "current":
+            return f"dependency_{state.status}"
+    return None
+
+
+def live_plan_problem(deps: ExecutionDeps, plan: PrefillPlan) -> str | None:
+    """Read-only usability; never register, claim, renew or launch a browser."""
+    return (
+        _definition_problem(deps, plan)
+        or managed_problem(deps, plan)
+        or next(
+            (p for a in plan.actions if (p := _approval_problem(deps, plan, a)) is not None), None
+        )
+    )
 
 
 def _portal(plan: PrefillPlan) -> PrefillPortal | None:
@@ -355,7 +439,9 @@ class _Hooks:
         self.checks.append(
             CurrentnessCheck(
                 stage=stage,
-                status="current" if problem is None else "stale",
+                status="current"
+                if problem is None
+                else ("unavailable" if "unavailable" in problem else "stale"),
                 detail=problem or "approval, definition, grant and dependencies current",
             )
         )
@@ -366,8 +452,10 @@ class _Hooks:
             return "grant_expired"
         if self.deps.runtime_epoch() != self.run.grant.runtime_epoch:
             return "runtime_epoch_changed"
-        return _definition_problem(self.deps, self.plan) or _approval_problem(
-            self.deps, self.plan, action
+        return (
+            managed_problem(self.deps, self.plan, self.run.grant)
+            or _definition_problem(self.deps, self.plan)
+            or _approval_problem(self.deps, self.plan, action)
         )
 
     def before_write(self, index: int) -> str | None:
@@ -464,6 +552,12 @@ def execute(
             "runtime_epoch_changed",
             "the API process restarted since planning (C's fixture store is process-local)",
         )
+    if plan.plan_format != PLAN_FORMAT:
+        raise GrantRefused(
+            "prepare_new_plan", "This pending plan uses an old format. Prepare a new plan."
+        )
+    if plan.created_by != actor_id:
+        raise GrantRefused("actor_mismatch", "Prepare a new plan with your own staff identity.")
     grant = derive_grant(plan, actor_id, now)
 
     def build() -> PrefillRun:
@@ -498,7 +592,13 @@ def _run_claimed(deps: ExecutionDeps, plan: PrefillPlan, run: PrefillRun) -> Pre
     pre: list[CurrentnessCheck] = []
 
     def blocked(reason: str) -> PrefillRun:
-        pre.append(CurrentnessCheck(stage="pre_execution", status="stale", detail=reason))
+        pre.append(
+            CurrentnessCheck(
+                stage="pre_execution",
+                status="unavailable" if "unavailable" in reason else "stale",
+                detail=reason,
+            )
+        )
         return _finish(
             deps,
             run,
@@ -508,7 +608,26 @@ def _run_claimed(deps: ExecutionDeps, plan: PrefillPlan, run: PrefillRun) -> Pre
             checks=pre,
         )
 
-    problem = grant_problem(run.grant, plan) or _definition_problem(deps, plan)
+    problem = grant_problem(run.grant, plan)
+    # Claim is already durable in B's local repository. No B/C lock is held here.
+    # A failure leaves a zero-write completed receipt, never an automatic retry.
+    if problem is None and run.grant.a4_registration is not None:
+        if not isinstance(deps.currentness, KnowledgeCurrentness):
+            return blocked("dependency_unavailable")
+        reg = run.grant.a4_registration
+        try:
+            registered = deps.currentness.register(
+                plan.organization_id, "browser_grant", run.grant.grant_id, reg.binding
+            )
+            if registered != reg:
+                return blocked("grant_registration_mismatch")
+        except Exception:
+            return blocked("grant_registration_failed")
+    problem = problem or managed_problem(deps, plan, run.grant) or _definition_problem(deps, plan)
+    if deps.clock() > run.grant.expires_at:
+        problem = "grant_expired"
+    if deps.runtime_epoch() != run.grant.runtime_epoch:
+        problem = "runtime_epoch_changed"
     if problem is None:
         problem = next(
             (p for a in plan.actions if (p := _approval_problem(deps, plan, a)) is not None), None
@@ -582,7 +701,9 @@ def _run_claimed(deps: ExecutionDeps, plan: PrefillPlan, run: PrefillRun) -> Pre
         checks.append(
             CurrentnessCheck(
                 stage="completion",
-                status="current" if completion is None else "stale",
+                status="current"
+                if completion is None
+                else ("unavailable" if "unavailable" in completion else "stale"),
                 detail=completion or "all approvals current at completion",
             )
         )

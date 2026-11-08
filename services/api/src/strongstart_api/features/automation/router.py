@@ -131,7 +131,8 @@ CAPABILITIES: list[Capability] = [
         status="fixture_only",
         detail="B2-AUTO-002: server-built plans and staff-authorized, single-use entry with real "
         "Chromium read-back on registered local fixture portals only. Requires a configured "
-        "approved-content reader; none is configured on main (503, no seeded fallback).",
+        "C approved-content reader over the same process-local save/approve store. "
+        "No seeded fallback.",
     ),
     Capability(
         feature="automation.prefill_plan_preparation",
@@ -150,9 +151,10 @@ CAPABILITIES: list[Capability] = [
     Capability(
         feature="automation.prefill_execution_c3",
         owner="B2",
-        status="unavailable",
-        detail="Integrated C3 execution is pending C's approved-content reader (B2-AUTO-002 P2). "
-        "C2b now consumes B's exact published question identities.",
+        status="fixture_only",
+        detail="Connected C save/approve/content reader, exact B question IDs and real Chromium. "
+        "Process-local C state; unmanaged synthetic evidence by default. Managed A4 requires "
+        "an explicit server workspace binding and successful SQL registrations.",
     ),
     Capability(
         feature="automation.prefill_choice_values",
@@ -192,15 +194,20 @@ def capabilities_for(settings: Settings) -> list[Capability]:
             c.model_copy(
                 update={
                     "status": "unavailable",
-                    "detail": "Disabled in production: no supported prefill runtime or repository.",
+                    "detail": "Prefill requires local fixture identity, its app-scoped approval "
+                    "store and development repository.",
                 }
             )
-            if not saved
+            if (
+                not saved
+                or (c.feature == "automation.prefill_execution_c3" and not settings.fixture_mode)
+            )
             and c.feature
             in {
                 "automation.approved_prefill",
                 "automation.prefill_plan_preparation",
                 "automation.prefill_execution_test_provider",
+                "automation.prefill_execution_c3",
                 "automation.attachment_checklist",
             }
             else c

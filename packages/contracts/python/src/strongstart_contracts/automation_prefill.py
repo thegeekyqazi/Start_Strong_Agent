@@ -36,9 +36,10 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_vali
 from .answers import ApprovalSnapshot, DependencyRef
 from .automation_intake import NetworkLogEntry
 from .common import ContractModel, Provenance, Sha256Hex, StableId
+from .knowledge_binding import ApprovedKnowledgeBinding, KnowledgeRegistration
 from .ports import CapabilityUnavailable
 
-PLAN_FORMAT: Final = "b2-approved-prefill/1"
+PLAN_FORMAT: Final = "b2-approved-prefill/2"
 RUN_FORMAT: Final = "b2-prefill-run/1"
 BOUND_MAP_FORMAT: Final = "b2-bound-form-map/1"
 CONTENT_FORMAT: Final = "b2-requested-approved-prefill-content/1"
@@ -162,6 +163,7 @@ class ApprovedPrefillContent(ContractModel):
     dependencies: list[DependencyRef] = Field(default_factory=list)
     currentness: Literal["current"]
     currentness_checked_at: datetime
+    a4_binding: ApprovedKnowledgeBinding | None = None
     typed_value: ApprovedTypedValue | None = None
     provenance: Provenance
     is_fixture: bool
@@ -316,6 +318,7 @@ class PlannedFieldAction(ContractModel):
     rendered_sha256: Sha256Hex
     dependency_snapshot_sha256: Sha256Hex
     dependencies: list[DependencyRef] = Field(default_factory=list)
+    a4_binding: ApprovedKnowledgeBinding | None = None
     intended_value: str | None = Field(default=None, description="Text/number: exact string.")
     intended_choices: list[str] = Field(default_factory=list)
     intended_sha256: Sha256Hex
@@ -412,7 +415,7 @@ class PrefillPlan(ContractModel):
     model_config = _config()
 
     schema_version: Literal["1"] = "1"
-    plan_format: Literal["b2-approved-prefill/1"] = PLAN_FORMAT
+    plan_format: Literal["b2-approved-prefill/1", "b2-approved-prefill/2"] = PLAN_FORMAT
     plan_id: PlanId
     plan_sha256: Sha256Hex = Field(description="sha256 of the canonical plan without this field.")
     organization_id: StableId
@@ -423,6 +426,8 @@ class PrefillPlan(ContractModel):
     definition: PlanDefinitionRef
     portal: PortalBinding
     actions: list[PlannedFieldAction] = Field(max_length=MAX_ACTIONS)
+    dependency_union: list[DependencyRef] = Field(default_factory=list)
+    a4_registration: KnowledgeRegistration | None = None
     held: list[HeldField] = Field(default_factory=list)
     unselected_requirements: list[UnselectedRequirement] = Field(default_factory=list)
     attachments: list[AttachmentChecklistItem] = Field(default_factory=list)
@@ -445,7 +450,18 @@ class PrefillPlanView(ContractModel):
     model_config = _config()
 
     plan: PrefillPlan
-    availability: Literal["executable", "expired", "runtime_epoch_changed", "claimed", "empty"]
+    availability: Literal[
+        "executable",
+        "expired",
+        "runtime_epoch_changed",
+        "claimed",
+        "empty",
+        "stale",
+        "dependency_unavailable",
+        "prepare_new_plan",
+    ]
+    availability_reason: str | None = None
+    next_action: str | None = None
     run_id: RunId | None = None
 
 
@@ -469,6 +485,8 @@ class PrefillGrant(ContractModel):
 
     model_config = _config()
 
+    grant_format: Literal["b2-prefill-grant/1", "b2-prefill-grant/2"] = "b2-prefill-grant/1"
+    a4_registration: KnowledgeRegistration | None = None
     grant_id: StableId
     grant_sha256: Sha256Hex
     plan_id: PlanId

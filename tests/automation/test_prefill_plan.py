@@ -219,6 +219,12 @@ def test_auto2_02_strict_execute_requests(h: Harness, stub: StubBrowser) -> None
 
 def test_auto2_03_unconfigured_reader_is_503_without_any_seeded_fallback(tmp_path: Path) -> None:
     h = harness(tmp_path, reader="none")
+    from strongstart_api.features.automation.prefill_deps import get_approved_prefill_reader
+    from strongstart_contracts.automation_prefill import UnconfiguredApprovedPrefillReader
+
+    h.client.app.dependency_overrides[get_approved_prefill_reader] = (  # type: ignore[attr-defined]
+        UnconfiguredApprovedPrefillReader
+    )
     pub = save_definition(h.client)
     r = plan(h, pub, [("pf-org-name", "apr-anything")])
     assert r.status_code == 503 and r.json()["details"]["reason"] == "approval_reader_unavailable"
@@ -797,7 +803,7 @@ def test_auto2_31_production_and_unregistered_portals_unavailable(
     assert r.status_code == 422 and r.json()["details"]["reason"] == "portal_not_registered"
     assert h.client.get("/api/automation/status").status_code == 200
     caps = {c["feature"]: c["status"] for c in h.client.get("/api/automation/status").json()}
-    assert caps["automation.prefill_execution_c3"] == "unavailable"
+    assert caps["automation.prefill_execution_c3"] == "fixture_only"
     assert caps["automation.real_portal_prefill"] == "unavailable"
     assert caps["automation.final_submission"] == "unavailable"
     # Inspection keeps its literal-false contract (it never authorizes entry).

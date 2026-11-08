@@ -330,6 +330,7 @@ export interface CheckReport {
  */
 export interface RenderedAnswer {
   bindings: ClaimBinding[]
+  renderer_version?: 'c-fact-renderer/1'
   text: string
   text_sha256: string
   unsupported_markers: UnsupportedMarker[]
@@ -966,6 +967,48 @@ export interface ApprovalSnapshot {
   schema_version?: '1'
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApprovedKnowledgeBinding".
+ */
+export interface ApprovedKnowledgeBinding {
+  active_revision: number
+  application_context: string
+  c_dependencies_sha256: string
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   */
+  dependencies: [ValidationDependency, ...ValidationDependency[]]
+  mapping_version?: 'c-a4-pack-root/1'
+  organization_id: string
+  pack_version_id: string
+  projection_sha256: string
+}
+/**
+ * Minimal exact dependency identity; never embeds private evidence content.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ValidationDependency".
+ */
+export interface ValidationDependency {
+  content_hash?: string | null
+  kind:
+    | 'subject'
+    | 'source_version'
+    | 'artifact_hash'
+    | 'passage_locator'
+    | 'normalization_policy'
+    | 'permission_snapshot'
+    | 'fact_version'
+    | 'pack_version'
+    | 'rounding_policy'
+    | 'formula'
+    | 'project_input'
+    | 'policy'
+  ref_id: string
+  version: string
+}
+/**
  * One consistent approved-content envelope (requested from Dev C; s5.1).
  *
  * C guarantees these properties. B recomputes the hashes and checks every identity.
@@ -974,6 +1017,7 @@ export interface ApprovalSnapshot {
  * via the `definition` "ApprovedPrefillContent".
  */
 export interface ApprovedPrefillContent {
+  a4_binding?: ApprovedKnowledgeBinding | null
   answer_version: number
   answer_version_id: string
   approval: ApprovalSnapshot
@@ -1960,45 +2004,41 @@ export interface DependencyRegistrationRequest {
   expected_revision?: number
   target_id: string
   target_kind:
-    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
-}
-/**
- * Minimal exact dependency identity; never embeds private evidence content.
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "ValidationDependency".
- */
-export interface ValidationDependency {
-  content_hash?: string | null
-  kind:
-    | 'subject'
-    | 'source_version'
-    | 'artifact_hash'
-    | 'passage_locator'
-    | 'normalization_policy'
-    | 'permission_snapshot'
-    | 'fact_version'
-    | 'pack_version'
-    | 'rounding_policy'
-    | 'formula'
-    | 'project_input'
-    | 'policy'
-  ref_id: string
-  version: string
+    | 'validation'
+    | 'answer'
+    | 'check'
+    | 'approval'
+    | 'export'
+    | 'browser_plan'
+    | 'browser_grant'
+    | 'job'
+    | 'skill'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "DependencyTargetState".
  */
 export interface DependencyTargetState {
+  active_revision?: number | null
+  application_context?: string | null
   dependencies: ValidationDependency[]
   organization_id: string
+  pack_version_id?: string | null
+  projection_sha256?: string | null
   revision: number
   stale_change_set_id?: string | null
   state: 'current' | 'stale'
   target_id: string
   target_kind:
-    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
+    | 'validation'
+    | 'answer'
+    | 'check'
+    | 'approval'
+    | 'export'
+    | 'browser_plan'
+    | 'browser_grant'
+    | 'job'
+    | 'skill'
 }
 /**
  * Validated model proposal for one question. Not an answer version or approval.
@@ -2434,6 +2474,7 @@ export interface FieldReceipt {
  * via the `definition` "PrefillGrant".
  */
 export interface PrefillGrant {
+  a4_registration?: KnowledgeRegistration | null
   actor_id: string
   budgets: PrefillBudgets
   created_at: string
@@ -2442,6 +2483,7 @@ export interface PrefillGrant {
   forbidden_operations?: string[]
   form_id: string
   form_version: number
+  grant_format?: 'b2-prefill-grant/1' | 'b2-prefill-grant/2'
   grant_id: string
   grant_sha256: string
   logical_origin: string
@@ -2694,6 +2736,16 @@ export interface PrefillGrant {
   portal_fixture_id: string
   runtime_epoch: string
   runtime_origin?: 'ephemeral_loopback_fixture_server'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "KnowledgeRegistration".
+ */
+export interface KnowledgeRegistration {
+  binding: ApprovedKnowledgeBinding
+  target_id: string
+  target_kind: 'browser_plan' | 'browser_grant'
+  target_revision: number
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -3507,7 +3559,15 @@ export interface InvalidationSummary {
   matched_dependencies: ValidationDependency[]
   target_id: string
   target_kind:
-    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
+    | 'validation'
+    | 'answer'
+    | 'check'
+    | 'approval'
+    | 'export'
+    | 'browser_plan'
+    | 'browser_grant'
+    | 'job'
+    | 'skill'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -3786,6 +3846,7 @@ export interface PlanRequest {
  * via the `definition` "PlannedFieldAction".
  */
 export interface PlannedFieldAction {
+  a4_binding?: ApprovedKnowledgeBinding | null
   action_index: number
   answer_version_id: string
   approval_provenance: Provenance
@@ -3857,6 +3918,7 @@ export interface PrefillAction {
  * via the `definition` "PrefillPlan".
  */
 export interface PrefillPlan {
+  a4_registration?: KnowledgeRegistration | null
   /**
    * @maxItems 20
    */
@@ -4103,6 +4165,7 @@ export interface PrefillPlan {
   created_at: string
   created_by: string
   definition: PlanDefinitionRef
+  dependency_union?: DependencyRef[]
   executable: boolean
   expires_at: string
   forbidden_operations?: string[]
@@ -4111,7 +4174,7 @@ export interface PrefillPlan {
   mode_label: string
   not_executable_reasons?: string[]
   organization_id: string
-  plan_format?: 'b2-approved-prefill/1'
+  plan_format?: 'b2-approved-prefill/1' | 'b2-approved-prefill/2'
   plan_id: string
   /**
    * sha256 of the canonical plan without this field.
@@ -4156,7 +4219,17 @@ export interface UnselectedRequirement {
  * via the `definition` "PrefillPlanView".
  */
 export interface PrefillPlanView {
-  availability: 'executable' | 'expired' | 'runtime_epoch_changed' | 'claimed' | 'empty'
+  availability:
+    | 'executable'
+    | 'expired'
+    | 'runtime_epoch_changed'
+    | 'claimed'
+    | 'empty'
+    | 'stale'
+    | 'dependency_unavailable'
+    | 'prepare_new_plan'
+  availability_reason?: string | null
+  next_action?: string | null
   plan: PrefillPlan
   run_id?: string | null
 }
