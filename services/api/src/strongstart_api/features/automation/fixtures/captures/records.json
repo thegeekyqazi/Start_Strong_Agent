@@ -1,0 +1,197 @@
+{
+  "fixture_note": "FIXTURE capture records (B2 fixture producer for the B1-B2 seam). Synthetic; .invalid URLs; not live captures.",
+  "records": [
+    {
+      "schema_version": "capture-record/1",
+      "capture_id": "cap-fixture-portal-html",
+      "source_id": "src-cap-fixture-portal-html",
+      "source_version_id": "srcv-cap-fixture-portal-html",
+      "organization_id": "demo-org",
+      "opportunity_id": "demo-gos",
+      "stream_id": null,
+      "cycle_id": null,
+      "urls": {
+        "original": "https://fixture.invalid/rep-portal-v1",
+        "requested": "https://fixture.invalid/rep-portal-v1",
+        "final": null,
+        "final_status": "unknown"
+      },
+      "provider": "fixture",
+      "captured_at": "2026-11-07T12:00:00Z",
+      "artifacts": [
+        {
+          "artifact_id": "art-portal-raw-html",
+          "representation_type": "provider_raw_html",
+          "media_type": "text/html; charset=utf-8",
+          "byte_size": 7289,
+          "sha256": "e5cbf284750e89da7eb45d6194a23702f6c1383c293e8682dd1e1dc10a956c8d",
+          "content_file": "portal-raw.html"
+        }
+      ],
+      "extraction": {
+        "coverage": "complete",
+        "warnings": []
+      },
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "FIXTURE capture record produced by B2 while B1's capture producer is pending. Not a live capture."
+      },
+      "authority_review_status": "unreviewed"
+    },
+    {
+      "schema_version": "capture-record/1",
+      "capture_id": "cap-fixture-guide-markdown",
+      "source_id": "src-cap-fixture-guide-markdown",
+      "source_version_id": "srcv-cap-fixture-guide-markdown",
+      "organization_id": "demo-org",
+      "opportunity_id": "demo-gos",
+      "stream_id": null,
+      "cycle_id": null,
+      "urls": {
+        "original": "https://fixture.invalid/guide",
+        "requested": "https://fixture.invalid/guide",
+        "final": null,
+        "final_status": "unknown"
+      },
+      "provider": "fixture",
+      "captured_at": "2026-11-07T12:00:00Z",
+      "artifacts": [
+        {
+          "artifact_id": "art-guide-markdown",
+          "representation_type": "provider_markdown",
+          "media_type": "text/markdown; charset=utf-8",
+          "byte_size": 385,
+          "sha256": "3bb6febc8797630c390c5d0d27f91243cf94b13429099b4b9d11e3e8aec89495",
+          "content_file": "guide.md"
+        }
+      ],
+      "extraction": {
+        "coverage": "complete",
+        "warnings": [
+          "provider rendered markdown; original bytes not preserved"
+        ]
+      },
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "FIXTURE capture record produced by B2 while B1's capture producer is pending. Not a live capture."
+      },
+      "authority_review_status": "unreviewed"
+    },
+    {
+      "schema_version": "capture-record/1",
+      "capture_id": "cap-fixture-guide-pdf",
+      "source_id": "src-cap-fixture-guide-pdf",
+      "source_version_id": "srcv-cap-fixture-guide-pdf",
+      "organization_id": "demo-org",
+      "opportunity_id": "demo-gos",
+      "stream_id": null,
+      "cycle_id": null,
+      "urls": {
+        "original": "https://fixture.invalid/guide.pdf",
+        "requested": "https://fixture.invalid/guide.pdf",
+        "final": null,
+        "final_status": "unknown"
+      },
+      "provider": "fixture",
+      "captured_at": "2026-11-07T12:00:00Z",
+      "artifacts": [
+        {
+          "artifact_id": "art-guide-pdf",
+          "representation_type": "original_http_bytes",
+          "media_type": "application/pdf",
+          "byte_size": 77,
+          "sha256": "4e59fe59782faf79c857a0640522f4d6642f5a91749203cc1b7c86cf788603fb",
+          "content_file": "guide.pdf"
+        }
+      ],
+      "extraction": {
+        "coverage": "complete",
+        "warnings": []
+      },
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "FIXTURE capture record produced by B2 while B1's capture producer is pending. Not a live capture."
+      },
+      "authority_review_status": "unreviewed"
+    },
+    {
+      "schema_version": "capture-record/1",
+      "capture_id": "cap-fixture-tampered",
+      "source_id": "src-cap-fixture-tampered",
+      "source_version_id": "srcv-cap-fixture-tampered",
+      "organization_id": "demo-org",
+      "opportunity_id": "demo-gos",
+      "stream_id": null,
+      "cycle_id": null,
+      "urls": {
+        "original": "https://fixture.invalid/rep-portal-v1",
+        "requested": "https://fixture.invalid/rep-portal-v1",
+        "final": null,
+        "final_status": "unknown"
+      },
+      "provider": "fixture",
+      "captured_at": "2026-11-07T12:00:00Z",
+      "artifacts": [
+        {
+          "artifact_id": "art-tampered-html",
+          "representation_type": "provider_raw_html",
+          "media_type": "text/html; charset=utf-8",
+          "byte_size": 7290,
+          "sha256": "e5cbf284750e89da7eb45d6194a23702f6c1383c293e8682dd1e1dc10a956c8d",
+          "content_file": "tampered.html"
+        }
+      ],
+      "extraction": {
+        "coverage": "complete",
+        "warnings": []
+      },
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "FIXTURE capture record produced by B2 while B1's capture producer is pending. Not a live capture."
+      },
+      "authority_review_status": "unreviewed"
+    },
+    {
+      "schema_version": "capture-record/1",
+      "capture_id": "cap-fixture-other-org",
+      "source_id": "src-cap-fixture-other-org",
+      "source_version_id": "srcv-cap-fixture-other-org",
+      "organization_id": "other-org",
+      "opportunity_id": "demo-gos",
+      "stream_id": null,
+      "cycle_id": null,
+      "urls": {
+        "original": "https://fixture.invalid/rep-portal-v1",
+        "requested": "https://fixture.invalid/rep-portal-v1",
+        "final": null,
+        "final_status": "unknown"
+      },
+      "provider": "fixture",
+      "captured_at": "2026-11-07T12:00:00Z",
+      "artifacts": [
+        {
+          "artifact_id": "art-other-org-html",
+          "representation_type": "provider_raw_html",
+          "media_type": "text/html; charset=utf-8",
+          "byte_size": 7289,
+          "sha256": "e5cbf284750e89da7eb45d6194a23702f6c1383c293e8682dd1e1dc10a956c8d",
+          "content_file": "portal-raw.html"
+        }
+      ],
+      "extraction": {
+        "coverage": "complete",
+        "warnings": []
+      },
+      "provenance": {
+        "provenance_class": "simulated",
+        "is_simulated": true,
+        "note": "FIXTURE capture record produced by B2 while B1's capture producer is pending. Not a live capture."
+      },
+      "authority_review_status": "unreviewed"
+    }
+  ]
+}

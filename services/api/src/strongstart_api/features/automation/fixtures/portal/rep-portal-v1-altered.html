@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>FIXTURE: Strong Start representative application portal (rep-portal v1, malformed variant: altered)</title>
+    <style>
+      body { font-family: system-ui, sans-serif; margin: 1.5rem; max-width: 46rem; }
+      .fixture-banner { background: #fff3cd; border: 2px solid #8a6d00; padding: 0.5rem 0.75rem; }
+      label, legend { display: block; font-weight: 600; margin-top: 1rem; }
+      .hint { font-size: 0.9rem; color: #444; margin: 0.15rem 0; }
+      textarea { width: 100%; min-height: 4rem; }
+      fieldset { margin-top: 1rem; }
+    </style>
+  </head>
+  <body>
+    <!--
+      B2-AUTO-001 representative portal fixture. Engineering-derived (engineering plan v1.1 s7);
+      original_guide_present=false. This is the Strong Start team's own fixture. It is NOT the
+      United Way portal, NOT a verbatim funder question set and NOT a verified open grant cycle.
+      data-fixture-* attributes are declared fixture metadata, not observed funder logic.
+    -->
+    <p class="fixture-banner" id="fixture-banner">
+      <strong>FIXTURE - representative portal, not a funder site.</strong>
+      <strong>Malformed variant: altered.</strong> Form changed after mapping: mission control renamed and an option value changed.
+      Engineering-derived example constraints; no original guide was parsed.
+    </p>
+    <h1>Sample operating-support application (fixture)</h1>
+    <form
+      id="rep-portal-v1"
+      action="/fixture-submit"
+      method="post"
+      data-fixture-form-id="rep-portal"
+      data-fixture-form-version="1"
+    >
+      <h2>Section A: Organization</h2>
+
+      <label for="mission-statement">1. Describe your organization's mission.</label>
+      <p class="hint" id="mission-hint">Maximum 50 words.</p>
+      <textarea
+        id="mission-statement"
+        name="mission"
+        required
+        maxlength="2000"
+        aria-describedby="mission-hint"
+        data-fixture-question-id="rp-mission"
+      ></textarea>
+
+      <label for="services">2. Describe the services you provide.</label>
+      <p class="hint" id="services-hint">Maximum 250 words.</p>
+      <textarea
+        id="services"
+        name="services"
+        required
+        aria-describedby="services-hint"
+        data-fixture-question-id="rp-services"
+      ></textarea>
+
+      <fieldset
+        id="service-area-group"
+        aria-describedby="service-area-hint"
+        data-fixture-question-id="rp-service-area"
+      >
+        <legend>3. Primary service area (required)</legend>
+        <p class="hint" id="service-area-hint">Choose one.</p>
+        <label for="service-area-city"
+          ><input type="radio" id="service-area-city" name="service_area" value="city" required />
+          City</label
+        >
+        <label for="service-area-region"
+          ><input type="radio" id="service-area-region" name="service_area" value="region" />
+          Region</label
+        >
+        <label for="service-area-province"
+          ><input type="radio" id="service-area-province" name="service_area" value="provincial" />
+          Province-wide</label
+        >
+      </fieldset>
+
+      <h2>Section B: Funding context</h2>
+
+      <label for="pending-applications">4. List other pending funding applications.</label>
+      <p class="hint" id="pending-applications-hint">Maximum 300 characters.</p>
+      <!-- Declared fixture discrepancy: native maxlength 250 differs from the 300-character text. -->
+      <textarea
+        id="pending-applications"
+        name="pending_applications"
+        maxlength="250"
+        aria-describedby="pending-applications-hint"
+        data-fixture-question-id="rp-pending-applications"
+      ></textarea>
+
+      <label for="other-funding">5. Describe other funding sources.</label>
+      <p class="hint" id="other-funding-hint">Max 300</p>
+      <textarea
+        id="other-funding"
+        name="other_funding"
+        aria-describedby="other-funding-hint"
+        data-fixture-question-id="rp-other-funding"
+      ></textarea>
+
+      <fieldset id="has-partners-group" data-fixture-question-id="rp-has-partners">
+        <legend>6. Do you deliver this work with partners? (required)</legend>
+        <label for="has-partners-yes"
+          ><input type="radio" id="has-partners-yes" name="has_partners" value="yes" required />
+          Yes</label
+        >
+        <label for="has-partners-no"
+          ><input type="radio" id="has-partners-no" name="has_partners" value="no" /> No</label
+        >
+      </fieldset>
+
+      <fieldset
+        id="partnership-section"
+        hidden
+        data-fixture-condition="rp-has-partners == yes"
+        data-fixture-condition-question="rp-has-partners"
+        data-fixture-condition-value="yes"
+      >
+        <legend>Partnership details (shown only when question 6 is Yes)</legend>
+        <label for="partnership">7. Describe your key partnerships.</label>
+        <p class="hint" id="partnership-hint">Maximum 350 words.</p>
+        <p class="hint" id="partnership-guide-note">
+          Guide note: partnership descriptions may be up to 500 words.
+        </p>
+        <textarea
+          id="partnership"
+          name="partnership"
+          aria-describedby="partnership-hint partnership-guide-note"
+          data-fixture-question-id="rp-partnership"
+        ></textarea>
+      </fieldset>
+
+      <h2>Section C: Request</h2>
+
+      <label for="request-amount">8. Standard request amount.</label>
+      <p class="hint" id="request-amount-hint">
+        Standard stream: 20,000 to 100,000. Whole dollars, no currency symbols or decimals.
+      </p>
+      <input
+        type="number"
+        id="request-amount"
+        name="request_amount"
+        required
+        min="20000"
+        max="100000"
+        step="1"
+        aria-describedby="request-amount-hint"
+        data-fixture-question-id="rp-request-amount"
+        data-fixture-stream="standard"
+      />
+
+      <label for="financial-statement">9. Attach your most recent financial statement.</label>
+      <p class="hint" id="financial-statement-hint">
+        Fixture constraint: one PDF or DOCX file, at most 5 MB.
+      </p>
+      <input
+        type="file"
+        id="financial-statement"
+        name="financial_statement"
+        accept=".pdf,.docx"
+        required
+        aria-describedby="financial-statement-hint"
+        data-fixture-question-id="rp-financial-statement"
+        data-fixture-max-size-bytes="5242880"
+        data-fixture-max-count="1"
+      />
+
+      <p class="hint" id="submit-note">
+        Submission and signing are staff-only. The automation principal has no submit permission;
+        the fixture server denies POST /fixture-submit.
+      </p>
+      <button type="submit" id="fixture-submit" disabled>Submit (staff only - disabled)</button>
+    </form>
+    <script>
+      // Fixture behaviour only: reveal the conditional section for staff and declare readiness.
+      ;(function () {
+        var yes = document.getElementById('has-partners-yes')
+        var no = document.getElementById('has-partners-no')
+        var section = document.getElementById('partnership-section')
+        function sync() {
+          section.hidden = !yes.checked
+        }
+        yes.addEventListener('change', sync)
+        no.addEventListener('change', sync)
+        setTimeout(function () {
+          document.body.setAttribute('data-fixture-ready', 'true')
+        }, 120)
+      })()
+    </script>
+  </body>
+</html>

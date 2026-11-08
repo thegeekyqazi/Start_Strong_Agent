@@ -18,6 +18,8 @@ FEATURE_OPS = [
     "/api/automation/intake",
     "/api/applications/draft-jobs",
 ]
+# B2-AUTO-001 implemented automation intake; it is no longer a 501 placeholder.
+UNIMPLEMENTED_OPS = [p for p in FEATURE_OPS if not p.startswith("/api/automation/")]
 
 
 def client(**overrides: Any) -> TestClient:
@@ -51,7 +53,6 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     caps = {c["feature"]: c for c in body["capabilities"]}
     for feature, owner in [
         ("knowledge", "A"),
-        ("automation", "B2"),
         ("applications", "C"),
         ("review", "C"),
         ("skills", "C"),
@@ -63,6 +64,11 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     assert caps["funding"]["owner"] == "B1"
     assert caps["funding"]["status"] == "unavailable"
     assert caps["platform.identity"]["status"] == "unavailable"
+    assert caps["automation"]["owner"] == "B2"
+    # B2-AUTO-001: intake + fixture inspection only
+    assert caps["automation"]["status"] == "fixture_only"
+    assert caps["automation.approved_prefill"]["status"] == "not_implemented"
+    assert caps["automation.final_submission"]["status"] == "unavailable"
 
 
 def test_protected_operations_deny_without_identity_provider() -> None:
@@ -76,7 +82,7 @@ def test_protected_operations_deny_without_identity_provider() -> None:
 
 def test_fixture_mode_unimplemented_ops_never_fake_success() -> None:
     c = client(auth_mode="fixture")
-    for path in FEATURE_OPS:
+    for path in UNIMPLEMENTED_OPS:
         r = c.post(path)
         assert r.status_code == 501, path
         assert r.json()["code"] == "not_implemented"
