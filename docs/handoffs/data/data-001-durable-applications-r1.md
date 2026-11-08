@@ -9,7 +9,10 @@ Branch `data/data-001-tigerdata-application-state`, canonical repository
 (PR #19 merged). Upstream rechecked at final checkpoint; no newer main changes. One agent,
 sequential M0–M4. The project owner owns former A/B/C engineering/migration sequencing;
 Sawaab owns UI/UX. No other worktree/branch changes discarded, default branch writes,
-force-push, merge or deployment. PR publication/head are recorded at the final checkpoint.
+force-push, merge or deployment. Draft [PR #20](https://github.com/thegeekyqazi/strong-start-agent/pull/20) is published.
+Final implementation/source checkpoint: `d2d76a0232c48cbf6922133837c9cbbd65a562c5`;
+subsequent documentation records publication only. Exact branch head and CI are visible
+in the PR. No merge or deployment performed.
 
 Spec: [DATA-001 revision 1.0](../../specs/DATA-001_TigerData_and_Durable_Application_State.md).
 Engineering v1.1 §§2,4.1–4.3,5.3,8.2–8.3,9.2,10.5,12.4,13.2–13.3,14–16,19–21;
@@ -26,7 +29,7 @@ revision 1.1. No blanket86-rule, general JOB-01/04 or G2/G4/G5 completion claim.
   guarded commands+audit, exports and process/failure/constraint/mutation evidence.
 - M3 `ac48f01`: actual normal runtime/public factory, explicit fixture selection, durable
   metadata/UI labels, operator epoch rotation, fresh API/restart/Chromium and managed A4.
-- M4: hosted opt-in tooling, actual local backup/restore, complete acceptance/runbooks,
+- M4 `d2d76a0`: hosted opt-in tooling, actual local backup/restore, complete acceptance/runbooks,
   required final checks and draft PR publication. Hosted execution/restore remain pending.
 
 All C state persists: every version/check/render/dependency/question-set/A4 field,
