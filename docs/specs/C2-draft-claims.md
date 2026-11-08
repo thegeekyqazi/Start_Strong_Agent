@@ -1,7 +1,7 @@
 # C2: Plan and draft answers with claim bindings and visible findings
 
 - Task ID: C2 (lane Dev C)
-- Revision: 1.0 (proposal, awaiting the project owner's "go")
+- Revision: 1.1 (approved by the project owner 2026-11-07 ("go"); s11 decisions recorded; owner focus: APP-03 unbound-number scan first, strict request typing)
 - Branch: `dev-c/c2-draft-claims`, **stacked** on `dev-c/c1-shell-and-adapter` (`94dffc2`; C1 is not yet merged). Integration order: C1 PR first, then rebase C2 onto `main`
 - Engineering baseline: v1.1, s4.2, s7, s8.1-8.3, s9.1-9.2, s10.5 (APP), s10.6 (POL), s13.2 (SEC-12), s14.1, s15, s18, s20.3-20.4 (C2 row)
 - Lane plan: `docs/coordination/dev-c-lane-plan.md` rev 1.0, s3 "C2"
@@ -149,9 +149,11 @@ Each phase is gated: owner instruction "do not start integration" applies until 
   - semantic support and paraphrase judgement (s8.2 says these need review, not code).
 - No new dependency is expected, and no migration is in C2.
 
-## 11. Open questions for the owner (please answer with "go")
+## 11. Owner decisions (2026-11-07)
 
-1. **Reviewer roles:** s8.1 lists numerical and meaning reviewers. Should they be added in C2, or kept for a later increment? Recommendation: later. C2 already has deterministic numeric checks, and s8.1 requires reviewers to see original evidence first.
-2. **Persistence:** should C2 stay stateless (check by exact text hash), or request a migration from A for answer versions? Recommendation: stay stateless. C3 owns the state machine and approval and will make one migration request.
-3. **Fact versioning:** `Fact` has no version field. Bindings use `pack_version_id` plus `fact_id` until A adds one. Should this be raised as a cross-module proposal to A now? Recommendation: yes, as a note only.
-4. **Phase C2b:** should C2b (consume B2's merged export) start once C2 fixture work is done, or wait until A1 also merges? Recommendation: do B2 first, since it is already in `main`.
+1. **Reviewer roles:** deferred to C3, alongside the approval records. C2 has only the planner and writer roles.
+2. **Persistence:** C2 stays stateless; checks bind to the exact text hash. C3 handles persistence and the DB schema with Dev A.
+3. **Fact versions:** a non-blocking request goes to Dev A for a version/`updated_at` field on facts in `EvidenceBundle` (`docs/handoffs/dev-c/c2-fact-version-request.md`). Until then, bindings use `pack_version_id` plus `fact_id`.
+4. **Real questions:** switch to B2's real questions (phase C2b) once the fixture work is done. A's evidence waits for A1 to merge.
+
+**Owner priorities:** (a) close the C1 gap with the APP-03 unbound-number scanner first; (b) enforce strict request typing (a string version such as `"1"` is rejected with 422).
