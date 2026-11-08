@@ -7,7 +7,7 @@
 - Task spec path/revision: `docs/specs/A3-VAL-003_Deterministic_Validation_Runner.md` rev 1.0, implementation record section 20
 - Engineering version/sections and rule IDs: v1.1 sections 4, 5, 9, 10.1, 13.2, 14-15 and 19-21; SRC-01 through SRC-10; SEC-01/13 boundaries
 - Branch and exact implementation commit: `dev-a/a3ab-val-003-source-validation`; exact commit attached to the PR
-- PR / Issue links, or not published: pending publication
+- PR / Issue links, or not published: [PR #13](https://github.com/thegeekyqazi/Start_Strong_Agent/pull/13)
 - Supersedes / superseded by: implements A3a/A3b from `docs/handoffs/dev-a/a3-val-003-spec-r1.md`; A3c will supersede only numeric/integration status
 
 ## What works
