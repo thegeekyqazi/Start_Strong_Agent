@@ -6,6 +6,6 @@ export const applicationsFeature: FeatureEntry = {
   id: 'applications',
   label: 'Applications',
   owner: 'C',
-  summary: 'Answer planning and drafting.',
+  summary: 'Application workspace and draft proposals (fixture-backed in C1).',
   Component: ApplicationsPage,
 }

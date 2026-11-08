@@ -477,6 +477,67 @@ export interface IntakeLimit {
   unit: 'words' | 'characters' | 'amount' | 'utf16_code_units' | 'unknown'
 }
 /**
+ * Questions and evidence for one application, scoped to the server identity.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApplicationWorkspace".
+ */
+export interface ApplicationWorkspace {
+  application_definition_id: string
+  data_label: string
+  evidence_bundle: EvidenceBundle
+  is_fixture: boolean
+  question_set: QuestionSet
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "EvidenceBundle".
+ */
+export interface EvidenceBundle {
+  /**
+   * Server-derived access scope label, not a client claim.
+   */
+  access_context: string
+  allowed_fact_ids: string[]
+  bundle_id: string
+  coverage_notes?: string[]
+  facts: Fact[]
+  organization_id: string
+  pack_id: string
+  pack_version_id: string
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "Fact".
+ */
+export interface Fact {
+  fact_id: string
+  metric_id: string
+  population?: string | null
+  provenance: Provenance
+  raw_value?: string | null
+  /**
+   * e.g. '2025-09/2026-06'; null = unknown.
+   */
+  reporting_period: string | null
+  scope: string
+  status: 'extracted' | 'needs_review' | 'verified' | 'conflicting' | 'superseded'
+  /**
+   * @minItems 1
+   */
+  supporting_refs: [SourceReference, ...SourceReference[]]
+  /**
+   * Null means the unit is unknown, not dimensionless.
+   */
+  unit: string | null
+  /**
+   * Exact decimal string; null when unknown.
+   */
+  value: string | null
+}
+/**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "ApprovalSnapshot".
  */
@@ -925,6 +986,67 @@ export interface ChangedVersion {
   ref_id: string
 }
 /**
+ * Validated model proposal for one question. Not an answer version or approval.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DraftProposal".
+ */
+export interface DraftProposal {
+  evidence_bundle_id: string
+  fact_ids: string[]
+  pack_version_id: string
+  proposal_id: string
+  provenance: Provenance
+  provider: ModelRunInfo
+  question_id: string
+  question_version: number
+  schema_version?: '1'
+  segments: (TextSegment | FactSlotSegment)[]
+  template_sha256: string
+  /**
+   * Proposal text with {{fact:ID}} slot tokens.
+   */
+  template_text: string
+  uncertainties: string[]
+}
+/**
+ * Which adapter actually produced the proposal (s17: record provider/model).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ModelRunInfo".
+ */
+export interface ModelRunInfo {
+  adapter: 'fake' | 'gemini'
+  is_fixture: boolean
+  model: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "TextSegment".
+ */
+export interface TextSegment {
+  kind: 'text'
+  text: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FactSlotSegment".
+ */
+export interface FactSlotSegment {
+  fact_id: string
+  kind: 'fact_slot'
+}
+/**
+ * Client request for a draft. Extra fields (e.g. ``approved``) are rejected.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DraftRequest".
+ */
+export interface DraftRequest {
+  evidence_bundle_id: string
+  question_version: number
+}
+/**
  * Safe structured error. Never include secrets or raw exception text.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -938,53 +1060,6 @@ export interface ErrorEnvelope {
   message: string
   request_id?: string | null
   schema_version?: '1'
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "EvidenceBundle".
- */
-export interface EvidenceBundle {
-  /**
-   * Server-derived access scope label, not a client claim.
-   */
-  access_context: string
-  allowed_fact_ids: string[]
-  bundle_id: string
-  coverage_notes?: string[]
-  facts: Fact[]
-  organization_id: string
-  pack_id: string
-  pack_version_id: string
-  schema_version?: '1'
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "Fact".
- */
-export interface Fact {
-  fact_id: string
-  metric_id: string
-  population?: string | null
-  provenance: Provenance
-  raw_value?: string | null
-  /**
-   * e.g. '2025-09/2026-06'; null = unknown.
-   */
-  reporting_period: string | null
-  scope: string
-  status: 'extracted' | 'needs_review' | 'verified' | 'conflicting' | 'superseded'
-  /**
-   * @minItems 1
-   */
-  supporting_refs: [SourceReference, ...SourceReference[]]
-  /**
-   * Null means the unit is unknown, not dimensionless.
-   */
-  unit: string | null
-  /**
-   * Exact decimal string; null when unknown.
-   */
-  value: string | null
 }
 /**
  * Body of POST /api/automation/export-definition. Server re-derives everything.

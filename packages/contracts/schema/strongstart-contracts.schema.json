@@ -341,6 +341,50 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "ApplicationWorkspace": {
+      "additionalProperties": false,
+      "description": "Questions and evidence for one application, scoped to the server identity.",
+      "properties": {
+        "application_definition_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Application Definition Id",
+          "type": "string"
+        },
+        "data_label": {
+          "title": "Data Label",
+          "type": "string"
+        },
+        "evidence_bundle": {
+          "$ref": "#/$defs/EvidenceBundle"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "question_set": {
+          "$ref": "#/$defs/QuestionSet"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "application_definition_id",
+        "question_set",
+        "evidence_bundle",
+        "is_fixture",
+        "data_label"
+      ],
+      "title": "ApplicationWorkspace",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "ApprovalSnapshot": {
       "additionalProperties": false,
       "properties": {
@@ -1902,6 +1946,149 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "DraftProposal": {
+      "additionalProperties": false,
+      "description": "Validated model proposal for one question. Not an answer version or approval.",
+      "properties": {
+        "evidence_bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evidence Bundle Id",
+          "type": "string"
+        },
+        "fact_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "title": "Fact Ids",
+          "type": "array"
+        },
+        "pack_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Pack Version Id",
+          "type": "string"
+        },
+        "proposal_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "provider": {
+          "$ref": "#/$defs/ModelRunInfo"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "segments": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "fact_slot": "#/$defs/FactSlotSegment",
+                "text": "#/$defs/TextSegment"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/TextSegment"
+              },
+              {
+                "$ref": "#/$defs/FactSlotSegment"
+              }
+            ]
+          },
+          "title": "Segments",
+          "type": "array"
+        },
+        "template_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Template Sha256",
+          "type": "string"
+        },
+        "template_text": {
+          "description": "Proposal text with {{fact:ID}} slot tokens.",
+          "title": "Template Text",
+          "type": "string"
+        },
+        "uncertainties": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Uncertainties",
+          "type": "array"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "question_id",
+        "question_version",
+        "evidence_bundle_id",
+        "pack_version_id",
+        "template_text",
+        "template_sha256",
+        "segments",
+        "fact_ids",
+        "uncertainties",
+        "provider",
+        "provenance"
+      ],
+      "title": "DraftProposal",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "DraftRequest": {
+      "additionalProperties": false,
+      "description": "Client request for a draft. Extra fields (e.g. ``approved``) are rejected.",
+      "properties": {
+        "evidence_bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evidence Bundle Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "question_version",
+        "evidence_bundle_id"
+      ],
+      "title": "DraftRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "ErrorCode": {
       "enum": [
         "not_implemented",
@@ -2257,6 +2444,31 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "A"
+    },
+    "FactSlotSegment": {
+      "additionalProperties": false,
+      "properties": {
+        "fact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Fact Id",
+          "type": "string"
+        },
+        "kind": {
+          "const": "fact_slot",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "fact_id"
+      ],
+      "title": "FactSlotSegment",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "FieldMapping": {
       "additionalProperties": false,
@@ -4335,6 +4547,37 @@
       "x-contract-status": "frozen",
       "x-owner": "shared"
     },
+    "ModelRunInfo": {
+      "additionalProperties": false,
+      "description": "Which adapter actually produced the proposal (s17: record provider/model).",
+      "properties": {
+        "adapter": {
+          "enum": [
+            "fake",
+            "gemini"
+          ],
+          "title": "Adapter",
+          "type": "string"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "model": {
+          "title": "Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "adapter",
+        "model",
+        "is_fixture"
+      ],
+      "title": "ModelRunInfo",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "NetworkLogEntry": {
       "additionalProperties": false,
       "properties": {
@@ -6057,6 +6300,28 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "TextSegment": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "text",
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "TextSegment",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "UnresolvedItem": {
       "additionalProperties": false,
