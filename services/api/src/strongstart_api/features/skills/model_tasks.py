@@ -148,13 +148,26 @@ def _run_info(adapter: ModelAdapter) -> tuple[ModelRunInfo, frozenset[Provenance
 
 
 def verify_span(text: str, source_version_id: str, text_sha: str, cite: _Cite) -> SourceSpan:
-    if not (0 <= cite.start < cite.end <= len(text)) or text[cite.start : cite.end] != cite.quote:
-        raise ModelOutputRejected(issues=["citation_not_exact_source_text"])
+    """Bind a model citation to an exact source span.
+
+    See docs/decisions/C4-SKL-001-citation-offset-resolution.md.
+
+    The quote must be exact source text. Models report code-point offsets unreliably, so when
+    the reported offsets do not slice to the quote, the server derives the offsets itself, but
+    only when the exact quote occurs exactly once in the source. A quote that is absent or
+    ambiguous is rejected. The stored span is always ``text[start:end] == quote``.
+    """
+    start, end = cite.start, cite.end
+    if not (0 <= start < end <= len(text)) or text[start:end] != cite.quote:
+        first = text.find(cite.quote)
+        if first < 0 or text.find(cite.quote, first + 1) >= 0:
+            raise ModelOutputRejected(issues=["citation_not_exact_source_text"])
+        start, end = first, first + len(cite.quote)
     return SourceSpan(
         source_version_id=source_version_id,
         text_sha256=text_sha,
-        start=cite.start,
-        end=cite.end,
+        start=start,
+        end=end,
         quote=cite.quote,
     )
 
