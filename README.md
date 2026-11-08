@@ -1,4 +1,4 @@
-# Strong Start grant workspace
+# Strong Start Agent
 
 A modular grant workspace for CommuniHacks. It covers discovering funding, capturing official requirements, retrieving organizational evidence, drafting and reviewing answers, and transferring approved content into forms. This repository currently holds the **INIT-001 foundation only**. No product feature is implemented yet.
 

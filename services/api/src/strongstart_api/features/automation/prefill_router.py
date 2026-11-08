@@ -59,7 +59,7 @@ from .prefill_deps import (
     get_runtime_epoch,
 )
 from .prefill_plan import PlanRejected, build_plan
-from .prefill_runner import ExecutionDeps, GrantRefused, execute, view_of
+from .prefill_runner import ExecutionDeps, GrantRefused, execute, live_plan_problem, view_of
 from .prefill_store import AlreadyClaimed, PrefillRepository, run_id_for
 from .public import build_application_definition_reader, build_definition_repository
 from .registry import PREFILL_PORTALS
@@ -227,6 +227,9 @@ def get_plan(
     repo: RepoDep,
     clock: ClockDep,
     epoch: EpochDep,
+    reader: ReaderDep,
+    currentness: CurrentDep,
+    config: BrowserDep,
 ) -> PrefillPlanView:
     store = _require(settings, repo)
     if not PLAN_ID.fullmatch(plan_id):
@@ -236,6 +239,7 @@ def get_plan(
         run = store.run_for_plan(identity.organization_id, plan_id)
     except Exception as exc:
         raise _store_error(exc) from None
+    reason = None
     if run is not None:
         availability = "claimed"
     elif not plan.executable:
@@ -245,10 +249,26 @@ def get_plan(
     elif clock() > plan.expires_at:
         availability = "expired"
     else:
-        availability = "executable"
+        problem = live_plan_problem(
+            _deps(settings, store, reader, currentness, clock, epoch, config), plan
+        )
+        reason = problem
+        if problem == "prepare_new_plan":
+            availability = "prepare_new_plan"
+        elif problem is not None:
+            availability = "dependency_unavailable" if "unavailable" in problem else "stale"
+        else:
+            availability = "executable"
     return PrefillPlanView(
         plan=plan,
         availability=availability,
+        availability_reason=reason,
+        next_action=(
+            "The source pack or answer changed, or could not be verified. "
+            "Review the answer and prepare a new plan."
+            if reason is not None
+            else None
+        ),
         run_id=run.run_id if run else None,
     )
 

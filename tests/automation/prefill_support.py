@@ -34,6 +34,7 @@ from strongstart_api.features.automation.prefill_deps import (
 from strongstart_api.identity import require_identity
 from strongstart_contracts import Provenance, ProvenanceClass, SessionIdentity
 from strongstart_contracts.answers import ApprovalSnapshot, DependencyRef
+from strongstart_contracts.approval_integrity import approval_snapshot_sha256
 from strongstart_contracts.automation_prefill import (
     ApprovedPrefillContent,
     ApprovedTypedValue,
@@ -180,7 +181,9 @@ class TestApprovals:
             rendered_sha256=rendered_sha,
             renderer_version="test-renderer/1",
             unresolved_marker_count=a.rendered.count("{{"),
-            dependency_snapshot_sha256=sha("snapshot:" + a.approval_id),
+            dependency_snapshot_sha256=approval_snapshot_sha256(
+                sha(a.template), a.organization_id, list(a.dependencies)
+            ),
             dependencies=list(a.dependencies)
             if a.corrupt != "dependencies"
             else [DependencyRef(kind="fact", ref_id="fact-x", version="9")],

@@ -139,7 +139,7 @@ def test_auto16_availability_is_granular(fixture_client: TestClient) -> None:
         "automation.approved_prefill": "fixture_only",
         "automation.prefill_plan_preparation": "fixture_only",
         "automation.prefill_execution_test_provider": "fixture_only",
-        "automation.prefill_execution_c3": "unavailable",
+        "automation.prefill_execution_c3": "fixture_only",
         "automation.prefill_choice_values": "unavailable",
         "automation.attachment_checklist": "fixture_only",
         "automation.real_portal_prefill": "unavailable",

@@ -9,7 +9,7 @@ from dataclasses import dataclass
 import pytest
 from alembic import command
 from alembic.config import Config
-from sqlalchemy import delete, insert, select
+from sqlalchemy import delete, insert, or_, select
 
 from strongstart_api.config import Settings
 from strongstart_api.db import (
@@ -179,8 +179,25 @@ def managed():
                     pack_change_sets.c.application_context.like(prefix + "%")
                 )
             )
-            for table in (dependency_target_refs, dependency_targets):
-                conn.execute(delete(table).where(table.c.target_id.like(prefix + "%")))
+            owned_targets = select(dependency_targets.c.target_id).where(
+                dependency_targets.c.application_context.like(prefix + "%")
+            )
+            conn.execute(
+                delete(dependency_target_refs).where(
+                    or_(
+                        dependency_target_refs.c.target_id.like(prefix + "%"),
+                        dependency_target_refs.c.target_id.in_(owned_targets),
+                    )
+                )
+            )
+            conn.execute(
+                delete(dependency_targets).where(
+                    or_(
+                        dependency_targets.c.target_id.like(prefix + "%"),
+                        dependency_targets.c.application_context.like(prefix + "%"),
+                    )
+                )
+            )
             conn.execute(
                 delete(active_pack_contexts).where(
                     active_pack_contexts.c.application_context.like(prefix + "%")

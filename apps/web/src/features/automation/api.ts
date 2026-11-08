@@ -101,6 +101,14 @@ export function portalUrl(fixtureId: string): string {
 }
 
 const REASON_TEXT: Record<string, string> = {
+  managed_registration_failed:
+    'The source pack changed or could not be verified. Review the answer and prepare a new plan.',
+  managed_verifier_unavailable:
+    'Managed source verification is unavailable. Try again when it is connected.',
+  prepare_new_plan: 'This pending plan uses an old format. Prepare a new plan.',
+  mixed_evidence_context:
+    'Select approved answers from one evidence context and prepare a new plan.',
+
   malformed_request: 'The request was not in the expected shape.',
   malformed_definition: 'The definition is not valid JSON or does not match the supported format.',
   duplicate_id: 'Two items share an ID. Nothing was renumbered; fix the source and re-import.',

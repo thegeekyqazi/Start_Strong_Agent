@@ -402,7 +402,7 @@ def _sha_bytes(data: bytes) -> str:
 def _grant_matches(
     grant: PrefillGrant | None, actions: list[BrowserAction], fp: str, page_sha: str
 ) -> bool:
-    if grant is None:
+    if grant is None or grant.grant_format != "b2-prefill-grant/2":
         return False
     record = grant.model_dump(mode="json")
     record.pop("grant_sha256")

@@ -2474,6 +2474,7 @@ export interface FieldReceipt {
  * via the `definition` "PrefillGrant".
  */
 export interface PrefillGrant {
+  a4_registration?: KnowledgeRegistration | null
   actor_id: string
   budgets: PrefillBudgets
   created_at: string
@@ -2482,6 +2483,7 @@ export interface PrefillGrant {
   forbidden_operations?: string[]
   form_id: string
   form_version: number
+  grant_format?: 'b2-prefill-grant/1' | 'b2-prefill-grant/2'
   grant_id: string
   grant_sha256: string
   logical_origin: string
@@ -2734,6 +2736,16 @@ export interface PrefillGrant {
   portal_fixture_id: string
   runtime_epoch: string
   runtime_origin?: 'ephemeral_loopback_fixture_server'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "KnowledgeRegistration".
+ */
+export interface KnowledgeRegistration {
+  binding: ApprovedKnowledgeBinding
+  target_id: string
+  target_kind: 'browser_plan' | 'browser_grant'
+  target_revision: number
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -3834,6 +3846,7 @@ export interface PlanRequest {
  * via the `definition` "PlannedFieldAction".
  */
 export interface PlannedFieldAction {
+  a4_binding?: ApprovedKnowledgeBinding | null
   action_index: number
   answer_version_id: string
   approval_provenance: Provenance
@@ -3905,6 +3918,7 @@ export interface PrefillAction {
  * via the `definition` "PrefillPlan".
  */
 export interface PrefillPlan {
+  a4_registration?: KnowledgeRegistration | null
   /**
    * @maxItems 20
    */
@@ -4151,6 +4165,7 @@ export interface PrefillPlan {
   created_at: string
   created_by: string
   definition: PlanDefinitionRef
+  dependency_union?: DependencyRef[]
   executable: boolean
   expires_at: string
   forbidden_operations?: string[]
@@ -4159,7 +4174,7 @@ export interface PrefillPlan {
   mode_label: string
   not_executable_reasons?: string[]
   organization_id: string
-  plan_format?: 'b2-approved-prefill/1'
+  plan_format?: 'b2-approved-prefill/1' | 'b2-approved-prefill/2'
   plan_id: string
   /**
    * sha256 of the canonical plan without this field.
@@ -4204,7 +4219,17 @@ export interface UnselectedRequirement {
  * via the `definition` "PrefillPlanView".
  */
 export interface PrefillPlanView {
-  availability: 'executable' | 'expired' | 'runtime_epoch_changed' | 'claimed' | 'empty'
+  availability:
+    | 'executable'
+    | 'expired'
+    | 'runtime_epoch_changed'
+    | 'claimed'
+    | 'empty'
+    | 'stale'
+    | 'dependency_unavailable'
+    | 'prepare_new_plan'
+  availability_reason?: string | null
+  next_action?: string | null
   plan: PrefillPlan
   run_id?: string | null
 }

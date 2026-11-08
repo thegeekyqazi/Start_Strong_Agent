@@ -84,3 +84,21 @@ restored test passed. Restored PackService SHA-256:
 The script is reproducible with the configured local PostgreSQL URL; it does not reset DB
 state. Only task-owned synthetic rows are cleaned. Migration advanced the existing local
 PostgreSQL from 0007 to 0008, no data reset. No TigerData environment was contacted.
+
+## M3 format/currentness compatibility
+
+Plans now use `b2-approved-prefill/2`; grants explicitly use `b2-prefill-grant/2`.
+Response decoders retain v1 historical reads with bounded defaults; execution refuses
+old pending plans/grants with a prepare-new-plan action. No stored grant is rehashed or
+upgraded. Immutable plan actions retain their saved C bindings, and the plan stores the
+full original dependency union plus aggregate A4 registration. Grant data/hash predicts
+its own exact target revision; that target must actually register after the claim before
+entry. Both targets are checked at every action boundary and completion. Legacy explicit
+test currentness remains a harness only; an object implementing a protocol does not earn
+an A4 label. Managed plans require the real supported facade and successful registration.
+
+GETs compute usability separately without changing plan bytes, registration or expiry.
+Completed receipt replay precedes new currentness decisions and never launches a browser.
+The harness now constructs valid C-format dependency snapshot hashes to meet B's stricter
+independent checks. Missing-reader coverage explicitly injects an unconfigured producer;
+the normal runtime now uses C's real empty store and refuses unknown approvals as held.

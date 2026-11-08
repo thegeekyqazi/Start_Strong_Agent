@@ -54,3 +54,42 @@ class KnowledgeRegistration(ContractModel):
     target_id: StableId
     target_revision: int = Field(ge=1)
     binding: ApprovedKnowledgeBinding
+
+
+def merge_bindings(
+    bindings: list[ApprovedKnowledgeBinding], refs: list[DependencyRef]
+) -> ApprovedKnowledgeBinding:
+    """Union of already verified projections, within one exact active context."""
+    if not bindings:
+        raise ValueError("managed binding required")
+    first = bindings[0]
+    for binding in bindings:
+        if binding_digest(binding) != binding.projection_sha256 or (
+            binding.organization_id,
+            binding.application_context,
+            binding.pack_version_id,
+            binding.active_revision,
+            binding.mapping_version,
+        ) != (
+            first.organization_id,
+            first.application_context,
+            first.pack_version_id,
+            first.active_revision,
+            first.mapping_version,
+        ):
+            raise ValueError("mixed or invalid managed context")
+    items = {
+        (d.kind, d.ref_id, d.version, d.content_hash): d
+        for binding in bindings
+        for d in binding.dependencies
+    }
+    identities = {(d.kind, d.ref_id) for d in items.values()}
+    if len(identities) != len(items):
+        raise ValueError("conflicting dependency versions")
+    merged = first.model_copy(
+        update={
+            "c_dependencies_sha256": c_dependency_digest(refs),
+            "dependencies": sorted(items.values(), key=lambda d: (d.kind, d.ref_id, d.version)),
+        }
+    )
+    return merged.model_copy(update={"projection_sha256": binding_digest(merged)})

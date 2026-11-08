@@ -6,6 +6,7 @@ import type {
 } from '@strongstart/contracts'
 import * as api from './api'
 import { PrefillPanel, PREFILL_PENDING_KEY } from './prefill'
+import { clearApprovedSelection, selectApprovedAnswer } from './approvedHandoff'
 
 const id = `pfp-${'a'.repeat(26)}`
 const qs = `qs-def-${'b'.repeat(26)}-v1`
@@ -29,6 +30,12 @@ const plan = {
   expires_at: '2026-11-08T12:02:00Z',
   executable: true,
   mode_label: 'FIXTURE test provider only',
+  producers: {
+    approval_reader: 'explicit_test_provider',
+    approval_reader_is_fixture: true,
+    dependency_currentness: 'not_integrated',
+    attachment_evidence: 'unavailable',
+  },
   scope_note: 'Selected fields only.',
   actions: [
     {
@@ -116,6 +123,7 @@ async function prepared() {
 
 beforeEach(() => {
   sessionStorage.clear()
+  clearApprovedSelection()
   vi.spyOn(api, 'getQuestionSet').mockResolvedValue({ ok: true, data: pub })
   vi.spyOn(api, 'preparePrefill').mockResolvedValue({ ok: true, data: plan })
   vi.spyOn(api, 'executePrefill').mockResolvedValue({
@@ -269,4 +277,52 @@ it('holds an empty plan and exposes an unavailable reader without fallback', asy
   await screen.findByText('Entry blocked: no_eligible_selected_fields')
   expect(screen.getByText('Fill these approved fields')).toBeDisabled()
   expect(api.executePrefill).not.toHaveBeenCalled()
+})
+
+it('loads Review IDs without copied text and requires explicit preparation and entry', async () => {
+  selectApprovedAnswer(qs, question, 'c-server-approval')
+  render(<PrefillPanel />)
+  await screen.findByText(/Exact selection/)
+  expect(screen.getByLabelText(/Approval ID for pf-org-name/)).toHaveValue('c-server-approval')
+  expect(api.preparePrefill).not.toHaveBeenCalled()
+  expect(api.executePrefill).not.toHaveBeenCalled()
+  fireEvent.click(screen.getByText('Prepare selected-field plan (no entry)'))
+  await screen.findByText('Exact approved plan preview')
+  expect(api.preparePrefill).toHaveBeenCalledWith({
+    question_set_id: qs,
+    portal_fixture_id: 'rep-prefill-v1',
+    selections: [{ published_question_id: question, approval_snapshot_id: 'c-server-approval' }],
+  })
+})
+
+it('read-only currentness shows the next action and disables stale entry', async () => {
+  vi.mocked(api.getPrefillPlan).mockResolvedValue({
+    ok: true,
+    data: {
+      plan,
+      availability: 'stale',
+      next_action: 'The source pack changed. Review the answer and prepare a new plan.',
+    },
+  })
+  render(<PrefillPanel />)
+  await prepared()
+  fireEvent.click(screen.getByText('Check current sources (no entry)'))
+  await screen.findByText(/The source pack changed/)
+  expect(screen.getByText('Fill these approved fields')).toBeDisabled()
+  expect(api.executePrefill).not.toHaveBeenCalled()
+  expect(api.preparePrefill).toHaveBeenCalledTimes(1)
+})
+
+it('a late Review handoff load cannot replace a newer question selection', async () => {
+  const gate = deferred<Awaited<ReturnType<typeof api.getQuestionSet>>>()
+  vi.mocked(api.getQuestionSet).mockReturnValue(gate.promise)
+  selectApprovedAnswer(qs, question, 'c-old-approval')
+  render(<PrefillPanel />)
+  fireEvent.change(screen.getByLabelText('Exact saved question-set ID'), {
+    target: { value: 'new-selection' },
+  })
+  await act(async () => gate.resolve({ ok: true, data: pub }))
+  expect(screen.getByLabelText('Exact saved question-set ID')).toHaveValue('new-selection')
+  expect(screen.queryByText(/Exact selection/)).not.toBeInTheDocument()
+  expect(api.preparePrefill).not.toHaveBeenCalled()
 })

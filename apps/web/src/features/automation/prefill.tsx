@@ -2,6 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type {
   PrefillPlan,
+  PrefillPlanView,
   PrefillRunView,
   PreparePrefillPlanRequest,
   PublishedApplicationVersion,
@@ -15,6 +16,8 @@ import {
   newIdempotencyKey,
   preparePrefill,
 } from './api'
+
+import { readApprovedSelection } from './approvedHandoff'
 
 export const PREFILL_PENDING_KEY = 'strongstart.automation.prefill.pending.v1'
 type Intent = { planId: string; hash: string; key: string }
@@ -51,11 +54,14 @@ const OUTCOME: Record<string, string> = {
 }
 
 export function PrefillPanel() {
-  const [questionSet, setQuestionSet] = useState('')
+  const [handoff] = useState(readApprovedSelection)
+  const [questionSet, setQuestionSet] = useState(handoff?.questionSetId ?? '')
   const [portal, setPortal] = useState('rep-prefill-v1')
   const [definition, setDefinition] = useState<PublishedApplicationVersion | null>(null)
   const [approvals, setApprovals] = useState<Record<string, string>>({})
   const [plan, setPlan] = useState<PrefillPlan | null>(null)
+  const [availability, setAvailability] = useState<PrefillPlanView['availability']>('empty')
+  const [nextAction, setNextAction] = useState('')
   const [receipt, setReceipt] = useState<PrefillRunView | null>(null)
   const [error, setError] = useState('')
   const [busy, setBusy] = useState('')
@@ -71,12 +77,50 @@ export function PrefillPanel() {
     [],
   )
 
+  useEffect(() => {
+    if (!handoff) return
+    const token = ++generation.current
+    inFlight.current = true
+    setBusy('Loading approved answer selection')
+    getQuestionSet(handoff.questionSetId).then((r) => {
+      if (token !== generation.current) return
+      inFlight.current = false
+      setBusy('')
+      if (!r.ok) {
+        setError(describeError(r))
+        return
+      }
+      if (
+        !Object.keys(handoff.approvals).every((id) =>
+          r.data.id_mapping.some((m) => m.published_question_id === id),
+        )
+      ) {
+        setError(
+          'The approved selection does not match these questions. Return to Review and select a current answer.',
+        )
+        return
+      }
+      setDefinition(r.data)
+      setApprovals(handoff.approvals)
+      setPortal(
+        r.data.id_mapping.some((m) => m.original_question_id.startsWith('rp-'))
+          ? 'rep-portal-v1'
+          : 'rep-prefill-v1',
+      )
+    })
+    return () => {
+      generation.current++
+    }
+  }, [handoff])
+
   function changed() {
     generation.current++
     inFlight.current = false
     setBusy('')
     setError('')
     setPlan(null)
+    setAvailability('empty')
+    setNextAction('')
     setReceipt(null)
     // Pending execution identity survives selection changes and refresh. It is read-only
     // unless staff explicitly retries the same displayed plan.
@@ -131,12 +175,15 @@ export function PrefillPanel() {
     setBusy('')
     if (r.ok) {
       setPlan(r.data)
+      setAvailability(r.data.executable ? 'executable' : 'empty')
+      setNextAction('')
       intentRef.current = null
     } else setError(describeError(r))
   }
 
   async function fill() {
-    if (!plan || !plan.executable || inFlight.current || receipt) return
+    if (!plan || !plan.executable || availability !== 'executable' || inFlight.current || receipt)
+      return
     let intent = intentRef.current
     if (!intent || intent.planId !== plan.plan_id || intent.hash !== plan.plan_sha256) {
       intent = { planId: plan.plan_id, hash: plan.plan_sha256, key: newIdempotencyKey() }
@@ -163,6 +210,28 @@ export function PrefillPanel() {
       setError(
         `${describeError(r)} Check the stored receipt before any further action. An explicit retry uses the same request identity.`,
       )
+  }
+
+  async function refreshUsability() {
+    if (!plan || inFlight.current) return
+    const token = generation.current
+    inFlight.current = true
+    setBusy('Checking current sources')
+    const result = await getPrefillPlan(plan.plan_id)
+    if (token !== generation.current) return
+    inFlight.current = false
+    setBusy('')
+    if (!result.ok) {
+      setError(describeError(result))
+      return
+    }
+    if (result.data.plan.plan_sha256 !== plan.plan_sha256) {
+      setAvailability('stale')
+      setError('The saved plan failed verification. Prepare a new plan.')
+      return
+    }
+    setAvailability(result.data.availability)
+    setNextAction(result.data.next_action ?? '')
   }
 
   async function checkReceipt() {
@@ -207,10 +276,17 @@ export function PrefillPanel() {
     <section className="panel" aria-labelledby="prefill-heading">
       <h3 id="prefill-heading">4. Approved selected-field prefill</h3>
       <p>
-        Local fixture demonstration only. Integrated C3 entry is unavailable until its
-        approved-content reader is connected. No approvals are seeded. The ephemeral page closes
-        after entry; this receipt does not establish application completeness.
+        Local fixture demonstration with the connected C approved-content reader. Approve answers in
+        Review, then use them here. No approvals are seeded. The ephemeral page closes after entry;
+        this receipt does not establish application completeness.
       </p>
+      {handoff && (
+        <p role="status">
+          Selected from Review: {Object.keys(handoff.approvals).length} approved answer(s). Return
+          to Review to add another answer for this question set. The server checks every approval
+          again.
+        </p>
+      )}
       <label>
         Exact saved question-set ID
         <input
@@ -270,6 +346,21 @@ export function PrefillPanel() {
           <p>{plan.mode_label}</p>
           <p>{plan.scope_note}</p>
           <p>
+            {plan.producers.approval_reader === 'c_reader'
+              ? 'C producer connected'
+              : 'Explicit test approval provider'}{' '}
+            ·
+            {plan.producers.dependency_currentness === 'a4_adapter'
+              ? 'Managed A4 currentness registered'
+              : 'A4 not integrated for this evidence (unmanaged demo)'}
+          </p>
+          <p aria-live="polite">
+            Plan usability: {availability}. {nextAction}
+          </p>
+          <button onClick={refreshUsability} disabled={!!busy}>
+            Check current sources (no entry)
+          </button>
+          <p>
             Plan <code>{plan.plan_id}</code> · hash <code>{plan.plan_sha256}</code> · expires{' '}
             {plan.expires_at}
           </p>
@@ -327,7 +418,10 @@ export function PrefillPanel() {
           {!plan.executable && (
             <p role="status">Entry blocked: {(plan.not_executable_reasons ?? []).join('; ')}</p>
           )}
-          <button onClick={fill} disabled={!!busy || !plan.executable || !!receipt}>
+          <button
+            onClick={fill}
+            disabled={!!busy || !plan.executable || availability !== 'executable' || !!receipt}
+          >
             Fill these approved fields
           </button>
         </>

@@ -7,12 +7,13 @@ import re
 from collections.abc import Callable
 from datetime import UTC, datetime
 
-from strongstart_contracts import Provenance, ProvenanceClass
+from strongstart_contracts import CapabilityUnavailable, Provenance, ProvenanceClass
 from strongstart_contracts.answers import ApprovalSnapshot
 from strongstart_contracts.automation_prefill import ApprovedPrefillContent
 from strongstart_contracts.fixture_adapters import ApprovalNotUsable
 
 from .approval import Context, stale_reason
+from .service import build_check_report
 from .snapshot import snapshot_sha256
 from .store import ApprovalRead, NotFoundInStore
 from .workspace import knowledge_binding_for, load_workspace
@@ -37,6 +38,16 @@ class StoreApprovedAnswerResolver:
         self._clock = clock or (lambda: datetime.now(UTC))
 
     def _usable(self, organization_id: str, approval_id: str) -> tuple[Context, ApprovalRead]:
+        try:
+            return self._read_usable(organization_id, approval_id)
+        except (ApprovalNotUsable, CapabilityUnavailable):
+            raise
+        except Exception:
+            raise CapabilityUnavailable(
+                "ApprovedPrefillReader", "dependency verification unavailable"
+            ) from None
+
+    def _read_usable(self, organization_id: str, approval_id: str) -> tuple[Context, ApprovalRead]:
         ctx = self._context_for(organization_id)
         try:
             read = ctx.store.capture_approval(organization_id, approval_id)
@@ -73,6 +84,24 @@ class StoreApprovedAnswerResolver:
             reason = f"stale: {stale}" if stale else None
         if reason is not None:
             raise ApprovalNotUsable(approval_id, reason)
+        workspace = load_workspace(ctx.workspace_source, organization_id, v.question_set_id)
+        question = next(
+            (q for q in workspace.question_set.questions if q.question_id == v.question_id), None
+        )
+        if question is None:
+            raise ApprovalNotUsable(approval_id, "dependency_changed")
+        report = build_check_report(
+            question=question,
+            bundle=workspace.evidence_bundle,
+            text=v.text,
+            mode="reviewed",
+            policy=ctx.policy,
+        )
+        if any(f.result.outcome == "fail" for f in report.findings) or (
+            any(f.result.outcome == "needs_review" for f in report.findings)
+            and not d.acknowledged_review_items
+        ):
+            raise ApprovalNotUsable(approval_id, "approval_gate_blocked")
         if v.a4_binding is not None:
             workspace = load_workspace(ctx.workspace_source, organization_id, v.question_set_id)
             live_binding = knowledge_binding_for(

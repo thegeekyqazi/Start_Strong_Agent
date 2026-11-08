@@ -24,6 +24,7 @@ import {
 } from '../applications/questionSets'
 import { describeReviewError, httpReviewClient, type ReviewClient } from './client'
 import { wordDiff } from './diff'
+import { selectApprovedAnswer } from '../automation/approvedHandoff'
 
 const STALE_REASON: Record<string, string> = {
   newer_version_saved: 'a newer version was saved',
@@ -272,6 +273,22 @@ export function ReviewPage({
               : 'Not ready for prefill: the latest version is not approved.'}
         </p>
       )}
+      {qsId &&
+        loadedFor === qsId &&
+        hist?.question_id === questionId &&
+        hist?.prefill_ready &&
+        latest?.question_set_id === qsId &&
+        latestApproval?.decision === 'approve' &&
+        !latestApproval.is_stale && (
+          <button
+            type="button"
+            onClick={() =>
+              selectApprovedAnswer(qsId, latest.question_id, latestApproval.approval_id)
+            }
+          >
+            Use approved answer in Automation
+          </button>
+        )}
       {anyStale && (
         <p role="alert" className="stale-banner">
           Out of date – the approval of version{' '}

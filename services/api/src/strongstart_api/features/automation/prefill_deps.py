@@ -24,11 +24,11 @@ from strongstart_contracts.automation_prefill import (
     EXECUTION_TIMEOUT_MS,
     OPERATION_TIMEOUT_MS,
     AttachmentEvidenceReader,
-    PrefillDependencyCurrentness,
     UnconfiguredAttachmentEvidenceReader,
 )
 
 from ..applications.public import get_approved_prefill_reader as get_approved_prefill_reader
+from ..knowledge.public import get_prefill_currentness as get_prefill_currentness
 
 Clock = Callable[[], datetime]
 RUNTIME_EPOCH = "epoch-" + secrets.token_hex(12)
@@ -47,10 +47,6 @@ class PrefillBrowserConfig:
 
 def get_attachment_evidence_reader() -> AttachmentEvidenceReader:
     return UnconfiguredAttachmentEvidenceReader()
-
-
-def get_prefill_currentness() -> PrefillDependencyCurrentness | None:
-    return None
 
 
 def _utc_now() -> datetime:
