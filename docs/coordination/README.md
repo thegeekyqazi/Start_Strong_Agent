@@ -1,3 +1,8 @@
+> Current engineering ownership (2026-11-08): the project owner owns former A/B/C
+> engineering and migration sequencing; Sawaab owns UI/UX. INT-001 uses one agent,
+> sequential milestones. See [decision 0005](../decisions/0005-int-001-engineering-takeover.md).
+> Historical lane instructions below remain context; machine-readable owners are unchanged.
+
 # Three-agent coordination and repository setup
 
 ## Recommended arrangement

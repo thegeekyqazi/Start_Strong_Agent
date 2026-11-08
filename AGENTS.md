@@ -18,6 +18,13 @@ Use one active feature task per agent. Work autonomously on implementation choic
 
 Treat the engineering plan as a baseline, and the task spec as its feature-specific implementation contract. Consult relevant engineering sections before implementation and again when scope, contracts or acceptance criteria change. A newer maintainer decision can supersede a proposal; record that relationship explicitly. Conflicting instructions or a missing file must be reported, not silently invented. Continue independent inspection/preparation while resolving a material gap. Do not assume proposed tools, modules or commands already exist.
 
+## Current ownership (INT-001, 2026-11-08)
+
+The project owner owns engineering across former A/B/C lanes and migration sequencing.
+Sawaab owns UI/UX presentation. INT-001 revision 1.1 is one coding agent, sequential
+M0–M4, with direct producer/consumer implementation. Decision 0005 supersedes former
+requirements to wait for lane acknowledgment within this task. Retain module owners.
+
 ## Ownership and parallel work
 
 | Lane | Primary responsibility |

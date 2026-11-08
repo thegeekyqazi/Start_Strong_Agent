@@ -1,3 +1,8 @@
+> Current engineering ownership (2026-11-08): the project owner owns former A/B/C
+> engineering and migration sequencing; Sawaab owns UI/UX. INT-001 uses one agent,
+> sequential milestones. See [decision 0005](../decisions/0005-int-001-engineering-takeover.md).
+> Historical lane instructions below remain context; machine-readable owners are unchanged.
+
 # Folder and contract ownership after INIT-001
 
 Source: INIT-001 rev 1.0 s5, `dev-b-two-agent-plan.md` rev 1.0 s2-s3, AGENTS.md, decision 0004. "Owner" means the lane coordinates changes; it is not permission to rewrite others' modules. Shared coordination points need a reviewed PR that names affected consumers.
