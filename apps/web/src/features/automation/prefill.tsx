@@ -64,7 +64,7 @@ export function PrefillPanel() {
   const [nextAction, setNextAction] = useState('')
   const [receipt, setReceipt] = useState<PrefillRunView | null>(null)
   const [error, setError] = useState('')
-  const [busy, setBusy] = useState('')
+  const [busy, setBusy] = useState(handoff ? 'Loading approved answer selection' : '')
   const [pending, setPending] = useState<Intent | null>(remembered)
   const generation = useRef(0)
   const inFlight = useRef(false)
@@ -80,10 +80,10 @@ export function PrefillPanel() {
   useEffect(() => {
     if (!handoff) return
     const token = ++generation.current
+    let active = true
     inFlight.current = true
-    setBusy('Loading approved answer selection')
     getQuestionSet(handoff.questionSetId).then((r) => {
-      if (token !== generation.current) return
+      if (!active || token !== generation.current) return
       inFlight.current = false
       setBusy('')
       if (!r.ok) {
@@ -109,7 +109,7 @@ export function PrefillPanel() {
       )
     })
     return () => {
-      generation.current++
+      active = false
     }
   }, [handoff])
 
