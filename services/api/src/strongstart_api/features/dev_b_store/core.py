@@ -151,12 +151,37 @@ def atomic_create(path: Path, data: bytes, durability: Durability) -> bool:
     return True
 
 
+LockEvent = Literal["blocked", "acquired_after_wait"]
+LockObserver = Callable[[Path, LockEvent], None]
+_lock_observer: LockObserver | None = None
+
+
+def set_lock_observer(observer: LockObserver | None) -> LockObserver | None:
+    """Test instrumentation: observe real lock contention in this process.
+
+    The observer is called with ``"blocked"`` the first time a non-blocking acquisition
+    attempt fails because another holder has the lock, and with ``"acquired_after_wait"``
+    once that waiter finally acquires it. It never changes locking behaviour. Returns the
+    previous observer so callers can restore it.
+    """
+    global _lock_observer
+    previous, _lock_observer = _lock_observer, observer
+    return previous
+
+
+def _notify(path: Path, event: LockEvent) -> None:
+    observer = _lock_observer
+    if observer is not None:
+        observer(path, event)
+
+
 @contextlib.contextmanager
 def _exclusive_lock(path: Path, timeout_s: float) -> Iterator[None]:
     """Cross-process exclusive lock with a bounded wait (process-local locks are not enough)."""
     path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
     handle = open(path, "a+b")  # held for the lock's lifetime
     deadline = time.monotonic() + timeout_s
+    waited = False
     try:
         if sys.platform == "win32":  # pragma: no cover - exercised on Windows only
             import msvcrt
@@ -167,9 +192,14 @@ def _exclusive_lock(path: Path, timeout_s: float) -> Iterator[None]:
                     msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
                     break
                 except OSError:
+                    if not waited:
+                        waited = True
+                        _notify(path, "blocked")
                     if time.monotonic() >= deadline:
                         raise StoreBusy("store lock wait exceeded") from None
                     time.sleep(0.01)
+            if waited:
+                _notify(path, "acquired_after_wait")
             try:
                 yield
             finally:
@@ -183,9 +213,14 @@ def _exclusive_lock(path: Path, timeout_s: float) -> Iterator[None]:
                     fcntl.flock(handle.fileno(), fcntl.LOCK_EX | fcntl.LOCK_NB)
                     break
                 except BlockingIOError:
+                    if not waited:
+                        waited = True
+                        _notify(path, "blocked")
                     if time.monotonic() >= deadline:
                         raise StoreBusy("store lock wait exceeded") from None
                     time.sleep(0.01)
+            if waited:
+                _notify(path, "acquired_after_wait")
             try:
                 yield
             finally:

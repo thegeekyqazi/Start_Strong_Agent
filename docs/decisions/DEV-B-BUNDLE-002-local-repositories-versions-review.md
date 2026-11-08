@@ -91,4 +91,10 @@ The owner asked that the bound funding case's current-version check be atomic wi
 - **Idempotent replay first.** `DefinitionRepository.replay()` runs before intake, the hash check and context validation. A command whose publication already committed returns that exact version (200, `replayed: true`), even after the bound case changed. A *new* command against the stale version gets 409 `context_changed`.
 - **Failure outcome.** A changed or deleted case, or a digest mismatch, under the pin gives 409 `context_changed` / 404 `context_not_found` / 409 `integrity_failure`, and nothing is published. If the wait times out, the result is 503 `store_busy`.
 - **Tradeoff.** A case writer may wait while a definition commit holds the pin; the commit is short and local. Unreferenced content-addressed input blobs are never written on a rejected pin, because the save runs inside the block.
-- **Validation.** `tests/automation/test_case_binding_atomicity.py` (BND-26a..e): pause after context resolution then revise → 409 and no definition; revise while the pin is held → the revision waits; a spawned process is blocked by the pin; replay after a case change → 200 with the same version; stale digest → conflict. A mutation check with the guard disabled made BND-26a/b fail (201 bound to the stale v1; interleaved revision), so the tests detect the race.
+- **Validation.** `tests/automation/test_case_binding_atomicity.py` (BND-26a..e):
+  - **26a:** publication is paused after context resolution, a revision commits, then publication resumes → 409 and no definition.
+  - **26b/26c:** a competing revision (thread / spawned process) is observed attempting the case lock and being refused, via a lock-observer hook. It has not acquired the lock while the pin is held; after release it acquires the lock and commits.
+  - **26d:** replay after a case change returns 200 with the same version.
+  - **26e:** stale digest → conflict.
+  - **Mutation checks:** guard disabled → 26a/b fail; pin lock disabled → 26b/c fail.
+- **Test instrumentation.** `dev_b_store.core.set_lock_observer(observer)` reports `blocked` (first failed non-blocking attempt) and `acquired_after_wait` per process. It is a no-op unless set, and it never changes locking. It replaced an earlier sleep- and `Queue.empty()`-based version of 26b/c, which could not prove contention.
