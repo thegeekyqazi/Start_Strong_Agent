@@ -154,4 +154,5 @@ The rehearsal was executed by **automated Chromium scripts and API tests** drivi
 ## Acknowledgments
 
 - M1 notice posted on C2 PR #7: https://github.com/thegeekyqazi/Start_Strong_Agent/pull/7#issuecomment-6718774577.
+- A3 registration ask posted on PR #13: https://github.com/thegeekyqazi/Start_Strong_Agent/pull/13#issuecomment-6719153735.
 - No consumer acknowledgment yet.
