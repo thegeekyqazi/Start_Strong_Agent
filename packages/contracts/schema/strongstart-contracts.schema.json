@@ -1384,10 +1384,90 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "ApprovedKnowledgeBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "active_revision": {
+          "minimum": 1,
+          "title": "Active Revision",
+          "type": "integer"
+        },
+        "application_context": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Application Context",
+          "type": "string"
+        },
+        "c_dependencies_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "C Dependencies Sha256",
+          "type": "string"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/ValidationDependency"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "mapping_version": {
+          "const": "c-a4-pack-root/1",
+          "default": "c-a4-pack-root/1",
+          "title": "Mapping Version",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "pack_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Pack Version Id",
+          "type": "string"
+        },
+        "projection_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Projection Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "organization_id",
+        "application_context",
+        "pack_version_id",
+        "active_revision",
+        "c_dependencies_sha256",
+        "dependencies",
+        "projection_sha256"
+      ],
+      "title": "ApprovedKnowledgeBinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
     "ApprovedPrefillContent": {
       "additionalProperties": false,
       "description": "One consistent approved-content envelope (requested from Dev C; s5.1).\n\nC guarantees these properties. B recomputes the hashes and checks every identity.",
       "properties": {
+        "a4_binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApprovedKnowledgeBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "answer_version": {
           "minimum": 1,
           "title": "Answer Version",
@@ -4777,6 +4857,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"
@@ -4798,6 +4879,33 @@
     "DependencyTargetState": {
       "additionalProperties": false,
       "properties": {
+        "active_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Active Revision"
+        },
+        "application_context": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Application Context"
+        },
         "dependencies": {
           "items": {
             "$ref": "#/$defs/ValidationDependency"
@@ -4811,6 +4919,34 @@
           "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
           "title": "Organization Id",
           "type": "string"
+        },
+        "pack_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pack Version Id"
+        },
+        "projection_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Projection Sha256"
         },
         "revision": {
           "minimum": 1,
@@ -4854,6 +4990,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"
@@ -9009,6 +9146,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"

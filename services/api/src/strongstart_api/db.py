@@ -28,7 +28,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from strongstart_contracts import ReadinessCheck, ReadinessReport
 
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0007_pack_replacement"
+REQUIRED_MIGRATION_REVISION = "0008_browser_bindings"
 
 metadata = MetaData()
 
@@ -336,6 +336,10 @@ dependency_targets = Table(
     Column("revision", Integer, nullable=False),
     Column("state", String(16), nullable=False),
     Column("stale_change_set_id", String(128)),
+    Column("application_context", String(128)),
+    Column("pack_version_id", String(128)),
+    Column("active_revision", Integer),
+    Column("projection_sha256", String(64)),
     Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
 

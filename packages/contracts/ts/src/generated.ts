@@ -967,6 +967,48 @@ export interface ApprovalSnapshot {
   schema_version?: '1'
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApprovedKnowledgeBinding".
+ */
+export interface ApprovedKnowledgeBinding {
+  active_revision: number
+  application_context: string
+  c_dependencies_sha256: string
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   */
+  dependencies: [ValidationDependency, ...ValidationDependency[]]
+  mapping_version?: 'c-a4-pack-root/1'
+  organization_id: string
+  pack_version_id: string
+  projection_sha256: string
+}
+/**
+ * Minimal exact dependency identity; never embeds private evidence content.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ValidationDependency".
+ */
+export interface ValidationDependency {
+  content_hash?: string | null
+  kind:
+    | 'subject'
+    | 'source_version'
+    | 'artifact_hash'
+    | 'passage_locator'
+    | 'normalization_policy'
+    | 'permission_snapshot'
+    | 'fact_version'
+    | 'pack_version'
+    | 'rounding_policy'
+    | 'formula'
+    | 'project_input'
+    | 'policy'
+  ref_id: string
+  version: string
+}
+/**
  * One consistent approved-content envelope (requested from Dev C; s5.1).
  *
  * C guarantees these properties. B recomputes the hashes and checks every identity.
@@ -975,6 +1017,7 @@ export interface ApprovalSnapshot {
  * via the `definition` "ApprovedPrefillContent".
  */
 export interface ApprovedPrefillContent {
+  a4_binding?: ApprovedKnowledgeBinding | null
   answer_version: number
   answer_version_id: string
   approval: ApprovalSnapshot
@@ -1961,45 +2004,41 @@ export interface DependencyRegistrationRequest {
   expected_revision?: number
   target_id: string
   target_kind:
-    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
-}
-/**
- * Minimal exact dependency identity; never embeds private evidence content.
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "ValidationDependency".
- */
-export interface ValidationDependency {
-  content_hash?: string | null
-  kind:
-    | 'subject'
-    | 'source_version'
-    | 'artifact_hash'
-    | 'passage_locator'
-    | 'normalization_policy'
-    | 'permission_snapshot'
-    | 'fact_version'
-    | 'pack_version'
-    | 'rounding_policy'
-    | 'formula'
-    | 'project_input'
-    | 'policy'
-  ref_id: string
-  version: string
+    | 'validation'
+    | 'answer'
+    | 'check'
+    | 'approval'
+    | 'export'
+    | 'browser_plan'
+    | 'browser_grant'
+    | 'job'
+    | 'skill'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "DependencyTargetState".
  */
 export interface DependencyTargetState {
+  active_revision?: number | null
+  application_context?: string | null
   dependencies: ValidationDependency[]
   organization_id: string
+  pack_version_id?: string | null
+  projection_sha256?: string | null
   revision: number
   stale_change_set_id?: string | null
   state: 'current' | 'stale'
   target_id: string
   target_kind:
-    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
+    | 'validation'
+    | 'answer'
+    | 'check'
+    | 'approval'
+    | 'export'
+    | 'browser_plan'
+    | 'browser_grant'
+    | 'job'
+    | 'skill'
 }
 /**
  * Validated model proposal for one question. Not an answer version or approval.
@@ -3508,7 +3547,15 @@ export interface InvalidationSummary {
   matched_dependencies: ValidationDependency[]
   target_id: string
   target_kind:
-    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
+    | 'validation'
+    | 'answer'
+    | 'check'
+    | 'approval'
+    | 'export'
+    | 'browser_plan'
+    | 'browser_grant'
+    | 'job'
+    | 'skill'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema

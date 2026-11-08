@@ -28,6 +28,7 @@ from strongstart_contracts.answers import (
     ReviewerProposal,
     ReviewNote,
 )
+from strongstart_contracts.knowledge_binding import ApprovedKnowledgeBinding
 
 
 class NotFoundInStore(Exception):
@@ -62,6 +63,7 @@ class StoredVersion:
     checked_at: datetime
     created_by: str
     created_at: datetime
+    a4_binding: ApprovedKnowledgeBinding | None = None
 
 
 @dataclass(frozen=True)

@@ -50,3 +50,37 @@ fixture identity/prefill remains disabled. No redesign, upload, submit, sign or 
 Project display name becomes Strong Start Agent. Owner also authorized GitHub repository
 rename to strong-start-agent; publication will use the returned canonical repository URL.
 Rollback is by reverting this task branch through review; never reset shared history.
+
+## M2 adopted layout and migration
+
+`knowledge.public.KnowledgeCurrentness` exposes active evidence, explicit projection,
+guarded register and read-only registration checks. `ApprovedKnowledgeBinding` carries
+organization/context, exact pack version/active revision, original C dependency digest,
+canonical A4 projection and its digest. `KnowledgeRegistration` adds actual target kind,
+ID and revision. C freezes this optional server-built binding when saving; unmanaged
+evidence never receives one. Legacy fact digests are compared to authoritative bundle
+facts and projected using their actual integer fact versions, never parsed as versions.
+Unknown requirement-set coverage is held because C currently has no independent live
+requirement-set verifier. Question/rule checks remain with C/B.
+
+Migration `0008_browser_bindings` follows `0007_pack_replacement`, adding four nullable
+binding columns to existing targets. No migration is needed merely for the new
+`browser_plan` string kind; columns persist exact context/revision/projection metadata
+for guarded consumers. Generic registrations remain compatible except that they cannot
+reset a guarded target. This prevents bypassing the new stale-target lifecycle.
+C3's draft migration remains uninstalled. Rollback: stop consumers, revert task code,
+then Alembic downgrade 0008 to 0007 only after preserving any guarded-target metadata.
+
+Registration uses organization, context and target row locks in that order. The mutation
+audit removes only the three registration `FOR UPDATE` locks, preserving activation and
+all assertions, then restores exact bytes in `finally`. The expected failure is
+`stale_registration: replacement missed the new target`; a removed guard must not be
+reported as covered merely because a Future remained unfinished.
+
+M2 evidence: 25 PostgreSQL smoke tests passed (13 new A4 facade cases plus 12
+existing DB tests). The lock-removal mutation failed at the stale-registration assertion;
+restored test passed. Restored PackService SHA-256:
+`ac9aceaa5d5e415082097545479df91bdd6f63f86db39d69a29c2ed06a0b586a`.
+The script is reproducible with the configured local PostgreSQL URL; it does not reset DB
+state. Only task-owned synthetic rows are cleaned. Migration advanced the existing local
+PostgreSQL from 0007 to 0008, no data reset. No TigerData environment was contacted.

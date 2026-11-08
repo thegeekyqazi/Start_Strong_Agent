@@ -43,6 +43,7 @@ from .workspace import (
     WorkspaceNotFound,
     WorkspaceSource,
     current_question_set_id,
+    knowledge_binding_for,
     load_workspace,
 )
 
@@ -223,6 +224,7 @@ def save_version(
     content = hashlib.sha256(body.text.encode("utf-8")).hexdigest()
     refs = dependency_refs(question, bundle, report.rendered, ctx.policy)
     snap = snapshot_sha256(content, ctx.organization_id, refs)
+    managed_binding = knowledge_binding_for(ctx.workspace_source, ctx.organization_id, bundle, refs)
     now = datetime.now(UTC)
 
     def build(n: int) -> StoredVersion:
@@ -244,6 +246,7 @@ def save_version(
             checked_at=now,
             created_by=identity.actor_id,
             created_at=now,
+            a4_binding=managed_binding,
         )
 
     previous = ctx.store.versions(ctx.organization_id, question.question_id)

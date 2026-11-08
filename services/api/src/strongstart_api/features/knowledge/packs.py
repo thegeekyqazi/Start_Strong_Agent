@@ -23,6 +23,7 @@ from strongstart_contracts import (
     PackManifestRequest,
     ValidationDependency,
 )
+from strongstart_contracts.knowledge_binding import ApprovedKnowledgeBinding, binding_digest
 from strongstart_contracts.packs import DependencyTargetKind
 
 from ...db import (
@@ -326,6 +327,14 @@ class PackService:
         if found is None:
             raise PackManifestError("dependency_not_authorized")
 
+    def validate_dependencies(
+        self, organization_id: str, dependencies: list[ValidationDependency]
+    ) -> None:
+        """Fresh authorization of an existing consumer projection; no writes."""
+        with self.engine.connect() as conn:
+            for dependency in dependencies:
+                self._validate_dependency(conn, organization_id, dependency)
+
     def register_target(
         self,
         organization_id: str,
@@ -350,6 +359,8 @@ class PackService:
                 .mappings()
                 .one_or_none()
             )
+            if current is not None and current["projection_sha256"] is not None:
+                raise PackConflictError  # generic registration cannot reset a guarded target
             actual_revision = 0 if current is None else int(current["revision"])
             if actual_revision != request.expected_revision:
                 raise PackConflictError
@@ -406,6 +417,164 @@ class PackService:
             revision=revision,
             state="current",
             dependencies=dependencies,
+        )
+
+    def register_browser_target(
+        self,
+        organization_id: str,
+        request: DependencyRegistrationRequest,
+        binding: ApprovedKnowledgeBinding,
+    ) -> DependencyTargetState:
+        """INT-001: serialize expected-active validation AND insertion with activate.
+
+        Lock order: stable organization -> context -> target. No external calls here.
+        Idempotence never updates a target or revives its stale state.
+        """
+        if (
+            request.target_kind not in ("browser_plan", "browser_grant")
+            or organization_id != binding.organization_id
+            or binding_digest(binding) != binding.projection_sha256
+            or request.dependencies != binding.dependencies
+        ):
+            raise PackManifestError("browser_binding_mismatch")
+        dependencies = sorted(request.dependencies, key=_dependency_key)
+        if len({_dependency_key(d) for d in dependencies}) != len(dependencies):
+            raise PackManifestError("duplicate_dependency")
+        root = ValidationDependency(
+            kind="pack_version", ref_id=binding.pack_version_id, version=binding.pack_version_id
+        )
+        if root not in dependencies:
+            raise PackManifestError("pack_root_required")
+        with self.engine.begin() as conn:
+            # INT-001 MUTATION GUARD: remove only this with_for_update for the race audit.
+            organization = conn.execute(
+                select(organizations.c.id)
+                .where(organizations.c.id == organization_id)
+                .with_for_update()
+            ).scalar_one_or_none()
+            if organization is None:
+                raise PackNotFoundError
+            active = (
+                conn.execute(
+                    select(active_pack_contexts)
+                    .where(
+                        active_pack_contexts.c.organization_id == organization_id,
+                        active_pack_contexts.c.application_context == binding.application_context,
+                    )
+                    .with_for_update()
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if (
+                active is None
+                or active["pack_version_id"] != binding.pack_version_id
+                or active["revision"] != binding.active_revision
+            ):
+                raise PackConflictError
+            # Manifest context is authorized independently of the active pointer.
+            manifest = conn.execute(
+                select(pack_manifests.c.pack_version_id).where(
+                    pack_manifests.c.organization_id == organization_id,
+                    pack_manifests.c.application_context == binding.application_context,
+                    pack_manifests.c.pack_version_id == binding.pack_version_id,
+                )
+            ).scalar_one_or_none()
+            if manifest is None:
+                raise PackNotFoundError
+            for dependency in dependencies:
+                if dependency.kind not in {
+                    "pack_version",
+                    "fact_version",
+                    "policy",
+                    "source_version",
+                }:
+                    raise PackManifestError("unsupported_browser_dependency")
+                self._validate_dependency(conn, organization_id, dependency)
+            current = (
+                conn.execute(
+                    select(dependency_targets)
+                    .where(
+                        dependency_targets.c.organization_id == organization_id,
+                        dependency_targets.c.target_kind == request.target_kind,
+                        dependency_targets.c.target_id == request.target_id,
+                    )
+                    .with_for_update()
+                )
+                .mappings()
+                .one_or_none()
+            )
+            if current is not None:
+                refs = (
+                    conn.execute(
+                        select(
+                            dependency_target_refs.c.kind,
+                            dependency_target_refs.c.ref_id,
+                            dependency_target_refs.c.version,
+                            dependency_target_refs.c.content_hash,
+                        )
+                        .where(
+                            dependency_target_refs.c.organization_id == organization_id,
+                            dependency_target_refs.c.target_kind == request.target_kind,
+                            dependency_target_refs.c.target_id == request.target_id,
+                        )
+                        .order_by(dependency_target_refs.c.ordinal)
+                    )
+                    .mappings()
+                    .all()
+                )
+                if (
+                    current["state"] != "current"
+                    or current["revision"] != request.expected_revision
+                    or current["application_context"] != binding.application_context
+                    or current["pack_version_id"] != binding.pack_version_id
+                    or current["active_revision"] != binding.active_revision
+                    or current["projection_sha256"] != binding.projection_sha256
+                    or [ValidationDependency.model_validate(r) for r in refs] != dependencies
+                ):
+                    raise PackConflictError
+                revision = int(current["revision"])
+            else:
+                if request.expected_revision != 0:
+                    raise PackConflictError
+                revision = 1
+                conn.execute(
+                    insert(dependency_targets).values(
+                        organization_id=organization_id,
+                        target_kind=request.target_kind,
+                        target_id=request.target_id,
+                        revision=revision,
+                        state="current",
+                        application_context=binding.application_context,
+                        pack_version_id=binding.pack_version_id,
+                        active_revision=binding.active_revision,
+                        projection_sha256=binding.projection_sha256,
+                    )
+                )
+                conn.execute(
+                    insert(dependency_target_refs),
+                    [
+                        {
+                            "organization_id": organization_id,
+                            "target_kind": request.target_kind,
+                            "target_id": request.target_id,
+                            "ordinal": i,
+                            **d.model_dump(mode="json"),
+                        }
+                        for i, d in enumerate(dependencies)
+                    ],
+                )
+        return DependencyTargetState(
+            organization_id=organization_id,
+            target_kind=request.target_kind,
+            target_id=request.target_id,
+            revision=revision,
+            state="current",
+            dependencies=dependencies,
+            application_context=binding.application_context,
+            pack_version_id=binding.pack_version_id,
+            active_revision=binding.active_revision,
+            projection_sha256=binding.projection_sha256,
         )
 
     def get_target(
@@ -466,6 +635,10 @@ class PackService:
             state=row["state"],
             stale_change_set_id=row["stale_change_set_id"],
             dependencies=[ValidationDependency.model_validate(item) for item in refs],
+            application_context=row["application_context"],
+            pack_version_id=row["pack_version_id"],
+            active_revision=row["active_revision"],
+            projection_sha256=row["projection_sha256"],
         )
 
     def active_state(self, organization_id: str, context: str) -> ActivePackState:

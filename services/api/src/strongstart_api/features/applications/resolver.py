@@ -15,6 +15,7 @@ from strongstart_contracts.fixture_adapters import ApprovalNotUsable
 from .approval import Context, stale_reason
 from .snapshot import snapshot_sha256
 from .store import ApprovalRead, NotFoundInStore
+from .workspace import knowledge_binding_for, load_workspace
 
 ContextFactory = Callable[[str], Context]
 TOKEN = re.compile(r"\{\{\s*(?:fact|unsupported)\s*:")
@@ -72,6 +73,16 @@ class StoreApprovedAnswerResolver:
             reason = f"stale: {stale}" if stale else None
         if reason is not None:
             raise ApprovalNotUsable(approval_id, reason)
+        if v.a4_binding is not None:
+            workspace = load_workspace(ctx.workspace_source, organization_id, v.question_set_id)
+            live_binding = knowledge_binding_for(
+                ctx.workspace_source,
+                organization_id,
+                workspace.evidence_bundle,
+                list(v.dependencies),
+            )
+            if live_binding != v.a4_binding:
+                raise ApprovalNotUsable(approval_id, "managed_binding_changed")
         return ctx, read
 
     def _snapshot(self, read: ApprovalRead) -> ApprovalSnapshot:
@@ -127,6 +138,7 @@ class StoreApprovedAnswerResolver:
             unresolved_marker_count=0,
             dependency_snapshot_sha256=v.snapshot_sha256,
             dependencies=list(v.dependencies),
+            a4_binding=v.a4_binding,
             currentness="current",
             currentness_checked_at=self._clock(),
             provenance=self._snapshot(read).provenance,

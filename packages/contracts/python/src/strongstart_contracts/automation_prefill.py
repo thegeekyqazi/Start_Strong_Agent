@@ -36,6 +36,7 @@ from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_vali
 from .answers import ApprovalSnapshot, DependencyRef
 from .automation_intake import NetworkLogEntry
 from .common import ContractModel, Provenance, Sha256Hex, StableId
+from .knowledge_binding import ApprovedKnowledgeBinding
 from .ports import CapabilityUnavailable
 
 PLAN_FORMAT: Final = "b2-approved-prefill/1"
@@ -162,6 +163,7 @@ class ApprovedPrefillContent(ContractModel):
     dependencies: list[DependencyRef] = Field(default_factory=list)
     currentness: Literal["current"]
     currentness_checked_at: datetime
+    a4_binding: ApprovedKnowledgeBinding | None = None
     typed_value: ApprovedTypedValue | None = None
     provenance: Provenance
     is_fixture: bool
