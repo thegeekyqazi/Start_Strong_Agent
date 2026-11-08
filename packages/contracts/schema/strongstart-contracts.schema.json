@@ -1121,6 +1121,70 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "CaptureCatalogPage": {
+      "additionalProperties": false,
+      "properties": {
+        "backfill_pending": {
+          "minimum": 0,
+          "title": "Backfill Pending",
+          "type": "integer"
+        },
+        "backfill_status": {
+          "description": "Indexing of captures saved before the catalog existed. 'pending' means older captures are not listed yet; never reported complete after a capped step.",
+          "enum": [
+            "complete",
+            "pending",
+            "incomplete_scan"
+          ],
+          "title": "Backfill Status",
+          "type": "string"
+        },
+        "incomplete": {
+          "description": "True when the bounded catalog scan limit was reached.",
+          "title": "Incomplete",
+          "type": "boolean"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/CaptureSummary"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "limit": {
+          "title": "Limit",
+          "type": "integer"
+        },
+        "more": {
+          "title": "More",
+          "type": "boolean"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Cursor"
+        }
+      },
+      "required": [
+        "items",
+        "more",
+        "incomplete",
+        "backfill_status",
+        "backfill_pending",
+        "limit"
+      ],
+      "title": "CaptureCatalogPage",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "CaptureContent": {
       "additionalProperties": false,
       "description": "Authorized, integrity-verified artifact content for inert display.",
@@ -1493,6 +1557,196 @@
         "url"
       ],
       "title": "CaptureRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "CaptureSummary": {
+      "additionalProperties": false,
+      "description": "Metadata-only listing entry. Artifact content integrity is NOT checked here.",
+      "properties": {
+        "authority_review": {
+          "anyOf": [
+            {
+              "enum": [
+                "unreviewed",
+                "confirmed_official",
+                "other"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority Review"
+        },
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "captured_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Captured At"
+        },
+        "content_integrity": {
+          "const": "not_checked_in_listing",
+          "default": "not_checked_in_listing",
+          "title": "Content Integrity",
+          "type": "string"
+        },
+        "coverage": {
+          "anyOf": [
+            {
+              "enum": [
+                "complete",
+                "partial",
+                "empty"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Coverage"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        },
+        "final_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Final Url"
+        },
+        "importable_artifacts": {
+          "items": {
+            "$ref": "#/$defs/ImportableArtifactRef"
+          },
+          "title": "Importable Artifacts",
+          "type": "array"
+        },
+        "is_simulated": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Simulated"
+        },
+        "page_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Title"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "provider_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "live",
+                "fixture"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Mode"
+        },
+        "representation_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Representation Count"
+        },
+        "requested_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested Url"
+        },
+        "status": {
+          "enum": [
+            "ok",
+            "corrupt"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capture_id",
+        "status"
+      ],
+      "title": "CaptureSummary",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
@@ -4197,6 +4451,41 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "ImportableArtifactRef": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "intake_reference": {
+          "description": "Exact 'capture_id:artifact_id' string the automation intake expects.",
+          "title": "Intake Reference",
+          "type": "string"
+        },
+        "representation": {
+          "enum": [
+            "provider_markdown",
+            "provider_html",
+            "provider_raw_html"
+          ],
+          "title": "Representation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "representation",
+        "intake_reference"
+      ],
+      "title": "ImportableArtifactRef",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "InputRepresentation": {
       "additionalProperties": false,

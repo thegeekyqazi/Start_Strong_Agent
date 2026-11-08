@@ -1,5 +1,6 @@
 // Find Funding API client (owner: B1). Types are generated from the Python contracts.
 import type {
+  CaptureCatalogPage,
   CaptureContent,
   CapturedDocument,
   CaptureRequest,
@@ -41,6 +42,7 @@ export interface FundingClient {
   capture(body: CaptureRequest): Promise<ApiResult<CapturedDocument>>
   getCapture(captureId: string): Promise<ApiResult<CapturedDocument>>
   content(captureId: string, artifactId: string): Promise<ApiResult<CaptureContent>>
+  listCaptures(cursor?: string | null): Promise<ApiResult<CaptureCatalogPage>>
 }
 
 const enc = encodeURIComponent
@@ -52,6 +54,7 @@ export const httpFundingClient: FundingClient = {
   getCapture: (id) => call(`/api/funding/captures/${enc(id)}`),
   content: (id, artifactId) =>
     call(`/api/funding/captures/${enc(id)}/artifacts/${enc(artifactId)}/content`),
+  listCaptures: (cursor) => call(`/api/funding/captures${cursor ? `?cursor=${enc(cursor)}` : ''}`),
 }
 
 /** Plain-language explanation for each failure; distinct states per B1-DISC-001 s3. */

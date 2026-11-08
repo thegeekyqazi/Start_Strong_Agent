@@ -43,7 +43,7 @@ from .providers import (
     SearchProvider,
     _fixture_json,
 )
-from .store import LocalCaptureStore
+from .store import LocalCaptureStore, StoreUnavailable
 from .url_policy import Resolver, UnsafeDestinationError, check_public_url, check_syntax
 
 SEARCH_WARNINGS = [
@@ -457,7 +457,10 @@ def run_capture(
         supported_import_representations=[a.representation for a in artifacts if a.b2_importable],
         storage_capability="development_local_store",
     )
-    store.save(record, blobs)
+    try:
+        store.save(record, blobs)
+    except StoreUnavailable as exc:
+        raise FundingError(FundingErrorReason.STORE_UNAVAILABLE, exc.detail) from None
     if coverage == "empty":
         raise FundingError(
             FundingErrorReason.EXTRACTION_EMPTY,

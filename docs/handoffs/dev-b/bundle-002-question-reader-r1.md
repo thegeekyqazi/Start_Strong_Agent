@@ -24,16 +24,16 @@
 
 ```python
 from strongstart_contracts.application_publication import (
-    ApplicationDefinitionReader,           # Protocol: is_fixture, get_version, get_current
-    ApplicationDefinitionNotFound,         # unknown AND other-org IDs (indistinguishable)
-    ApplicationDefinitionIntegrityError,   # stored version failed verification; withhold
-    PublishedApplicationVersion,           # the envelope (below)
+    ApplicationDefinitionReader,  # Protocol: is_fixture, get_version, get_current
+    ApplicationDefinitionNotFound,  # unknown AND other-org IDs (indistinguishable)
+    ApplicationDefinitionIntegrityError,  # stored version failed verification; withhold
+    PublishedApplicationVersion,  # the envelope (below)
     UnconfiguredApplicationDefinitionReader,
 )
-from strongstart_contracts.ports import CapabilityUnavailable   # production / no store
+from strongstart_contracts.ports import CapabilityUnavailable  # production / no store
 from strongstart_api.features.automation.public import (
-    get_application_definition_reader,     # FastAPI dependency (override in tests)
-    build_application_definition_reader,   # same, from Settings
+    get_application_definition_reader,  # FastAPI dependency (override in tests)
+    build_application_definition_reader,  # same, from Settings
 )
 ```
 
@@ -42,12 +42,13 @@ Wiring example: the `public.py` module docstring and `tests/contracts/test_appli
 ```python
 ReaderDep = Annotated[ApplicationDefinitionReader, Depends(get_application_definition_reader)]
 
+
 def handler(identity: Identity, reader: ReaderDep, question_set_id: str):
-    v = reader.get_version(identity.organization_id, question_set_id)   # server org only
-    v.question_set.questions   # shared Question DTOs, published IDs, question_version == v.version
-    v.unresolved               # UnresolvedItem keyed by PUBLISHED IDs
-    v.intake.questions         # rich intake (exact text, locators, candidate/native limits,
-                               #   conditions, attachments) with ORIGINAL IDs; join via v.id_mapping
+    v = reader.get_version(identity.organization_id, question_set_id)  # server org only
+    v.question_set.questions  # shared Question DTOs, published IDs, question_version == v.version
+    v.unresolved  # UnresolvedItem keyed by PUBLISHED IDs
+    v.intake.questions  # rich intake (exact text, locators, candidate/native limits,
+    #   conditions, attachments) with ORIGINAL IDs; join via v.id_mapping
 ```
 
 ## Envelope `PublishedApplicationVersion` (`b2-published-definition/1`)

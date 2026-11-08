@@ -6,6 +6,7 @@ Endpoint mapping (spec s7 labels -> actual routes under the existing /api/fundin
 - captures     -> POST /api/funding/captures           (identity required)
 - metadata     -> GET  /api/funding/captures/{capture_id}
 - content      -> GET  /api/funding/captures/{capture_id}/artifacts/{artifact_id}/content
+- library        -> GET  /api/funding/captures?cursor=&limit=  (DEV-B-BUNDLE-002 M2; bounded)
 - POST /api/funding/discovery-jobs stays an explicit 501: durable discovery jobs are
   future work (no JobStore); search/capture are bounded request operations instead.
 
@@ -16,10 +17,11 @@ from __future__ import annotations
 
 from typing import Annotated, NoReturn
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from strongstart_contracts import Capability, ErrorCode
 from strongstart_contracts.discovery import (
+    CaptureCatalogPage,
     CaptureContent,
     CapturedDocument,
     CaptureIntegrityError,
@@ -250,6 +252,19 @@ def _not_found() -> ApiError:
     )
 
 
+@router.get("/captures", response_model=CaptureCatalogPage)
+def list_captures(
+    identity: Identity,
+    store: Annotated[LocalCaptureStore | None, Depends(get_capture_store)],
+    cursor: Annotated[str | None, Query(pattern=r"^[0-9]{13}-cap-[0-9a-f]{32}$")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> CaptureCatalogPage:
+    try:
+        return _require_store(store).list_captures(identity.organization_id, cursor, limit)
+    except CaptureNotFoundError:
+        raise _not_found() from None
+
+
 @router.get("/captures/{capture_id}", response_model=CapturedDocument)
 def get_capture(
     identity: Identity,
@@ -260,6 +275,13 @@ def get_capture(
         return _require_store(store).get_record(identity.organization_id, capture_id)
     except CaptureNotFoundError:
         raise _not_found() from None
+    except CaptureIntegrityError:
+        raise _api_error(
+            FundingError(
+                FundingErrorReason.INTEGRITY_FAILURE,
+                "stored capture record failed verification; content withheld",
+            )
+        ) from None
 
 
 @router.get("/captures/{capture_id}/artifacts/{artifact_id}/content", response_model=CaptureContent)

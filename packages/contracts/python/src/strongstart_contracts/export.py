@@ -46,6 +46,7 @@ from .answers import ANSWERS_PUBLIC_MODELS
 from .application_publication import APPLICATION_PUBLICATION_PUBLIC_MODELS
 from .automation_intake import AUTOMATION_INTAKE_PUBLIC_MODELS
 from .discovery import (
+    CaptureCatalogPage,
     CaptureContent,
     CapturedDocument,
     CaptureRequest,
@@ -89,6 +90,7 @@ PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     CapturedDocument,
     CaptureContent,
     FundingAvailability,
+    CaptureCatalogPage,  # DEV-B-BUNDLE-002 M2 (owner B1/funding)
     # B2-AUTO-001 (owner B2), imported from its module (B1-B2 launch agreement s2)
     *AUTOMATION_INTAKE_PUBLIC_MODELS,
     # DEV-B-BUNDLE-002 M1 (owner B2): saved definitions / question reader

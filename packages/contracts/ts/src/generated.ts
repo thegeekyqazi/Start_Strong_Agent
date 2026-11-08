@@ -947,6 +947,60 @@ export interface SectionLocator {
   start_char: number
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureCatalogPage".
+ */
+export interface CaptureCatalogPage {
+  backfill_pending: number
+  /**
+   * Indexing of captures saved before the catalog existed. 'pending' means older captures are not listed yet; never reported complete after a capped step.
+   */
+  backfill_status: 'complete' | 'pending' | 'incomplete_scan'
+  /**
+   * True when the bounded catalog scan limit was reached.
+   */
+  incomplete: boolean
+  items: CaptureSummary[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
+}
+/**
+ * Metadata-only listing entry. Artifact content integrity is NOT checked here.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureSummary".
+ */
+export interface CaptureSummary {
+  authority_review?: ('unreviewed' | 'confirmed_official' | 'other') | null
+  capture_id: string
+  captured_at?: string | null
+  content_integrity?: 'not_checked_in_listing'
+  coverage?: ('complete' | 'partial' | 'empty') | null
+  detail?: string | null
+  final_url?: string | null
+  importable_artifacts?: ImportableArtifactRef[]
+  is_simulated?: boolean | null
+  page_title?: string | null
+  provider?: string | null
+  provider_mode?: ('live' | 'fixture') | null
+  representation_count?: number | null
+  requested_url?: string | null
+  status: 'ok' | 'corrupt'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ImportableArtifactRef".
+ */
+export interface ImportableArtifactRef {
+  artifact_id: string
+  /**
+   * Exact 'capture_id:artifact_id' string the automation intake expects.
+   */
+  intake_reference: string
+  representation: 'provider_markdown' | 'provider_html' | 'provider_raw_html'
+}
+/**
  * Authorized, integrity-verified artifact content for inert display.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema

@@ -1,0 +1,9 @@
+# DEV-B-BUNDLE-002 s6: hash-sensitive fixture bytes must survive checkout unchanged.
+# These files are registered by SHA-256 (capture records, sample captures, saved-definition
+# samples) or are captured into stores whose hashes tests compare. Disable end-of-line
+# normalization so a CRLF checkout (e.g. Windows core.autocrlf) cannot rewrite them.
+# Do not "fix" a mismatch by recomputing expected hashes.
+tests/fixtures/funding/** -text
+tests/fixtures/automation/** -text
+services/api/src/strongstart_api/features/funding/fixture_data/** -text
+services/api/src/strongstart_api/features/automation/fixtures/** -text

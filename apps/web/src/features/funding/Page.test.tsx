@@ -127,6 +127,18 @@ function client(overrides: Partial<FundingClient> = {}): FundingClient {
         integrity_verified: true,
       },
     }),
+    listCaptures: async () => ({
+      ok: true,
+      data: {
+        items: [],
+        next_cursor: null,
+        more: false,
+        incomplete: false,
+        backfill_status: 'complete',
+        backfill_pending: 0,
+        limit: 20,
+      },
+    }),
     ...overrides,
   }
 }

@@ -5,6 +5,7 @@ import type {
   FormInspectionResult,
 } from '@strongstart/contracts'
 import { AutomationPage } from './Page'
+import { INTAKE_REFERENCE_KEY } from './handoff'
 
 const loc = { kind: 'json_pointer' as const, value: '/questions/0/text' }
 const ref = {
@@ -216,6 +217,17 @@ function mockFetch(handler: Handler, opts: { handleDefinitions?: boolean } = {})
 afterEach(() => vi.unstubAllGlobals())
 
 describe('AutomationPage', () => {
+  it('pre-fills capture mode from a Find Funding intake reference (IDs only)', async () => {
+    const ref = `cap-${'a'.repeat(32)}:cap-${'a'.repeat(32)}-html`
+    window.sessionStorage.setItem(INTAKE_REFERENCE_KEY, ref)
+    mockFetch(() => ({ status: 200, body: availability('installed_not_launched') }))
+    render(<AutomationPage />)
+    await screen.findByText('automation.intake')
+    expect(screen.getByLabelText(/Captured document \(capture port\)/)).toBeChecked()
+    expect(screen.getByDisplayValue(ref)).toBeInTheDocument()
+    expect(window.sessionStorage.getItem(INTAKE_REFERENCE_KEY)).toBeNull()
+  })
+
   it('shows granular availability and fixture mode', async () => {
     mockFetch(() => ({ status: 200, body: availability('installed_not_launched') }))
     render(<AutomationPage />)

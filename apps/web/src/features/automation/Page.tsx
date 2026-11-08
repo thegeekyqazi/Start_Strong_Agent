@@ -19,6 +19,7 @@ import {
 } from './api'
 import { EvidencePanel, FindingList, InspectionView, QuestionTable } from './views'
 import { SavedDefinitions, type Preview } from './saved'
+import { clearIntakeReference, readIntakeReference } from './handoff'
 import './automation.css'
 
 type Mode = IntakeSource['mode']
@@ -27,17 +28,6 @@ type Load<T> =
   | { kind: 'loading' }
   | { kind: 'error'; message: string }
   | { kind: 'done'; data: T }
-
-export const INTAKE_REFERENCE_KEY = 'strongstart.intakeReference'
-
-function readIntakeReference(): string | null {
-  try {
-    const ref = window.sessionStorage.getItem(INTAKE_REFERENCE_KEY)
-    return ref && /^[a-z0-9][a-z0-9._:-]*:[a-z0-9][a-z0-9._:-]*$/.test(ref) ? ref : null
-  } catch {
-    return null
-  }
-}
 
 const MODE_LABEL: Record<Mode, string> = {
   fixture: 'Known fixture',
@@ -69,13 +59,7 @@ export function AutomationPage() {
   const [previewToken, setPreviewToken] = useState(0)
 
   // "Use in application intake" from Find Funding passes IDs only (resolved server-side).
-  useEffect(() => {
-    try {
-      window.sessionStorage.removeItem(INTAKE_REFERENCE_KEY)
-    } catch {
-      // storage unavailable: nothing to clear
-    }
-  }, [])
+  useEffect(() => clearIntakeReference(), [])
 
   useEffect(() => {
     let active = true
