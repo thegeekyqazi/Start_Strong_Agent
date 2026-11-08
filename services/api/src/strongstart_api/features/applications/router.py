@@ -65,12 +65,6 @@ _REVIEW_STATIC = Capability(
     status="unavailable",
     detail="Review needs configured storage, identity and a question/evidence workspace.",
 )
-_SKILLS = Capability(
-    feature="skills",
-    owner="C",
-    status="not_implemented",
-    detail="Practice-skill generation planned (C4).",
-)
 
 # Static fallback kept for features.FEATURE_CAPABILITIES (pre-hook consumers).
 CAPABILITIES: list[Capability] = [
@@ -81,7 +75,6 @@ CAPABILITIES: list[Capability] = [
         detail="Workspace needs a configured question/evidence producer.",
     ),
     _REVIEW_STATIC,
-    _SKILLS,
 ]
 
 
@@ -154,7 +147,7 @@ def capabilities_for(settings: Settings) -> list[Capability]:
             else "Answer storage is unconfigured; no fallback."
         ),
     )
-    return [workspace, _model_capability(settings), review, storage, _SKILLS]
+    return [workspace, _model_capability(settings), review, storage]
 
 
 _lookup_error = lookup_error

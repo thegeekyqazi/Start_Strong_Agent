@@ -59,10 +59,13 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     caps = {c["feature"]: c for c in body["capabilities"]}
     for feature, owner in [
         ("knowledge", "A"),
-        ("skills", "C"),
     ]:
         assert caps[feature]["status"] == "not_implemented"
         assert caps[feature]["owner"] == owner
+    # C4-SKL-001: skills is implemented but needs fixture mode + PostgreSQL; explicitly
+    # unavailable here, never "available" by default.
+    assert caps["skills"]["owner"] == "C"
+    assert caps["skills"]["status"] == "unavailable"
     # B1-DISC-001: funding reports runtime availability; without provider keys it is
     # explicitly unavailable (never "available" by default).
     assert caps["funding"]["owner"] == "B1"

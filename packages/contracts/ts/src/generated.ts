@@ -945,6 +945,20 @@ export interface UnresolvedItem {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AppliedPractice".
+ */
+export interface AppliedPractice {
+  instruction_sha256: string
+  instructions: string
+  is_fixture: boolean
+  package_sha256: string
+  release_id: string
+  rule_ids: string[]
+  source_text_sha256: string
+  source_version_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "ApprovalDecisionRequest".
  */
 export interface ApprovalDecisionRequest {
@@ -1899,6 +1913,27 @@ export interface CheckRequest {
    * Editor text; may contain slot tokens.
    */
   text: string
+}
+/**
+ * Deterministic compiler output. Fixed allowlisted file map; no executable content.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CompiledPracticePackage".
+ */
+export interface CompiledPracticePackage {
+  compiler_version: string
+  files: PackageFile[]
+  package_sha256: string
+  template_version: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PackageFile".
+ */
+export interface PackageFile {
+  content: string
+  path: 'SKILL.md' | 'rules.json' | 'references/policy-excerpts.md'
+  sha256: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -3900,6 +3935,515 @@ export interface PortalBinding {
   logical_origin: string
   page_sha256: string
   portal_fixture_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeActivateRequest".
+ */
+export interface PracticeActivateRequest {
+  idempotency_key: string
+  package_sha256: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeAuditEvent".
+ */
+export interface PracticeAuditEvent {
+  action: string
+  actor_id: string
+  at: string
+  detail: string
+  event_id: string
+  object_id: string
+}
+/**
+ * Explicit staff review of a source as practice authority for one context.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeAuthority".
+ */
+export interface PracticeAuthority {
+  approved_at: string
+  approved_by: string
+  context_id: string
+  is_fixture: boolean
+  kind: 'synthetic_demo' | 'administrator_authored'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeCandidate".
+ */
+export interface PracticeCandidate {
+  candidate_id: string
+  context_id: string
+  created_at: string
+  hold_reasons: string[]
+  package: CompiledPracticePackage
+  proposer: ModelRunInfo
+  review: PracticeReview | null
+  rules: (PreferredTermRule | ProtectedNameRule)[]
+  scan: ScanReport
+  screening: ScreeningReport | null
+  source_text_sha256: string
+  source_version_id: string
+  status:
+    | 'proposed'
+    | 'needs_review'
+    | 'held'
+    | 'approved'
+    | 'active'
+    | 'superseded'
+    | 'revoked'
+    | 'stale_source'
+  tests: RuleTestReport
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeReview".
+ */
+export interface PracticeReview {
+  acknowledged: string[]
+  candidate_id: string
+  is_fixture: boolean
+  package_sha256: string
+  review_id: string
+  reviewed_at: string
+  reviewed_by: string
+  scan_sha256: string
+  screening_sha256: string
+  source_supported: boolean
+  tests_sha256: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PreferredTermRule".
+ */
+export interface PreferredTermRule {
+  /**
+   * @minItems 1
+   * @maxItems 3
+   */
+  citations: [SourceSpan] | [SourceSpan, SourceSpan] | [SourceSpan, SourceSpan, SourceSpan]
+  forbidden_term: string
+  matching: 'whole_word_case_insensitive_plural_s_outside_quotes'
+  operator: 'preferred_term'
+  preferred_term: string
+  rule_id: string
+}
+/**
+ * Exact evidence: Unicode code-point offsets into an exact stored source version.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SourceSpan".
+ */
+export interface SourceSpan {
+  end: number
+  quote: string
+  source_version_id: string
+  start: number
+  text_sha256: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ProtectedNameRule".
+ */
+export interface ProtectedNameRule {
+  acronym?: string | null
+  /**
+   * @minItems 1
+   * @maxItems 3
+   */
+  citations: [SourceSpan] | [SourceSpan, SourceSpan] | [SourceSpan, SourceSpan, SourceSpan]
+  full_name: string
+  operator: 'protected_name'
+  rule_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ScanReport".
+ */
+export interface ScanReport {
+  findings: ScanFinding[]
+  inspected_parts: string[]
+  report_sha256: string
+  scanner_version: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ScanFinding".
+ */
+export interface ScanFinding {
+  category:
+    | 'instruction_override'
+    | 'exfiltration'
+    | 'hidden_control'
+    | 'executable_request'
+    | 'disallowed_path'
+    | 'secret_canary'
+    | 'unregistered_name'
+    | 'policy_conflict'
+    | 'mutable_fact'
+  excerpt: string
+  finding_id: string
+  location: string
+  message: string
+  part: string
+  severity: 'block' | 'review'
+}
+/**
+ * Model-based screening signal, not a calibrated security classifier (spec s7.3).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ScreeningReport".
+ */
+export interface ScreeningReport {
+  candidate_id: string
+  complete: boolean
+  covered_parts: string[]
+  created_at: string
+  expected_parts: string[]
+  findings: ScreeningFinding[]
+  hold_reason: string | null
+  package_sha256: string
+  provider: ModelRunInfo | null
+  report_sha256: string
+  screening_id: string
+  signal: 'no_flags' | 'review' | 'block' | 'unknown'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ScreeningFinding".
+ */
+export interface ScreeningFinding {
+  part: string
+  reason: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RuleTestReport".
+ */
+export interface RuleTestReport {
+  cases: RuleTestCase[]
+  passed: boolean
+  report_sha256: string
+  tester_version: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RuleTestCase".
+ */
+export interface RuleTestCase {
+  case_id: string
+  expectation: string
+  passed: boolean
+  rule_id: string
+  sample: string
+}
+/**
+ * Server-owned demo scope (spec s5). Never inferred from model prose or requests.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeContext".
+ */
+export interface PracticeContext {
+  active_release_id: string | null
+  context_id: string
+  current_source_version_id: string | null
+  is_simulated: boolean
+  label: string
+  program: string
+  registered_names: string[]
+  revision: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeGenerateRequest".
+ */
+export interface PracticeGenerateRequest {
+  source_version_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeOverview".
+ */
+export interface PracticeOverview {
+  audit: PracticeAuditEvent[]
+  candidates: PracticeCandidate[]
+  context: PracticeContext
+  releases: PracticeRelease[]
+  screening_live: boolean
+  sources: PracticeSourceVersion[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeRelease".
+ */
+export interface PracticeRelease {
+  activated_at: string
+  activated_by: string
+  candidate_id: string
+  context_id: string
+  effective_state: 'active' | 'revoked' | 'superseded' | 'stale_source'
+  is_fixture: boolean
+  package_sha256: string
+  release_id: string
+  review_id: string
+  revoked_reason: string | null
+  source_version_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeSourceVersion".
+ */
+export interface PracticeSourceVersion {
+  authority: PracticeAuthority | null
+  authority_kind: 'synthetic_demo' | 'administrator_authored'
+  context_id: string
+  created_at: string
+  created_by: string
+  is_current: boolean
+  provenance: Provenance
+  source_id: string
+  source_version_id: string
+  text: string
+  text_sha256: string
+  title: string
+  version: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticePreview".
+ */
+export interface PracticePreview {
+  applied: AppliedPractice | null
+  approval_permitted?: false
+  baseline_draft: DraftProposal
+  context_id: string
+  current: boolean
+  hold_reason: string | null
+  next_actions: string[]
+  practice_draft: DraftProposal | null
+  preview_id: string
+  sample_baseline_check: CheckReport1 | null
+  sample_practice_check: CheckReport1 | null
+  working_preview_only?: true
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticePreviewRequest".
+ */
+export interface PracticePreviewRequest {
+  evidence_bundle_id: string
+  question_id: string
+  question_set_id?: string | null
+  question_version: number
+  sample_text?: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeReviewRequest".
+ */
+export interface PracticeReviewRequest {
+  /**
+   * @maxItems 20
+   */
+  acknowledged_findings?:
+    | []
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+  package_sha256: string
+  rationale?: string
+  source_supported: boolean
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeRevokeRequest".
+ */
+export interface PracticeRevokeRequest {
+  reason: string
+  release_id: string
+}
+/**
+ * Administrator-authored or synthetic practice text. Bounded plain text only.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PracticeSourceCreate".
+ */
+export interface PracticeSourceCreate {
+  expected_current_source_version_id?: string | null
+  text: string
+  title: string
 }
 /**
  * Planned field entry. Only fill operations exist; submit/sign is unrepresentable.

@@ -74,4 +74,5 @@ def test_capabilities_report_fixture_workspace_and_fake_model() -> None:
     assert caps["applications"]["status"] == "fixture_only"
     assert caps["applications.model"]["status"] == "fixture_only"
     assert caps["review"]["status"] == "fixture_only"
-    assert caps["skills"]["status"] == "not_implemented"
+    # C4-SKL-001: implemented, but this fixture app has no PostgreSQL store.
+    assert caps["skills"]["status"] == "unavailable"

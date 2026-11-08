@@ -69,6 +69,7 @@ from .discovery import (
     SearchResult,
 )
 from .funding_review import FUNDING_REVIEW_PUBLIC_MODELS
+from .skills import SKILLS_PUBLIC_MODELS
 
 PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     SourceReference,
@@ -128,6 +129,8 @@ PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     *AUTOMATION_PREFILL_PUBLIC_MODELS,
     # C1 (owner C), imported from its module like B2's
     *ANSWERS_PUBLIC_MODELS,
+    # C4-SKL-001 (owner C): thin practice generator and draft preview
+    *SKILLS_PUBLIC_MODELS,
 )
 
 

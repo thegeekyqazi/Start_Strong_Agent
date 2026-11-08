@@ -37,7 +37,14 @@ class StructuredTask:
     """A bounded, typed request. Identity/permissions are never part of the payload."""
 
     task_id: str
-    operation: Literal["draft_answer", "plan_application", "numerical_review", "meaning_review"]
+    operation: Literal[
+        "draft_answer",
+        "plan_application",
+        "numerical_review",
+        "meaning_review",
+        "propose_practice",  # C4-SKL-001: structured practice proposal (no tools)
+        "screen_practice",  # C4-SKL-001: bounded model-based screening signal
+    ]
     instructions: str
     payload: dict[str, Any]
     output_schema: dict[str, Any]
