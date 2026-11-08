@@ -26,7 +26,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from strongstart_contracts import ReadinessCheck, ReadinessReport
 
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0002_source_fact_foundation"
+REQUIRED_MIGRATION_REVISION = "0003_artifact_text_ingestion"
 
 metadata = MetaData()
 
@@ -72,7 +72,9 @@ knowledge_source_versions = Table(
     Column("source_id", String(128), ForeignKey("knowledge_sources.id"), nullable=False),
     Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
     Column("media_type", Text, nullable=False),
-    Column("content_bytes", LargeBinary, nullable=False),
+    Column("content_bytes", LargeBinary),
+    Column("storage_backend", String(32), nullable=False, server_default="postgres_bytea"),
+    Column("artifact_key", Text),
     Column("content_sha256", String(64), nullable=False),
     Column("size_bytes", Integer, nullable=False),
     Column("captured_at", DateTime(timezone=True)),
@@ -80,6 +82,9 @@ knowledge_source_versions = Table(
     Column("publication_date", DateTime(timezone=True)),
     Column("reporting_period", Text),
     Column("verification_status", String(24), nullable=False),
+    Column("parser_name", String(64)),
+    Column("parser_version", String(32)),
+    Column("parser_warnings", Text),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
 
