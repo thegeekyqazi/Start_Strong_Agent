@@ -32,12 +32,16 @@ class StoreApprovedAnswerResolver:
         context_for: ContextFactory,
         is_fixture: bool,
         clock: Callable[[], datetime] | None = None,
+        store_current: Callable[[], bool] | None = None,
     ) -> None:
         self._context_for = context_for
         self.is_fixture = is_fixture
         self._clock = clock or (lambda: datetime.now(UTC))
+        self._store_current = store_current or (lambda: True)
 
     def _usable(self, organization_id: str, approval_id: str) -> tuple[Context, ApprovalRead]:
+        if not self._store_current():
+            raise ApprovalNotUsable(approval_id, "producer_store_replaced")
         try:
             return self._read_usable(organization_id, approval_id)
         except (ApprovalNotUsable, CapabilityUnavailable):
@@ -135,7 +139,9 @@ class StoreApprovedAnswerResolver:
         )
 
     def _finish(self, ctx: Context, read: ApprovalRead) -> None:
-        if not ctx.store.approval_read_current(ctx.organization_id, read):
+        if not self._store_current() or not ctx.store.approval_read_current(
+            ctx.organization_id, read
+        ):
             raise ApprovalNotUsable(read.decision.approval_id, "approval_changed_during_read")
 
     def resolve(self, organization_id: str, approval_snapshot_id: str) -> ApprovalSnapshot:

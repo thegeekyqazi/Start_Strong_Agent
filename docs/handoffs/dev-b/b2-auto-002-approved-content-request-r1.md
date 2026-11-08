@@ -1,3 +1,7 @@
+> INT-001 adoption (2026-11-08): engineering ownership and current producer/consumer
+> integration are recorded in the [integration handoff](../integration/int-001-approved-content-currentness-r1.md).
+> This historical note retains its original status, evidence and limitations below.
+
 # B2-AUTO-002: Request to Dev C for an approved-content reader for prefill (r1)
 
 - Author/lane: Dev B agent (Claude Code, claude-opus-5-5) for the project owner (Dev B)

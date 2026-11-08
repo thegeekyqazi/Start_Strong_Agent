@@ -155,3 +155,51 @@ def test_concurrent_save_during_resolution_is_explicitly_refused(setup):
             release.set()
         with pytest.raises(ApprovalNotUsable, match="approval_changed_during_read"):
             future.result(timeout=5)
+
+
+def test_inconsistent_unknown_fact_fixture_cannot_authorize_a_fill(setup):
+    from strongstart_api.features.applications.store import StoredDecision
+
+    settings, app, c, pub, _, _ = setup
+    version = save(c, pub, "pf-summary", "Linked: {{fact:missing-fact}}.")
+    assert (
+        c.post(
+            "/api/applications/answers/decisions",
+            json={
+                "answer_version_id": version["answer_version_id"],
+                "decision": "approve",
+                "expected_content_sha256": version["content_sha256"],
+                "expected_snapshot_sha256": version["snapshot_sha256"],
+                "acknowledge_review_items": True,
+            },
+        ).status_code
+        == 422
+    )
+    # Deliberately inconsistent stored fixture: strip old findings and insert a forged
+    # approve decision to prove a matching saved hash cannot bypass the live gate.
+    store = app.state.c3_answer_store
+    with store._lock:
+        org = store._org(ORG)
+        q = version["question_id"]
+        stored = org.versions[q][-1]
+        org.versions[q][-1] = replace(
+            stored, check=stored.check.model_copy(update={"findings": []})
+        )
+    store.record_decision(
+        ORG,
+        StoredDecision(
+            approval_id="apr-inconsistent-fixture",
+            answer_version_id=stored.answer_version_id,
+            decision="approve",
+            content_sha256=stored.content_sha256,
+            snapshot_sha256=stored.snapshot_sha256,
+            reviewer_id="fixture-staff",
+            reviewer_is_fixture_identity=True,
+            acknowledged_review_items=True,
+            note="inconsistent fixture",
+            decided_at=stored.created_at,
+        ),
+        True,
+    )
+    with pytest.raises(ApprovalNotUsable, match="approval_gate_blocked"):
+        reader_for(app, settings).resolve_for_prefill(ORG, "apr-inconsistent-fixture")

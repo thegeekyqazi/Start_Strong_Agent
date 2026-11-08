@@ -7,7 +7,9 @@ through the normal app factory; none of these tests replaces C's approval reader
 from __future__ import annotations
 
 import importlib
+import threading
 from collections.abc import Callable
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 from typing import Any, cast
 
@@ -22,7 +24,6 @@ from tests.integration.a4_support import Managed
 from tests.integration.managed_workspace import managed_client
 from tests.integration.support import decide, prepare, publish, save
 
-pytest_plugins = ["tests.integration.a4_support"]
 pytestmark = pytest.mark.db
 browser_module = importlib.import_module("strongstart_api.features.automation.prefill_browser")
 
@@ -115,15 +116,16 @@ def test_managed_actual_plan_grant_and_full_union_replay(managed, tmp_path, actu
 
 
 @pytest.mark.parametrize("phase", ["after_preparation", "after_grant_registration"])
+@pytest.mark.parametrize("replacement", [1, 2, 3])
 def test_actual_replacement_zero_writes_and_no_downgrade(
-    managed, tmp_path, actuator, monkeypatch, phase
+    managed, tmp_path, actuator, monkeypatch, phase, replacement
 ):
     c, pub, approvals = two(managed, tmp_path)
     response = prepare(c, pub, approvals)
     assert response.status_code == 201, response.text
     plan = response.json()
     if phase == "after_preparation":
-        managed.replace()
+        managed.replace(replacement)
         view = c.get(f"/api/automation/prefill-plans/{plan['plan_id']}").json()
         assert view["availability"] == "stale" and "prepare a new plan" in view["next_action"]
     else:
@@ -134,7 +136,7 @@ def test_actual_replacement_zero_writes_and_no_downgrade(
         def replace_after(self, org, kind, target_id, binding, expected_revision=0):
             result = original(self, org, kind, target_id, binding, expected_revision)
             if kind == "browser_grant":
-                managed.replace()
+                managed.replace(replacement)
             return result
 
         monkeypatch.setattr(KnowledgeCurrentness, "register", replace_after)
@@ -171,3 +173,153 @@ def test_later_field_fact_change_is_checked_against_whole_union(managed, tmp_pat
     run = execute(c, plan)["run"]["run"]
     assert run["outcome"] == "blocked_before_entry"
     assert actuator.operations == []
+
+
+def test_event_controlled_pack_change_between_fields_preserves_partial_receipt(
+    managed, tmp_path, actuator, monkeypatch
+):
+    c, pub, approvals = two(managed, tmp_path)
+    plan = prepare(c, pub, approvals).json()
+    runner = importlib.import_module("strongstart_api.features.automation.prefill_runner")
+    first_entered, replaced = threading.Event(), threading.Event()
+    original = runner._Hooks.after_write
+
+    def after(self, index, outcome):
+        if index == 0:
+            first_entered.set()
+            assert replaced.wait(5)
+        return original(self, index, outcome)
+
+    monkeypatch.setattr(runner._Hooks, "after_write", after)
+    with ThreadPoolExecutor(1) as pool:
+        future = pool.submit(execute, c, plan)
+        try:
+            assert first_entered.wait(5)
+            managed.replace(2)  # real policy-only activation; conservative root invalidates
+        finally:
+            replaced.set()
+        run = future.result(timeout=10)["run"]["run"]
+    assert run["outcome"] == "stopped_with_partial_entry"
+    assert run["fields"][0]["state"] == "entered_then_stale"
+    assert run["fields"][1]["state"] == "not_attempted"
+    assert actuator.operations == ["fill:org-name-field"]
+
+
+def test_get_reads_never_register_retarget_or_renew(managed, tmp_path, actuator, monkeypatch):
+    from strongstart_api.features.knowledge.public import KnowledgeCurrentness
+
+    c, pub, approvals = two(managed, tmp_path)
+    plan = prepare(c, pub, approvals).json()
+
+    def forbidden(*args, **kwargs):
+        raise AssertionError("registration during GET")
+
+    monkeypatch.setattr(KnowledgeCurrentness, "register", forbidden)
+    for _ in range(2):
+        view = c.get(f"/api/automation/prefill-plans/{plan['plan_id']}").json()
+        assert view["plan"] == plan and view["availability"] == "executable"
+    target_before = managed.service.get_target("demo-org", "browser_plan", plan["plan_id"])
+    managed.replace(3)
+    for _ in range(2):
+        view = c.get(f"/api/automation/prefill-plans/{plan['plan_id']}").json()
+        assert view["plan"] == plan and view["availability"] == "stale"
+    target_after = managed.service.get_target("demo-org", "browser_plan", plan["plan_id"])
+    assert target_after.state == "stale" and target_after.revision == target_before.revision
+    assert target_after.projection_sha256 == target_before.projection_sha256
+    assert actuator.launches == 0
+
+
+def test_registration_failure_after_claim_never_retries(managed, tmp_path, actuator, monkeypatch):
+    from strongstart_api.features.knowledge.packs import PackConflictError
+    from strongstart_api.features.knowledge.public import KnowledgeCurrentness
+
+    c, pub, approvals = two(managed, tmp_path)
+    plan = prepare(c, pub, approvals).json()
+    original = KnowledgeCurrentness.register
+    calls = []
+
+    def fail_grant(self, org, kind, target_id, binding, expected_revision=0):
+        calls.append(kind)
+        if kind == "browser_grant":
+            raise PackConflictError
+        return original(self, org, kind, target_id, binding, expected_revision)
+
+    monkeypatch.setattr(KnowledgeCurrentness, "register", fail_grant)
+    result = execute(c, plan)
+    assert result["run"]["run"]["outcome_reason"] == "grant_registration_failed"
+    assert result["run"]["run"]["outcome"] == "blocked_before_entry"
+    replay = execute(c, plan)
+    assert replay["replayed"] and replay["run"]["run"] == result["run"]["run"]
+    assert calls == ["browser_grant"] and actuator.launches == 0
+
+
+def test_replacement_before_preparation_registration_publishes_no_executable_plan(
+    managed, tmp_path, actuator, monkeypatch
+):
+    from strongstart_api.features.automation.public import build_definition_repository
+    from strongstart_api.features.knowledge.public import KnowledgeCurrentness
+
+    c, settings, _source = managed_client(managed, tmp_path)
+    pub = publish(c)
+    approval = decide(c, save(c, pub, "pf-org-name", "Synthetic organization"))
+    original = KnowledgeCurrentness.register
+
+    def replacement_wins(self, org, kind, target_id, binding, expected_revision=0):
+        managed.replace()
+        return original(self, org, kind, target_id, binding, expected_revision)
+
+    monkeypatch.setattr(KnowledgeCurrentness, "register", replacement_wins)
+    response = prepare(c, pub, {"pf-org-name": approval})
+    assert (
+        response.status_code == 409
+        and response.json()["details"]["reason"] == "managed_registration_failed"
+    )
+    repository = build_definition_repository(settings)
+    assert repository is not None
+    assert (
+        repository.store.collection("demo-org", "prefill-plans").list_ids(None, 50).object_ids == []
+    )
+    assert actuator.launches == 0
+
+
+@pytest.mark.parametrize("stage", ["after_action", "completion"])
+def test_managed_verifier_failure_cannot_finish_fully_verified(
+    managed, tmp_path, actuator, monkeypatch, stage
+):
+    from strongstart_api.features.knowledge.public import KnowledgeCurrentness
+    from strongstart_contracts.automation_prefill import DependencyCurrentness
+
+    runner = importlib.import_module("strongstart_api.features.automation.prefill_runner")
+    c, pub, approvals = two(managed, tmp_path)
+    plan = prepare(c, pub, approvals).json()
+    unavailable = threading.Event()
+    check = KnowledgeCurrentness.check_registration
+
+    def failing(self, org, registration):
+        if unavailable.is_set():
+            return DependencyCurrentness(status="unavailable", detail="injected_verifier_outage")
+        return check(self, org, registration)
+
+    monkeypatch.setattr(KnowledgeCurrentness, "check_registration", failing)
+    if stage == "after_action":
+        after = runner._Hooks.after_write
+
+        def fail_after(self, index, outcome):
+            unavailable.set()
+            return after(self, index, outcome)
+
+        monkeypatch.setattr(runner._Hooks, "after_write", fail_after)
+    else:
+
+        def completed(*args, **kwargs):
+            result = actuator(*args, **kwargs)
+            unavailable.set()
+            return result
+
+        monkeypatch.setattr(browser_module, "execute_actions", completed)
+    run = execute(c, plan)["run"]["run"]
+    assert run["outcome"] == "stopped_with_partial_entry"
+    assert run["outcome_reason"] == "dependency_unavailable"
+    if stage == "after_action":
+        assert run["fields"][0]["state"] == "entered_then_stale"
+        assert run["fields"][1]["state"] == "not_attempted"

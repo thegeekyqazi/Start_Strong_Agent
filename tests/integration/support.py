@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, cast
 
 from fastapi.testclient import TestClient
+from starlette.requests import Request
 
 from strongstart_api.features.applications.public import get_approved_prefill_reader
 from strongstart_api.features.applications.rules.policy import fixture_policy
@@ -84,7 +85,11 @@ def reader_for(app: Any, settings: Any, source: Any = None):
         build_application_definition_reader(settings), FixtureWorkspaceSource()
     )
     return get_approved_prefill_reader(
-        app.state.c3_answer_store, source, fixture_policy(), settings
+        app.state.c3_answer_store,
+        source,
+        fixture_policy(),
+        settings,
+        Request({"type": "http", "app": app}),
     )
 
 

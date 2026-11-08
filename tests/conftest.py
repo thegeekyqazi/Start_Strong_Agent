@@ -14,3 +14,6 @@ BUNDLE_PATH = REPO_ROOT / "tests/fixtures/demo/demo-bundle-v1.json"
 def bundle_json() -> dict[str, Any]:
     data: dict[str, Any] = json.loads(BUNDLE_PATH.read_text(encoding="utf-8"))
     return data
+
+
+pytest_plugins = ["tests.integration.a4_support"]

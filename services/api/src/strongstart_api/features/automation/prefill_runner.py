@@ -439,7 +439,9 @@ class _Hooks:
         self.checks.append(
             CurrentnessCheck(
                 stage=stage,
-                status="current" if problem is None else "stale",
+                status="current"
+                if problem is None
+                else ("unavailable" if "unavailable" in problem else "stale"),
                 detail=problem or "approval, definition, grant and dependencies current",
             )
         )
@@ -590,7 +592,13 @@ def _run_claimed(deps: ExecutionDeps, plan: PrefillPlan, run: PrefillRun) -> Pre
     pre: list[CurrentnessCheck] = []
 
     def blocked(reason: str) -> PrefillRun:
-        pre.append(CurrentnessCheck(stage="pre_execution", status="stale", detail=reason))
+        pre.append(
+            CurrentnessCheck(
+                stage="pre_execution",
+                status="unavailable" if "unavailable" in reason else "stale",
+                detail=reason,
+            )
+        )
         return _finish(
             deps,
             run,
@@ -693,7 +701,9 @@ def _run_claimed(deps: ExecutionDeps, plan: PrefillPlan, run: PrefillRun) -> Pre
         checks.append(
             CurrentnessCheck(
                 stage="completion",
-                status="current" if completion is None else "stale",
+                status="current"
+                if completion is None
+                else ("unavailable" if "unavailable" in completion else "stale"),
                 detail=completion or "all approvals current at completion",
             )
         )

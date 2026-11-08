@@ -325,7 +325,7 @@ class UnconfiguredAnswerStore:
     def _unavailable() -> CapabilityUnavailable:
         return CapabilityUnavailable(
             "AnswerStore",
-            "no answer store configured (C3 answers/approvals migration pending Dev A)",
+            "TigerData durable answer store is not configured; process-local fixture mode only",
         )
 
     def append_version(

@@ -54,3 +54,20 @@ API dependency providers live in `strongstart_api/ports.py` (`get_capture_store`
 ## CODEOWNERS
 
 Not created: real GitHub reviewer handles have not been supplied. Add `.github/CODEOWNERS` from this table once the team's handles are known.
+
+
+## INT-001 current public producer/consumer paths
+
+- C: `applications.public.get_approved_prefill_reader` resolves the app-scoped save/approve
+  store, exact saved rendering and store epoch with consistent snapshots. It also supports
+  metadata resolution through the same usable-approval predicate. Process-local only.
+- A4: `knowledge.public.KnowledgeCurrentness` / `get_prefill_currentness` resolve authorized
+  active evidence, project dependencies, register exact browser targets and check existing
+  registrations. PostgreSQL/Alembic, compatible with the next TigerData increment.
+- B: plan/grant v2 binds C content, full dependency union and actual A4 registrations;
+  default demo evidence remains unmanaged. The Review handoff carries IDs only.
+- Sawaab: owns UI/UX; this task adds functional state/props only. See the
+  [UI contract](../handoffs/integration/int-001-ui-contract.md).
+
+See [the current integration handoff](../handoffs/integration/int-001-approved-content-currentness-r1.md)
+for evidence, migration, limitations, acceptance mapping and next consumer work.

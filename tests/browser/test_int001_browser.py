@@ -104,6 +104,103 @@ def test_normal_runtime_c_review_to_two_field_chromium_receipt(tmp_path: Path) -
             assert page.get_by_label("Read-back receipt").count() == 0
             page.get_by_role("button", name="Check stored receipt").click()
             page.get_by_role("heading", name="Selected fields verified", exact=True).wait_for()
+            # A new pending plan becomes visibly stale after one C character edit.
+            page.get_by_role("link", name="Review", exact=True).click()
+            page.get_by_label("Question", exact=True).select_option(ids["pf-summary"])
+            page.get_by_role("button", name="Use approved answer in Automation").click()
+            page.get_by_text(re.compile(r"Selected from Review:")).wait_for()
+            with page.expect_response(
+                lambda r: (
+                    r.url.endswith("/api/automation/prefill-plans") and r.request.method == "POST"
+                )
+            ) as prepared:
+                page.get_by_role("button", name="Prepare selected-field plan (no entry)").click()
+            pending_plan = prepared.value.json()
+            page.get_by_text("Exact approved plan preview", exact=True).wait_for()
+            post(
+                "/api/applications/answers/versions",
+                {
+                    "question_id": ids["pf-summary"],
+                    "question_version": 1,
+                    "question_set_id": pub["question_set_id"],
+                    "evidence_bundle_id": "demo-evidence-a-v1",
+                    "text": summary + "!",
+                    "expected_answer_version": 1,
+                },
+            )
+            page.get_by_role("button", name="Check current sources (no entry)").click()
+            page.get_by_text("Review the answer and prepare a new plan.", exact=False).wait_for()
+            assert page.get_by_role("button", name="Fill these approved fields").is_disabled()
+            blocked = post(
+                f"/api/automation/prefill-plans/{pending_plan['plan_id']}/execute",
+                {
+                    "expected_plan_sha256": pending_plan["plan_sha256"],
+                    "idempotency_key": "int-real-blocked-edit",
+                },
+            )["run"]["run"]
+            assert blocked["outcome"] == "blocked_before_entry"
+            assert blocked["activity"]["operations_performed"] == []
             assert errors == [] and external == []
         finally:
             browser.close()
+
+
+def test_real_chromium_stops_after_event_controlled_c_edit(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    import importlib
+    import threading
+    from concurrent.futures import ThreadPoolExecutor
+
+    from fastapi.testclient import TestClient
+
+    from strongstart_api.app import create_app
+    from strongstart_api.config import Settings
+    from tests.integration.support import decide, prepare, publish, save
+
+    runner = importlib.import_module("strongstart_api.features.automation.prefill_runner")
+    app = create_app(
+        Settings(_env_file=None, auth_mode="fixture", dev_b_store_dir=tmp_path / "store")
+    )
+    c = TestClient(app)
+    pub = publish(c)
+    approvals = {
+        q: decide(c, save(c, pub, q, text))
+        for q, text in [
+            ("pf-org-name", "Riverside Youth Collective"),
+            ("pf-summary", "We support early learning."),
+        ]
+    }
+    plan = prepare(c, pub, approvals).json()
+    entered, edited = threading.Event(), threading.Event()
+    original = runner._Hooks.after_write
+
+    def after(self: Any, index: int, outcome: Any) -> Any:
+        if index == 0:
+            entered.set()
+            assert edited.wait(10)
+        return original(self, index, outcome)
+
+    monkeypatch.setattr(runner._Hooks, "after_write", after)
+    with ThreadPoolExecutor(1) as pool:
+        future = pool.submit(
+            c.post,
+            f"/api/automation/prefill-plans/{plan['plan_id']}/execute",
+            json={
+                "expected_plan_sha256": plan["plan_sha256"],
+                "idempotency_key": "int-real-partial-edit",
+            },
+        )
+        try:
+            assert entered.wait(10)
+            save(c, pub, "pf-org-name", "Riverside Youth Collective!", 1)
+        finally:
+            edited.set()
+        response = future.result(timeout=15)
+    assert response.status_code == 201, response.text
+    run = response.json()["run"]["run"]
+    assert run["browser_version"] and run["outcome"] == "stopped_with_partial_entry"
+    assert run["activity"]["operations_performed"] == ["fill:org-name-field"]
+    assert run["fields"][0]["state"] == "entered_then_stale"
+    assert run["fields"][0]["actual_value"] == "Riverside Youth Collective"
+    assert run["fields"][1]["state"] == "not_attempted"

@@ -490,6 +490,16 @@ class PackService:
                     "source_version",
                 }:
                     raise PackManifestError("unsupported_browser_dependency")
+                if dependency.kind in {"fact_version", "policy"}:
+                    value = dependency.version
+                    if (
+                        not value.isascii()
+                        or not value.isdecimal()
+                        or len(value) > 10
+                        or str(int(value)) != value
+                        or int(value) < 1
+                    ):
+                        raise PackManifestError("dependency_version_invalid")
                 self._validate_dependency(conn, organization_id, dependency)
             current = (
                 conn.execute(

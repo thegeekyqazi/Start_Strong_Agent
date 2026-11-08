@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import hashlib
 import secrets
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 
 import pytest
@@ -22,6 +24,9 @@ from strongstart_api.db import (
     get_engine,
     invalidation_events,
     knowledge_facts,
+    knowledge_source_versions,
+    knowledge_sources,
+    organizations,
     pack_change_sets,
     pack_changes,
     pack_facts,
@@ -81,11 +86,8 @@ class Managed:
         )
 
 
-@pytest.fixture
-def managed():
-    url = Settings().database_url
-    if not url:
-        pytest.fail("real PostgreSQL required: set STRONGSTART_DATABASE_URL")
+@contextmanager
+def managed_environment(url: str) -> Iterator[Managed]:
     cfg = Config(str(REPO_ROOT / "alembic.ini"))
     cfg.attributes["database_url"] = url
     command.upgrade(cfg, "head")
@@ -217,5 +219,23 @@ def managed():
             conn.execute(
                 delete(pack_policies).where(pack_policies.c.policy_id == prefix + "policy")
             )
-            conn.execute(delete(fact_source_refs).where(fact_source_refs.c.fact_id.in_(fact_ids)))
-            conn.execute(delete(knowledge_facts).where(knowledge_facts.c.id.in_(fact_ids)))
+            conn.execute(
+                delete(fact_source_refs).where(fact_source_refs.c.fact_id.like(prefix + "%"))
+            )
+            conn.execute(delete(knowledge_facts).where(knowledge_facts.c.id.like(prefix + "%")))
+            conn.execute(
+                delete(knowledge_source_versions).where(
+                    knowledge_source_versions.c.id.like(prefix + "%")
+                )
+            )
+            conn.execute(delete(knowledge_sources).where(knowledge_sources.c.id.like(prefix + "%")))
+            conn.execute(delete(organizations).where(organizations.c.id.like(prefix + "%")))
+
+
+@pytest.fixture
+def managed() -> Iterator[Managed]:
+    url = Settings().database_url
+    if not url:
+        pytest.fail("real PostgreSQL required: set STRONGSTART_DATABASE_URL")
+    with managed_environment(url) as environment:
+        yield environment

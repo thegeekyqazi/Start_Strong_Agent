@@ -1,3 +1,7 @@
+> INT-001 adoption (2026-11-08): engineering ownership and current producer/consumer
+> integration are recorded in the [integration handoff](../integration/int-001-approved-content-currentness-r1.md).
+> This historical note retains its original status, evidence and limitations below.
+
 # B2-AUTO-002: Approved selected-field prefill and live read-back (r1)
 
 - Author/lane: single Dev B agent (Codex), automation module; continued the existing implementation, no restart or parallel agents.

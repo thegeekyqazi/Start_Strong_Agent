@@ -102,3 +102,25 @@ Completed receipt replay precedes new currentness decisions and never launches a
 The harness now constructs valid C-format dependency snapshot hashes to meet B's stricter
 independent checks. Missing-reader coverage explicitly injects an unconfigured producer;
 the normal runtime now uses C's real empty store and refuses unknown approvals as held.
+
+## M4 verification refinements
+
+The public C factory also detects replacement of its app-scoped store during an existing
+request. Keeping a reference to the old store must not allow hooks to continue after the
+active store is replaced. Both the captured org revision and active-store identity are
+checked at the final reader boundary. Live reviewed gates are recomputed as well as
+snapshot/render hashes, including deliberately inconsistent unknown-fact fixtures.
+Unavailable dependency checks now retain `unavailable` receipt labels separately from stale.
+
+Browser-specific A4 registration rejects noncanonical fact/policy version strings;
+generic historical APIs retain their established conventions. The final lock mutation
+again produced the exact stale-registration failure, restored the source and passed:
+`e0574503c6d2e4698c9c51cacf1202e70f62308ad12575d52764bc34815f44ea`.
+The earlier M2 source hash remains historical evidence, not the final source hash.
+
+Two opt-in rehearsal scripts use a bounded test workspace over actual A4 evidence and
+normal C save/approve/content implementations; they are never wired into the runtime.
+The real HTTP/SQL/Chromium rehearsal passed locally, including actual plan/grant rows,
+pack activation, zero-write refusal and unchanged completed replay. Its owned API was
+stopped and synthetic SQL rows/temporary B files cleaned. No TigerData/live provider
+verification, production enablement or Sawaab UI/UX branch merge is claimed.

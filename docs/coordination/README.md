@@ -2,6 +2,7 @@
 > engineering and migration sequencing; Sawaab owns UI/UX. INT-001 uses one agent,
 > sequential milestones. See [decision 0005](../decisions/0005-int-001-engineering-takeover.md).
 > Historical lane instructions below remain context; machine-readable owners are unchanged.
+> Current status: [INT-001 handoff](../handoffs/integration/int-001-approved-content-currentness-r1.md).
 
 # Three-agent coordination and repository setup
 

@@ -18,8 +18,6 @@ from strongstart_api.features.knowledge.packs import (
 from strongstart_contracts import DependencyRegistrationRequest
 from strongstart_contracts.answers import DependencyRef
 
-pytest_plugins = ["tests.integration.a4_support"]
-
 pytestmark = pytest.mark.db
 
 
@@ -51,7 +49,16 @@ def test_exact_projection_and_guarded_registration(managed):
 
 
 @pytest.mark.parametrize(
-    "bad", ["fact_digest", "fact_missing", "policy_version", "requirement_set", "pack", "context"]
+    "bad",
+    [
+        "fact_digest",
+        "fact_missing",
+        "policy_version",
+        "requirement_set",
+        "pack",
+        "context",
+        "source_hash",
+    ],
 )
 def test_mapping_never_drops_or_reinterprets_dependencies(managed, bad):
     bundle = managed.facade.resolve_active("demo-org", managed.context)
@@ -64,6 +71,12 @@ def test_mapping_never_drops_or_reinterprets_dependencies(managed, bad):
         refs = [r.model_copy(update={"version": "01"}) if r.kind == "policy" else r for r in refs]
     elif bad == "requirement_set":
         refs.append(DependencyRef(kind="requirement_set", ref_id="unverified", version="1"))
+    elif bad == "source_hash":
+        refs.append(
+            DependencyRef(
+                kind="source_version", ref_id="demo-synthetic-metrics-v1", version="0" * 64
+            )
+        )
     elif bad == "pack":
         refs = [r for r in refs if r.kind != "pack"]
     with pytest.raises((PackManifestError, PackNotFoundError)):
@@ -197,4 +210,149 @@ def test_unrelated_context_replacement_keeps_this_plan_current(managed):
         packs.append(request.pack_version_id)
     managed.service.activate("demo-org", "fixture-staff", context, packs[0], None)
     managed.service.activate("demo-org", "fixture-staff", context, packs[1], packs[0])
+    assert managed.facade.check_registration("demo-org", reg).status == "current"
+
+
+def test_source_projection_uses_authoritative_source_hash(managed):
+    bundle = managed.facade.resolve_active("demo-org", managed.context)
+    _, refs = managed.binding()
+    source = bundle.facts[0].supporting_refs[0]
+    assert source.content_hash is not None
+    refs.append(
+        DependencyRef(
+            kind="source_version", ref_id=source.source_version_id, version=source.content_hash
+        )
+    )
+    binding = managed.facade.project("demo-org", managed.context, bundle, refs)
+    assert any(
+        d.kind == "source_version"
+        and d.ref_id == source.source_version_id
+        and d.version == source.content_hash
+        for d in binding.dependencies
+    )
+    reg = managed.facade.register(
+        "demo-org", "browser_plan", managed.prefix + "source-plan", binding
+    )
+    assert managed.facade.check_registration("demo-org", reg).status == "current"
+
+
+@pytest.mark.parametrize(
+    "kind,value", [("fact_version", "01"), ("policy", "01"), ("policy", "policy-v1")]
+)
+def test_guarded_boundary_refuses_noncanonical_versions(managed, kind, value):
+    from strongstart_contracts.knowledge_binding import binding_digest
+
+    binding, _ = managed.binding(include_policy=True)
+    dependencies = [
+        d.model_copy(update={"version": value}) if d.kind == kind else d
+        for d in binding.dependencies
+    ]
+    altered = binding.model_copy(update={"dependencies": dependencies})
+    altered = altered.model_copy(update={"projection_sha256": binding_digest(altered)})
+    with pytest.raises(PackManifestError, match="dependency_version_invalid"):
+        managed.facade.register("demo-org", "browser_plan", managed.prefix + "bad-version", altered)
+
+
+def test_another_organization_pack_change_does_not_stale_this_plan(managed):
+    from sqlalchemy import insert, select
+
+    from strongstart_api.db import (
+        fact_source_refs,
+        knowledge_facts,
+        knowledge_source_versions,
+        knowledge_sources,
+        organizations,
+    )
+    from strongstart_contracts import PackManifestRequest
+
+    binding, _ = managed.binding()
+    reg = managed.facade.register(
+        "demo-org", "browser_plan", managed.prefix + "tenant-isolated", binding
+    )
+    other = managed.prefix + "tenant"
+    source_id, source_version, fact_id = other + "-source", other + "-sv", other + "-fact"
+    with managed.service.engine.begin() as conn:
+        conn.execute(
+            insert(organizations).values(
+                id=other,
+                display_name="Synthetic other tenant",
+                provenance_class="simulated",
+                is_simulated=True,
+            )
+        )
+        original_version = dict(
+            conn.execute(
+                select(knowledge_source_versions).where(
+                    knowledge_source_versions.c.id == "demo-synthetic-metrics-v1"
+                )
+            )
+            .mappings()
+            .one()
+        )
+        original_source = dict(
+            conn.execute(
+                select(knowledge_sources).where(
+                    knowledge_sources.c.id == original_version["source_id"]
+                )
+            )
+            .mappings()
+            .one()
+        )
+        conn.execute(
+            insert(knowledge_sources).values(
+                **{**original_source, "id": source_id, "organization_id": other}
+            )
+        )
+        conn.execute(
+            insert(knowledge_source_versions).values(
+                **{
+                    **original_version,
+                    "id": source_version,
+                    "source_id": source_id,
+                    "organization_id": other,
+                }
+            )
+        )
+        original_fact = dict(
+            conn.execute(
+                select(knowledge_facts).where(
+                    knowledge_facts.c.id == managed.manifests[0].facts[0].fact_id
+                )
+            )
+            .mappings()
+            .one()
+        )
+        conn.execute(
+            insert(knowledge_facts).values(
+                **{**original_fact, "id": fact_id, "organization_id": other}
+            )
+        )
+        conn.execute(
+            insert(fact_source_refs).values(
+                fact_id=fact_id, source_version_id=source_version, locator="line:1"
+            )
+        )
+    previous = None
+    for i in (1, 2):
+        request = PackManifestRequest.model_validate(
+            {
+                **managed.manifests[0].model_dump(),
+                "pack_id": other + "-pack",
+                "pack_version_id": other + f"-pv{i}",
+                "bundle_id": other + f"-bundle{i}",
+                "application_context": other + "-context",
+                "facts": [{"fact_id": fact_id, "fact_version": original_fact["fact_version"]}],
+                "source_version_ids": [source_version],
+                "policies": [],
+            }
+        )
+        managed.service.create_manifest(other, "other-fixture-staff", request)
+        managed.service.activate(
+            other,
+            "other-fixture-staff",
+            request.application_context,
+            request.pack_version_id,
+            previous,
+        )
+        previous = request.pack_version_id
     assert managed.facade.check_registration("demo-org", reg).status == "current"

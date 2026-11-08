@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import Depends
+from fastapi import Depends, Request
 
 from ...config import Settings, get_settings
 from .approval import Context
@@ -20,7 +20,12 @@ def get_approved_prefill_reader(
     source: Annotated[WorkspaceSource, Depends(get_workspace_source)],
     policy: Annotated[WritingPolicy | None, Depends(get_policy)],
     settings: Annotated[Settings, Depends(get_settings)],
+    request: Request,
 ) -> StoreApprovedAnswerResolver:
     return StoreApprovedAnswerResolver(
-        lambda org: Context(store, source, policy, settings, org), store.is_fixture
+        lambda org: Context(store, source, policy, settings, org),
+        store.is_fixture,
+        store_current=(lambda: request.app.state.c3_answer_store is store)
+        if getattr(request.app.state, "c3_answer_store", None) is store
+        else None,
     )
