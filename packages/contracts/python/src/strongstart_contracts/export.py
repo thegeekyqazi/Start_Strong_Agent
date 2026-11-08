@@ -35,6 +35,7 @@ from . import (
     SourceReference,
     ValidationResult,
 )
+from .automation_intake import AUTOMATION_INTAKE_PUBLIC_MODELS
 from .discovery import (
     CaptureContent,
     CapturedDocument,
@@ -72,6 +73,8 @@ PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     CapturedDocument,
     CaptureContent,
     FundingAvailability,
+    # B2-AUTO-001 (owner B2), imported from its module (B1-B2 launch agreement s2)
+    *AUTOMATION_INTAKE_PUBLIC_MODELS,
 )
 
 

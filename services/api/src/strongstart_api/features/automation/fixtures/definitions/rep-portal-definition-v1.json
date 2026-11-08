@@ -1,0 +1,154 @@
+{
+  "format": "strongstart-application-definition",
+  "format_version": "1",
+  "definition_id": "rep-portal-definition-v1",
+  "opportunity_id": "demo-gos",
+  "stream_id": "standard",
+  "cycle_id": null,
+  "title": "FIXTURE: Sample operating-support application (representative portal v1)",
+  "provenance_note": "Engineering-derived from engineering plan v1.1 s7; original_guide_present=false. Not the United Way portal, not verbatim funder questions, not a verified open grant cycle.",
+  "questions": [
+    {
+      "question_id": "rp-mission",
+      "number": "1",
+      "section": "Section A: Organization",
+      "text": "Describe your organization's mission.",
+      "instructions": ["Maximum 50 words."],
+      "scope": "organization",
+      "type": "text",
+      "required": "required",
+      "limits": [{ "maximum": 50, "unit": "words", "text": "Maximum 50 words." }]
+    },
+    {
+      "question_id": "rp-services",
+      "number": "2",
+      "section": "Section A: Organization",
+      "text": "Describe the services you provide.",
+      "instructions": ["Maximum 250 words."],
+      "scope": "organization",
+      "type": "text",
+      "required": "required",
+      "limits": [{ "maximum": 250, "unit": "words", "text": "Maximum 250 words." }]
+    },
+    {
+      "question_id": "rp-service-area",
+      "number": "3",
+      "section": "Section A: Organization",
+      "text": "Primary service area",
+      "instructions": ["Choose one."],
+      "scope": "organization",
+      "type": "choice",
+      "required": "required",
+      "multiple": false,
+      "choices": [
+        { "value": "city", "label": "City" },
+        { "value": "region", "label": "Region" },
+        { "value": "province", "label": "Province-wide" }
+      ]
+    },
+    {
+      "question_id": "rp-pending-applications",
+      "number": "4",
+      "section": "Section B: Funding context",
+      "text": "List other pending funding applications.",
+      "instructions": ["Maximum 300 characters."],
+      "scope": "organization",
+      "type": "text",
+      "required": "unknown",
+      "limits": [{ "maximum": 300, "unit": "characters", "text": "Maximum 300 characters." }]
+    },
+    {
+      "question_id": "rp-other-funding",
+      "number": "5",
+      "section": "Section B: Funding context",
+      "text": "Describe other funding sources.",
+      "instructions": ["Max 300"],
+      "scope": "organization",
+      "type": "text",
+      "required": "unknown",
+      "limits": [{ "maximum": 300, "unit": "unknown", "text": "Max 300" }]
+    },
+    {
+      "question_id": "rp-has-partners",
+      "number": "6",
+      "section": "Section B: Funding context",
+      "text": "Do you deliver this work with partners?",
+      "scope": "organization",
+      "type": "choice",
+      "required": "required",
+      "multiple": false,
+      "choices": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" }
+      ]
+    },
+    {
+      "question_id": "rp-partnership",
+      "number": "7",
+      "section": "Partnership details",
+      "text": "Describe your key partnerships.",
+      "instructions": [
+        "Maximum 350 words.",
+        "Guide note: partnership descriptions may be up to 500 words."
+      ],
+      "scope": "organization",
+      "type": "text",
+      "required": "conditional",
+      "condition": {
+        "text": "Shown only when question 6 is Yes",
+        "depends_on": "rp-has-partners",
+        "equals": "yes"
+      },
+      "limits": [
+        { "maximum": 350, "unit": "words", "text": "Maximum 350 words." },
+        {
+          "maximum": 500,
+          "unit": "words",
+          "text": "Guide note: partnership descriptions may be up to 500 words."
+        }
+      ]
+    },
+    {
+      "question_id": "rp-request-amount",
+      "number": "8",
+      "section": "Section C: Request",
+      "text": "Standard request amount.",
+      "instructions": [
+        "Standard stream: 20,000 to 100,000. Whole dollars, no currency symbols or decimals."
+      ],
+      "scope": "organization",
+      "type": "number",
+      "required": "required",
+      "limits": [
+        {
+          "minimum": "20000",
+          "maximum": "100000",
+          "unit": "amount",
+          "stream": "standard",
+          "text": "Standard stream: 20,000 to 100,000. Whole dollars, no currency symbols or decimals."
+        },
+        {
+          "maximum": "250000",
+          "unit": "amount",
+          "stream": "network",
+          "text": "Network stream maximum (separate stream; not applied to the standard request)."
+        }
+      ]
+    },
+    {
+      "question_id": "rp-financial-statement",
+      "number": "9",
+      "section": "Section C: Request",
+      "text": "Attach your most recent financial statement.",
+      "instructions": ["Fixture constraint: one PDF or DOCX file, at most 5 MB."],
+      "scope": "organization",
+      "type": "file",
+      "required": "required",
+      "attachment": {
+        "accepted_types": [".pdf", ".docx"],
+        "max_size_bytes": 5242880,
+        "max_count": 1
+      }
+    }
+  ]
+}
