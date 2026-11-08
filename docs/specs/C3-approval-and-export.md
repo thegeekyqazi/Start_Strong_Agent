@@ -156,8 +156,8 @@ Owner answers to s11:
 
 | # | Spec text | Implemented | Why |
 | --- | --- | --- | --- |
-| 1 | Migration `0003_answers_and_approvals` | Drafted as **`0004_answers_and_approvals`** (down-revision `0003_artifact_text_ingestion`) in `docs/handoffs/dev-c/c3-migration-request/`, **outside** `migrations/` | A2a already took `0003`, and `migrations/` is A-owned. An active file would change the head and break readiness on `main` |
-| 2 | Postgres `AnswerStore` plus fixture store | **Fixture in-memory store only** (labelled; lost on restart). Outside fixture mode the store is `CapabilityUnavailable` (503) | There are no tables until Dev A sequences 0004. An untested Postgres store would be dead code |
+| 1 | Migration `0003_answers_and_approvals` | Drafted as **`0005_answers_and_approvals`** (down-revision `0004_pdf_extraction_coverage`) in `docs/handoffs/dev-c/c3-migration-request/`, **outside** `migrations/` | A2a took `0003` and A2b took `0004` (`0004_pdf_extraction_coverage`, PR #8), and `migrations/` is A-owned. An active file would change the head and break readiness on `main` |
+| 2 | Postgres `AnswerStore` plus fixture store | **Fixture in-memory store only** (labelled; lost on restart). Outside fixture mode the store is `CapabilityUnavailable` (503) | There are no tables until Dev A sequences 0005. An untested Postgres store would be dead code |
 | 3 | Reviewer roles only | Plus **human review notes** from any signed-in identity, with no approval rights | Owner directive: "secondary reviewers add notes/findings without direct approval rights" |
 | 4 | Blocked reviewed export | `POST /exports` returns **200** with `blocked: true`, `blocked_by` and no artifact | A typed result the UI can explain. No file exists when blocked |
 | 5 | (not specified) | Working DOCX exports list **working-mode** findings; reviewed exports use reviewed mode | s9.2: working drafts allow incomplete work with visible markers |

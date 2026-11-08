@@ -1,4 +1,4 @@
-# C3-approval-and-export: Fixture store until migration 0004, live staleness, export contract
+# C3-approval-and-export: Fixture store until migration 0005, live staleness, export contract
 
 - Author/developer: Dev C agent
 - Date: 2026-11-08
@@ -11,11 +11,11 @@
 
 ## Decisions
 
-1. **D1: Fixture-only persistence until A sequences 0004.**
+1. **D1: Fixture-only persistence until A sequences 0005.**
    - C3 runs on a labelled, process-local `InMemoryAnswerStore`, active only in fixture mode.
    - The draft migration is outside `migrations/`.
    - *Tradeoff:* data is lost on restart.
-   - *Reversal:* a Postgres `AnswerStore` behind the same protocol once `0004` exists.
+   - *Reversal:* a Postgres `AnswerStore` behind the same protocol once `0005` exists.
 2. **D2: Staleness is evaluated live, not stored.**
    - Every read and action recomputes the JOB-05 snapshot from current dependencies and checks for a newer version and applied ChangeSets.
    - Nothing is cached, so no change can be missed.
@@ -34,7 +34,7 @@
 | `services/api/pyproject.toml` adds `python-docx>=1.1` | shared | owner-approved |
 | `uv.lock` regenerated (+`python-docx` 1.2.0, +`lxml` 6.1.3) | **Dev B** (lockfiles) | owner-approved; **B please acknowledge** |
 | `tests/unit/test_api.py` | shared | C's `review` line only: `not_implemented` → `unavailable` |
-| Migration `0004_answers_and_approvals` | **Dev A** | request only, not active |
+| Migration `0005_answers_and_approvals` (down-revision `0004_pdf_extraction_coverage`) | **Dev A** | request only, not active |
 | Real `ApprovedAnswerResolver` into shared `ports.py` | shared host | not wired; needs owner/B agreement |
 
 ## Validation and rollback

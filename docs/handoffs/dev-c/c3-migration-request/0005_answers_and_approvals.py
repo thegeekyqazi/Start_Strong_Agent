@@ -16,8 +16,8 @@ from __future__ import annotations
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = "0004_answers_and_approvals"
-down_revision: str | None = "0003_artifact_text_ingestion"
+revision: str = "0005_answers_and_approvals"
+down_revision: str | None = "0004_pdf_extraction_coverage"
 branch_labels: str | None = None
 depends_on: str | None = None
 

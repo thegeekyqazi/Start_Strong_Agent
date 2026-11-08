@@ -70,7 +70,7 @@ def get_policy(settings: Annotated[Settings, Depends(get_settings)]) -> WritingP
 def get_answer_store(
     request: Request, settings: Annotated[Settings, Depends(get_settings)]
 ) -> AnswerStore:
-    """C3 persistence. Until Dev A sequences migration 0004, only a labelled in-memory
+    """C3 persistence. Until Dev A sequences migration 0005, only a labelled in-memory
     FIXTURE store exists (fixture mode, one per app instance, lost on restart)."""
     if not settings.fixture_mode:
         return UnconfiguredAnswerStore()

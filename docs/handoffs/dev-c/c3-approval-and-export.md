@@ -6,7 +6,7 @@
 - Status: implemented as **uncommitted working-tree changes** on `dev-c/c3-approval-export` (owner rule: no add, commit or push)
 - Task spec: `docs/specs/C3-approval-and-export.md` rev 1.0 plus s12 notes
 - Engineering: v1.1 s8.1, s9.2, s15, s16, s18. Rules: APP-04, APP-06, APP-07, APP-08, POL-05, JOB-02, JOB-05, SEC-10, plus SEC-14 boundaries (catalog stays `planned`)
-- Branch base: `origin/main` `c69d610` (after the owner-authorized attribution rewrite)
+- Branch base: `origin/main` `2adcdeb` (includes A2b/A2c PR #8 and the lane plan PR #9); rebased from `c69d610`
 
 ## What works (fixture mode)
 
@@ -63,7 +63,7 @@ Contracts are C-owned, added to `answers.py` and regenerated.
 | --- | --- |
 | `make check` | exit 0: ruff, mypy (130 files), oxlint, Prettier; **454 pytest**; **66 Vitest**; contracts drift clean; build ok |
 | `uv run pytest tests/applications` | 154 passed (46 new C3 cases across the s8 rule table) |
-| `make smoke` | exit 0: readiness 200 at `0003_artifact_text_ingestion` |
+| `make smoke` | exit 0: readiness 200 (see PR for the post-rebase run at `0004_pdf_extraction_coverage`) |
 | `make browser-smoke` | exit 0, 13 passed |
 | Chromium against the real API | Draft → save v1 → approve (with ack) → prefill ready → numbers reviewer → reviewed export blocked (3 unanswered questions) → working DOCX downloaded (labels in the header) → edit → v2 → "Out of date" banner and "Not ready for prefill". 0 page errors, 0 external requests |
 
@@ -76,7 +76,7 @@ Defects found during C3 validation and fixed:
 
 ## Consumer action / blockers
 
-- **Dev A:** sequence `docs/handoffs/dev-c/c3-migration-request/0004_answers_and_approvals.py` (it targets `organizations.id`, down-revision `0003_artifact_text_ingestion`). Persistence stays fixture-only until then.
+- **Dev A:** sequence `docs/handoffs/dev-c/c3-migration-request/0005_answers_and_approvals.py` (it targets `organizations.id`, down-revision `0004_pdf_extraction_coverage`). Persistence stays fixture-only until then.
 - **Dev B:**
   - acknowledge the `uv.lock` change (`python-docx`, `lxml`);
   - consume `get_c_approved_answer_resolver` / `StoreApprovedAnswerResolver` for B2-AUTO-002;

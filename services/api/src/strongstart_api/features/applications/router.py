@@ -57,7 +57,7 @@ _REVIEW_STATIC = Capability(
     feature="review",
     owner="C",
     status="unavailable",
-    detail="Review needs an answer store (fixture mode only until migration 0004).",
+    detail="Review needs an answer store (fixture mode only until migration 0005).",
 )
 _SKILLS = Capability(
     feature="skills",
@@ -126,7 +126,7 @@ def capabilities_for(settings: Settings) -> list[Capability]:
         status="fixture_only" if settings.fixture_mode else "unavailable",
         detail=(
             "Saved versions, exact-version approval, staleness, resolver and DOCX/audit export "
-            "over an in-memory FIXTURE store (migration 0004 pending Dev A)."
+            "over an in-memory FIXTURE store (migration 0005 pending Dev A)."
             if settings.fixture_mode
             else _REVIEW_STATIC.detail
         ),

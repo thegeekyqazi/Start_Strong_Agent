@@ -1,7 +1,7 @@
 """C3 answer/approval store (C3 spec s3).
 
 Only a labelled in-memory FIXTURE store exists until Dev A sequences migration
-``0004_answers_and_approvals`` (drafted in ``docs/handoffs/dev-c/c3-migration-request/``).
+``0005_answers_and_approvals`` (drafted in ``docs/handoffs/dev-c/c3-migration-request/``).
 Writes that must not race (version append, one decision per version) run under one lock,
 the in-memory analogue of the guarded transactional writes in s15. All reads are
 organization-scoped: unknown and other-org IDs raise the same ``NotFoundInStore``.
@@ -255,7 +255,7 @@ class InMemoryAnswerStore:
 
 
 class UnconfiguredAnswerStore:
-    """No persistence configured (outside fixture mode, until migration 0004 exists).
+    """No persistence configured (outside fixture mode, until migration 0005 exists).
     Every operation fails closed with ``CapabilityUnavailable``."""
 
     is_fixture = False
@@ -263,7 +263,7 @@ class UnconfiguredAnswerStore:
     @staticmethod
     def _unavailable() -> CapabilityUnavailable:
         return CapabilityUnavailable(
-            "AnswerStore", "no answer store configured (migration 0004 pending Dev A)"
+            "AnswerStore", "no answer store configured (migration 0005 pending Dev A)"
         )
 
     def append_version(
