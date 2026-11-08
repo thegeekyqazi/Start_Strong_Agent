@@ -93,7 +93,8 @@ CAPABILITIES: list[Capability] = [
         status="fixture_only",
         detail=(
             "Intake (structured JSON, saved HTML, capture reference) and read-only inspection "
-            "of the local representative fixture portal. Prefill/submission not available."
+            "of the local representative fixture portal. Fixture-only approved prefill; "
+            "no submission."
         ),
     ),
     Capability(
@@ -126,8 +127,51 @@ CAPABILITIES: list[Capability] = [
     Capability(
         feature="automation.approved_prefill",
         owner="B2",
-        status="not_implemented",
-        detail="Planned for B2-AUTO-002; needs C's ApprovedAnswerResolver (unavailable here).",
+        status="fixture_only",
+        detail="B2-AUTO-002: server-built plans and staff-authorized, single-use entry with real "
+        "Chromium read-back on registered local fixture portals only. Requires a configured "
+        "approved-content reader; none is configured on main (503, no seeded fallback).",
+    ),
+    Capability(
+        feature="automation.prefill_plan_preparation",
+        owner="B2",
+        status="fixture_only",
+        detail="Plans bind an exact saved question set, registered fixture form and approval "
+        "hashes; held fields, unselected requirements and attachments stay visible. No writes.",
+    ),
+    Capability(
+        feature="automation.prefill_execution_test_provider",
+        owner="B2",
+        status="fixture_only",
+        detail="Entry/read-back verified against an explicitly injected test approval provider "
+        "(harness), not a joined C3 integration.",
+    ),
+    Capability(
+        feature="automation.prefill_execution_c3",
+        owner="B2",
+        status="unavailable",
+        detail="Integrated C3 execution is pending C's approved-content reader and B question "
+        "identities in C's workspace (B2-AUTO-002 P2).",
+    ),
+    Capability(
+        feature="automation.prefill_choice_values",
+        owner="B2",
+        status="unavailable",
+        detail="Choice controls need C-authorized typed values; the real producer has none yet, "
+        "so choices are held outside the test harness.",
+    ),
+    Capability(
+        feature="automation.attachment_checklist",
+        owner="B2",
+        status="fixture_only",
+        detail="AUT-04 checklist only: constraints are compared with trusted artifact records "
+        "when a reader exists, otherwise needs review. No upload.",
+    ),
+    Capability(
+        feature="automation.real_portal_prefill",
+        owner="B2",
+        status="unavailable",
+        detail="Arbitrary URLs, authenticated funder portals and file upload are out of scope.",
     ),
     Capability(
         feature="automation.final_submission",
@@ -479,3 +523,9 @@ def view_portal(fixture_id: str, identity: Identity, settings: SettingsDep) -> H
             "Referrer-Policy": "no-referrer",
         },
     )
+
+
+# B2-AUTO-002 approved prefill routes (same /api/automation prefix).
+from .prefill_router import prefill_router  # noqa: E402
+
+router.include_router(prefill_router)
