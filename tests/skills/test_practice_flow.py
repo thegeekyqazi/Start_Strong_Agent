@@ -102,7 +102,8 @@ def _candidate(c: TestClient, key: str = "demo") -> dict[str, Any]:
     assert c.post(f"/api/skills/sources/{sid}/authority").status_code == 200
     cand = c.post("/api/skills/candidates", json={"source_version_id": sid})
     assert cand.status_code == 201, cand.text
-    return cand.json()
+    body: dict[str, Any] = cand.json()
+    return body
 
 
 def _activate(c: TestClient, cand: dict[str, Any], key: str = "act-1") -> dict[str, Any]:
@@ -119,7 +120,8 @@ def _activate(c: TestClient, cand: dict[str, Any], key: str = "act-1") -> dict[s
         json={"package_sha256": sha, "idempotency_key": key},
     )
     assert act.status_code == 200, act.text
-    return act.json()
+    released: dict[str, Any] = act.json()
+    return released
 
 
 def test_source_to_candidate_to_activation_to_draft_preview(env):
