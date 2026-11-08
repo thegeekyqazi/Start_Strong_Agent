@@ -44,6 +44,7 @@ instructions/payload (existing tests pass unchanged).
 | `uv run pytest -m db tests/skills` | 4 passed | Real API + local PostgreSQL 17 (disposable DB) + real C pipeline; FakeAdapter fixture and explicit test-only adapter overrides |
 | `make check` (once, at checkpoint) | exit 0: ruff/format, strict mypy 248 files, TS, 819 pytest, 103 Vitest, contract drift, builds | Unit/static |
 | `make contracts` | regenerated schema + TS with `strongstart_contracts.skills` | Static |
+| PR #23 CI at `b253c34` | all 5 jobs SUCCESS: python (ruff/mypy/pytest), web, contracts, db smoke (`make smoke`, now including `tests/skills`), browser readiness (Chromium suite) | CI (GitHub Actions), not rerun locally |
 | `uv run python scripts/c4_walkthrough.py` | passed in Chromium (Python Playwright), 0 console errors, 0 external requests | Actual API (uvicorn, fixture mode, local PostgreSQL DB `strongstart_c4_demo` at 0010) + actual Chromium UI |
 
 The four essential checks from the owner's update, by test:
@@ -71,8 +72,9 @@ windowed from fully redacted text. Covered by test assertion and the walkthrough
 
 ## Not run / unverified at this checkpoint (honest gaps)
 
-- Full `make smoke` and `make browser-smoke` were **not** rerun (lean scope). `make smoke` now
-  includes `tests/skills`; CI will run it. No automated Chromium test was added to the suite.
+- Full `make smoke` and `make browser-smoke` were **not** rerun locally (lean scope); they ran
+  green in PR CI at `b253c34`. No C4-specific automated Chromium test was added to the suite
+  (the existing browser suite passing shows no regression, not C4 UI coverage).
 - C4-14/C4-20 races (event-controlled source revision vs activation; revoke during a model call):
   implemented as guarded single-transaction checks and a post-model resolver recheck, **not**
   tested with process barriers.
