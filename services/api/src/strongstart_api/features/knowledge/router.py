@@ -17,12 +17,15 @@ from strongstart_contracts import (
     EvidenceBundle,
     KnowledgeAvailability,
     KnowledgeSnapshot,
+    TextSourceImportRequest,
+    TextSourceImportResult,
 )
 
 from ...config import Settings, get_settings
 from ...errors import ApiError, not_implemented
 from ...identity import Identity, require_identity
-from .deps import get_knowledge_repository
+from .deps import get_knowledge_repository, get_text_ingestion_service
+from .ingestion import TextIngestionError, TextIngestionService
 from .repository import (
     KnowledgeIntegrityError,
     KnowledgeNotFoundError,
@@ -50,7 +53,10 @@ def capabilities_for(settings: Settings) -> list[Capability]:
             feature=FEATURE,
             owner="A1",
             status="fixture_only" if settings.fixture_mode else "available",
-            detail="Source/fact reads implemented; ingestion and pack replacement remain planned.",
+            detail=(
+                "Source/fact reads and local bounded text ingestion are implemented; "
+                "PDF/OCR and pack replacement remain planned."
+            ),
         )
     ]
 
@@ -107,6 +113,34 @@ def _integrity_failure() -> ApiError:
         "stored source failed integrity verification; knowledge content was withheld",
         {"reason": "integrity_failure"},
     )
+
+
+@router.post("/sources/import-text", response_model=TextSourceImportResult, status_code=201)
+def import_text_source(
+    request: TextSourceImportRequest,
+    identity: Identity,
+    service: Annotated[TextIngestionService | None, Depends(get_text_ingestion_service)],
+) -> TextSourceImportResult:
+    if service is None:
+        raise ApiError(
+            503,
+            ErrorCode.CAPABILITY_UNAVAILABLE,
+            "text ingestion storage is not configured for this environment",
+        )
+    try:
+        return service.ingest(
+            identity.organization_id,
+            request.title,
+            request.text,
+            is_fixture=identity.is_fixture,
+        )
+    except TextIngestionError as exc:
+        raise ApiError(
+            422,
+            ErrorCode.VALIDATION_FAILED,
+            str(exc),
+            {"reason": "invalid_text_source"},
+        ) from None
 
 
 @router.get("/snapshot", response_model=KnowledgeSnapshot)

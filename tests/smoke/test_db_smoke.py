@@ -9,7 +9,7 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from fastapi.testclient import TestClient
-from sqlalchemy import func, select, update
+from sqlalchemy import delete, func, select, update
 
 from strongstart_api.app import create_app
 from strongstart_api.config import Settings
@@ -19,11 +19,14 @@ from strongstart_api.db import (
     fact_source_refs,
     get_engine,
     knowledge_facts,
+    knowledge_passages,
     knowledge_source_versions,
     knowledge_sources,
     organizations,
     pack_facts,
 )
+from strongstart_api.features.knowledge.artifacts import LocalArtifactStore
+from strongstart_api.features.knowledge.ingestion import TextIngestionService
 from strongstart_api.features.knowledge.repository import (
     KnowledgeIntegrityError,
     PostgresKnowledgeRepository,
@@ -120,4 +123,40 @@ def test_tampered_source_is_withheld(migrated: str) -> None:
                 update(knowledge_source_versions)
                 .where(knowledge_source_versions.c.id == "demo-synthetic-metrics-v1")
                 .values(content_bytes=original)
+            )
+
+
+def test_text_ingestion_persists_artifact_and_exact_passage(migrated: str, tmp_path) -> None:
+    engine = get_engine(migrated)
+    seed_demo(engine, BUNDLE_PATH)
+    artifacts = LocalArtifactStore(tmp_path)
+    service = TextIngestionService(engine, artifacts, max_bytes=1_000)
+    result = service.ingest("demo-org", "Staff notes", "First line\nSecond line", is_fixture=True)
+    try:
+        assert artifacts.read("demo-org", result.artifact_key) == b"First line\nSecond line"
+        snapshot = PostgresKnowledgeRepository(engine, artifacts).get_snapshot(
+            "demo-org", is_fixture=True
+        )
+        imported = next(
+            item
+            for item in snapshot.source_versions
+            if item.source_reference.source_version_id == result.source_version_id
+        )
+        passage = next(item for item in snapshot.passages if item.passage_id == result.passage_id)
+        assert imported.source_reference.content_hash == result.content_sha256
+        assert imported.source_reference.provenance.is_simulated is True
+        assert passage.locator == "char:0-22"
+        assert passage.exact_text == "First line\nSecond line"
+    finally:
+        with engine.begin() as conn:
+            conn.execute(
+                delete(knowledge_passages).where(knowledge_passages.c.id == result.passage_id)
+            )
+            conn.execute(
+                delete(knowledge_source_versions).where(
+                    knowledge_source_versions.c.id == result.source_version_id
+                )
+            )
+            conn.execute(
+                delete(knowledge_sources).where(knowledge_sources.c.id == result.source_id)
             )

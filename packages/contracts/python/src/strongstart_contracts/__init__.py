@@ -27,6 +27,8 @@ from .evidence import (
     KnowledgePassage,
     KnowledgeSnapshot,
     KnowledgeSourceVersion,
+    TextSourceImportRequest,
+    TextSourceImportResult,
 )
 from .fixtures import FixtureBundle, load_fixture_bundle
 from .funding import Opportunity, RequirementCondition, RequirementSet
@@ -83,6 +85,8 @@ __all__ = [
     "RequirementSet",
     "SessionIdentity",
     "SourceReference",
+    "TextSourceImportRequest",
+    "TextSourceImportResult",
     "ValidationResult",
     "load_fixture_bundle",
 ]
