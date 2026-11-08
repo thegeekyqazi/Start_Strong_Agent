@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from functools import lru_cache
+from pathlib import Path
 from typing import Literal
 
 from pydantic import Field, SecretStr, model_validator
@@ -31,12 +32,31 @@ class Settings(BaseSettings):
     tavily_api_key: SecretStr | None = None
     firecrawl_api_key: SecretStr | None = None
 
+    # Funding discovery/capture (owner B1; B1-DISC-001). Budgets are project limits.
+    # "fixture" modes serve labelled synthetic data and are rejected in production.
+    funding_search_mode: Literal["live", "fixture"] = "live"
+    funding_capture_mode: Literal["live", "fixture"] = "live"
+    funding_max_results: int = Field(default=5, ge=1, le=5)
+    funding_search_timeout_seconds: float = Field(default=15, ge=1, le=30)
+    funding_capture_timeout_seconds: float = Field(default=45, ge=5, le=120)
+    funding_max_capture_bytes: int = Field(default=2_000_000, ge=10_000, le=10_000_000)
+    funding_capture_store_dir: Path = Path(".local-data/funding-captures")
+    funding_query_fields: list[Literal["interests", "geography", "program_context"]] = Field(
+        default=["interests", "geography", "program_context"]
+    )
+    funding_source_seed_path: Path | None = None
+
     @model_validator(mode="after")
     def _fixture_mode_is_local_only(self) -> Settings:
         if self.auth_mode == "fixture" and self.environment == "production":
             raise ValueError(
                 "STRONGSTART_AUTH_MODE=fixture is forbidden when STRONGSTART_ENVIRONMENT=production"
             )
+        if self.environment == "production" and "fixture" in (
+            self.funding_search_mode,
+            self.funding_capture_mode,
+        ):
+            raise ValueError("funding fixture providers are forbidden in production")
         return self
 
     @property

@@ -19,7 +19,7 @@ from strongstart_contracts import (
 from .config import Settings, get_settings
 from .db import check_readiness
 from .errors import install_error_handling
-from .features import FEATURE_CAPABILITIES, FEATURE_ROUTERS
+from .features import FEATURE_ROUTERS, feature_capabilities
 from .identity import Identity
 
 SERVICE_NAME = "strongstart-api"
@@ -83,7 +83,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             environment=s.environment,
             auth_mode=s.auth_mode,
             fixture_mode=s.fixture_mode,
-            capabilities=[*platform_capabilities(s), *FEATURE_CAPABILITIES],
+            capabilities=[*platform_capabilities(s), *feature_capabilities(s)],
         )
 
     @app.get("/api/session", response_model=SessionIdentity)

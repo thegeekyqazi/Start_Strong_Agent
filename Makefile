@@ -76,7 +76,8 @@ smoke: migrate seed-demo ## Imports, real API process health/readiness, DB migra
 	$(UV) pytest -m db tests/smoke
 	$(UV) python scripts/smoke_server.py
 
-browser-smoke: ## Chromium opens the local fixture and reads values back
+browser-smoke: ## Build web, then Chromium browser tests (fixture read-back + Funding page e2e)
+	npm run build
 	$(UV) pytest -m browser -s tests/browser
 
 check: lint typecheck test contracts-check build ## All no-DB checks

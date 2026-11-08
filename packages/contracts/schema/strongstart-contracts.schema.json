@@ -208,6 +208,34 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "CandidateDuplicate": {
+      "additionalProperties": false,
+      "properties": {
+        "original_url": {
+          "title": "Original Url",
+          "type": "string"
+        },
+        "provider_rank": {
+          "minimum": 1,
+          "title": "Provider Rank",
+          "type": "integer"
+        },
+        "reason": {
+          "const": "same_normalized_url",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "original_url",
+        "provider_rank",
+        "reason"
+      ],
+      "title": "CandidateDuplicate",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "Capability": {
       "additionalProperties": false,
       "properties": {
@@ -289,6 +317,523 @@
       "type": "object",
       "x-contract-status": "frozen",
       "x-owner": "shared"
+    },
+    "CaptureArtifact": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "b2_importable": {
+          "description": "True only for HTML representations.",
+          "title": "B2 Importable",
+          "type": "boolean"
+        },
+        "encoding": {
+          "const": "utf-8",
+          "default": "utf-8",
+          "title": "Encoding",
+          "type": "string"
+        },
+        "locator_scheme": {
+          "enum": [
+            "markdown_heading_char_offsets",
+            "none"
+          ],
+          "title": "Locator Scheme",
+          "type": "string"
+        },
+        "media_type": {
+          "enum": [
+            "text/markdown",
+            "text/html"
+          ],
+          "title": "Media Type",
+          "type": "string"
+        },
+        "representation": {
+          "enum": [
+            "provider_markdown",
+            "provider_html",
+            "provider_raw_html"
+          ],
+          "title": "Representation",
+          "type": "string"
+        },
+        "sections": {
+          "items": {
+            "$ref": "#/$defs/SectionLocator"
+          },
+          "title": "Sections",
+          "type": "array"
+        },
+        "sha256": {
+          "description": "SHA-256 of exactly the stored bytes.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "representation",
+        "media_type",
+        "size_bytes",
+        "sha256",
+        "locator_scheme",
+        "b2_importable"
+      ],
+      "title": "CaptureArtifact",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "CaptureContent": {
+      "additionalProperties": false,
+      "description": "Authorized, integrity-verified artifact content for inert display.",
+      "properties": {
+        "artifact": {
+          "$ref": "#/$defs/CaptureArtifact"
+        },
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "integrity_verified": {
+          "const": true,
+          "default": true,
+          "title": "Integrity Verified",
+          "type": "boolean"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capture_id",
+        "artifact",
+        "text"
+      ],
+      "title": "CaptureContent",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "CaptureRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Id"
+        },
+        "cycle_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Id"
+        },
+        "opportunity_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opportunity Id"
+        },
+        "search_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Search Id"
+        },
+        "stream_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Id"
+        },
+        "url": {
+          "maxLength": 2048,
+          "minLength": 8,
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url"
+      ],
+      "title": "CaptureRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "CapturedDocument": {
+      "additionalProperties": false,
+      "description": "Semantic v1 capture record shared with B2 (launch agreement s3).",
+      "properties": {
+        "artifacts": {
+          "items": {
+            "$ref": "#/$defs/CaptureArtifact"
+          },
+          "title": "Artifacts",
+          "type": "array"
+        },
+        "authority_basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority Basis"
+        },
+        "authority_review": {
+          "enum": [
+            "unreviewed",
+            "confirmed_official",
+            "other"
+          ],
+          "title": "Authority Review",
+          "type": "string"
+        },
+        "candidate_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Candidate Id"
+        },
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "capture_pipeline_version": {
+          "default": "b1-disc-001/1",
+          "title": "Capture Pipeline Version",
+          "type": "string"
+        },
+        "captured_at": {
+          "description": "Actual provider call completion time only.",
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "coverage": {
+          "enum": [
+            "complete",
+            "partial",
+            "empty"
+          ],
+          "title": "Coverage",
+          "type": "string"
+        },
+        "cycle_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Id"
+        },
+        "final_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Provider-reported final URL; null = unknown.",
+          "title": "Final Url"
+        },
+        "final_url_status": {
+          "enum": [
+            "provider_reported",
+            "unknown"
+          ],
+          "title": "Final Url Status",
+          "type": "string"
+        },
+        "normalized_url": {
+          "title": "Normalized Url",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opportunity Id"
+        },
+        "organization_id": {
+          "description": "Server-derived organization scope.",
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "page_title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Page Title"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "provider_mode": {
+          "enum": [
+            "live",
+            "fixture"
+          ],
+          "title": "Provider Mode",
+          "type": "string"
+        },
+        "provider_request_params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            ]
+          },
+          "title": "Provider Request Params",
+          "type": "object"
+        },
+        "redirect_chain": {
+          "const": "unknown",
+          "default": "unknown",
+          "title": "Redirect Chain",
+          "type": "string"
+        },
+        "requested_url": {
+          "title": "Requested Url",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "search_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Search Id"
+        },
+        "source_content_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Content Type"
+        },
+        "source_http_status": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "As reported by provider.",
+          "title": "Source Http Status"
+        },
+        "source_reference": {
+          "$ref": "#/$defs/SourceReference"
+        },
+        "storage_capability": {
+          "const": "development_local_store",
+          "title": "Storage Capability",
+          "type": "string"
+        },
+        "stream_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Id"
+        },
+        "supported_import_representations": {
+          "items": {
+            "enum": [
+              "provider_markdown",
+              "provider_html",
+              "provider_raw_html"
+            ],
+            "type": "string"
+          },
+          "title": "Supported Import Representations",
+          "type": "array"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "capture_id",
+        "organization_id",
+        "requested_url",
+        "normalized_url",
+        "final_url",
+        "final_url_status",
+        "provider",
+        "provider_mode",
+        "provider_request_params",
+        "captured_at",
+        "artifacts",
+        "coverage",
+        "warnings",
+        "authority_review",
+        "provenance",
+        "source_reference",
+        "supported_import_representations",
+        "storage_capability"
+      ],
+      "title": "CapturedDocument",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "ChangeSet": {
       "additionalProperties": false,
@@ -1101,6 +1646,69 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "FundingAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "authenticated": {
+          "title": "Authenticated",
+          "type": "boolean"
+        },
+        "environment": {
+          "title": "Environment",
+          "type": "string"
+        },
+        "identity_is_fixture": {
+          "title": "Identity Is Fixture",
+          "type": "boolean"
+        },
+        "limits": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              }
+            ]
+          },
+          "title": "Limits",
+          "type": "object"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "providers": {
+          "items": {
+            "$ref": "#/$defs/ProviderAvailability"
+          },
+          "title": "Providers",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authenticated",
+        "identity_is_fixture",
+        "environment",
+        "providers",
+        "limits",
+        "notes"
+      ],
+      "title": "FundingAvailability",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "JobBudget": {
       "additionalProperties": false,
       "properties": {
@@ -1363,6 +1971,40 @@
       "x-contract-status": "frozen",
       "x-owner": "shared"
     },
+    "OmittedResult": {
+      "additionalProperties": false,
+      "properties": {
+        "original_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Original Url"
+        },
+        "provider_rank": {
+          "minimum": 1,
+          "title": "Provider Rank",
+          "type": "integer"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "original_url",
+        "provider_rank",
+        "reason"
+      ],
+      "title": "OmittedResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
     "Opportunity": {
       "additionalProperties": false,
       "properties": {
@@ -1604,6 +2246,79 @@
       ],
       "title": "ProvenanceClass",
       "type": "string"
+    },
+    "ProviderAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "configured": {
+          "title": "Configured",
+          "type": "boolean"
+        },
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "live_verified": {
+          "const": false,
+          "default": false,
+          "description": "This service never claims live verification by itself.",
+          "title": "Live Verified",
+          "type": "boolean"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "live",
+                "fixture"
+              ],
+              "type": "string"
+            },
+            {
+              "enum": [
+                "development_only",
+                "disabled"
+              ],
+              "type": "string"
+            }
+          ],
+          "title": "Mode"
+        },
+        "operation": {
+          "enum": [
+            "search",
+            "capture",
+            "capture_store"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "fixture_only",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operation",
+        "provider",
+        "mode",
+        "status",
+        "configured",
+        "detail"
+      ],
+      "title": "ProviderAvailability",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
     },
     "Question": {
       "additionalProperties": false,
@@ -1988,6 +2703,470 @@
         "conditions"
       ],
       "title": "RequirementSet",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SearchCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "enum": [
+            "unreviewed",
+            "confirmed_official",
+            "other"
+          ],
+          "title": "Authority",
+          "type": "string"
+        },
+        "authority_basis": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority Basis"
+        },
+        "candidate_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "capture_allowed": {
+          "title": "Capture Allowed",
+          "type": "boolean"
+        },
+        "capture_block_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capture Block Reason"
+        },
+        "cycle_status": {
+          "const": "unknown",
+          "default": "unknown",
+          "title": "Cycle Status",
+          "type": "string"
+        },
+        "deadline": {
+          "$ref": "#/$defs/DateKnowledge"
+        },
+        "duplicates": {
+          "items": {
+            "$ref": "#/$defs/CandidateDuplicate"
+          },
+          "title": "Duplicates",
+          "type": "array"
+        },
+        "eligibility_status": {
+          "const": "unassessed",
+          "default": "unassessed",
+          "title": "Eligibility Status",
+          "type": "string"
+        },
+        "host": {
+          "title": "Host",
+          "type": "string"
+        },
+        "matched_terms": {
+          "description": "Public query terms found in title/excerpt.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Matched Terms",
+          "type": "array"
+        },
+        "normalized_url": {
+          "title": "Normalized Url",
+          "type": "string"
+        },
+        "original_url": {
+          "description": "URL exactly as the provider returned it.",
+          "title": "Original Url",
+          "type": "string"
+        },
+        "possible_duplicate_of": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Identical title+excerpt as another candidate; not merged.",
+          "title": "Possible Duplicate Of"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "provider_date_hint": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Provider's estimated published/updated date, raw. NOT a deadline, publication date of a grant round, or reporting period.",
+          "title": "Provider Date Hint"
+        },
+        "provider_excerpt": {
+          "description": "Provider-supplied snippet; not verified text.",
+          "title": "Provider Excerpt",
+          "type": "string"
+        },
+        "provider_rank": {
+          "minimum": 1,
+          "title": "Provider Rank",
+          "type": "integer"
+        },
+        "provider_relevance": {
+          "anyOf": [
+            {
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Provider ranking score; not a success or eligibility score.",
+          "title": "Provider Relevance"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "provider_rank",
+        "title",
+        "original_url",
+        "normalized_url",
+        "host",
+        "provider_excerpt",
+        "matched_terms",
+        "authority",
+        "deadline",
+        "capture_allowed",
+        "provenance"
+      ],
+      "title": "SearchCandidate",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SearchProfile": {
+      "additionalProperties": false,
+      "description": "Public search inputs. Only these staff-entered public fields reach the provider.",
+      "properties": {
+        "geography": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 2,
+              "pattern": "^[\\w][\\w .,&'/-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geography"
+        },
+        "interests": {
+          "items": {
+            "maxLength": 60,
+            "minLength": 2,
+            "pattern": "^[\\w][\\w .,&'/-]*$",
+            "type": "string"
+          },
+          "maxItems": 5,
+          "minItems": 1,
+          "title": "Interests",
+          "type": "array"
+        },
+        "program_context": {
+          "anyOf": [
+            {
+              "maxLength": 80,
+              "minLength": 2,
+              "pattern": "^[\\w][\\w .,&'/-]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Program Context"
+        }
+      },
+      "required": [
+        "interests"
+      ],
+      "title": "SearchProfile",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SearchQueryRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "completed_at": {
+          "format": "date-time",
+          "title": "Completed At",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "live",
+            "fixture"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "provider_http_status": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Http Status"
+        },
+        "provider_request_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Request Id"
+        },
+        "provider_response_time": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Response Time"
+        },
+        "provider_usage_credits": {
+          "anyOf": [
+            {
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider Usage Credits"
+        },
+        "public_fields_used": {
+          "items": {
+            "enum": [
+              "interests",
+              "geography",
+              "program_context"
+            ],
+            "type": "string"
+          },
+          "title": "Public Fields Used",
+          "type": "array"
+        },
+        "query_text": {
+          "title": "Query Text",
+          "type": "string"
+        },
+        "requested_params": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "title": "Requested Params",
+          "type": "object"
+        },
+        "started_at": {
+          "format": "date-time",
+          "title": "Started At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "query_text",
+        "public_fields_used",
+        "provider",
+        "mode",
+        "requested_params",
+        "started_at",
+        "completed_at"
+      ],
+      "title": "SearchQueryRecord",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SearchRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "max_results": {
+          "default": 5,
+          "maximum": 5,
+          "minimum": 1,
+          "title": "Max Results",
+          "type": "integer"
+        },
+        "profile": {
+          "$ref": "#/$defs/SearchProfile"
+        }
+      },
+      "required": [
+        "profile"
+      ],
+      "title": "SearchRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SearchResult": {
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/SearchCandidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "duplicates_collapsed": {
+          "minimum": 0,
+          "title": "Duplicates Collapsed",
+          "type": "integer"
+        },
+        "omitted": {
+          "items": {
+            "$ref": "#/$defs/OmittedResult"
+          },
+          "title": "Omitted",
+          "type": "array"
+        },
+        "query": {
+          "$ref": "#/$defs/SearchQueryRecord"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "search_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Search Id",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "search_id",
+        "query",
+        "candidates",
+        "omitted",
+        "duplicates_collapsed",
+        "warnings"
+      ],
+      "title": "SearchResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B1"
+    },
+    "SectionLocator": {
+      "additionalProperties": false,
+      "description": "Character-offset range within the exact stored (UTF-8 decoded) representation.",
+      "properties": {
+        "end_char": {
+          "minimum": 0,
+          "title": "End Char",
+          "type": "integer"
+        },
+        "heading": {
+          "title": "Heading",
+          "type": "string"
+        },
+        "level": {
+          "maximum": 6,
+          "minimum": 1,
+          "title": "Level",
+          "type": "integer"
+        },
+        "start_char": {
+          "minimum": 0,
+          "title": "Start Char",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "heading",
+        "level",
+        "start_char",
+        "end_char"
+      ],
+      "title": "SectionLocator",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"

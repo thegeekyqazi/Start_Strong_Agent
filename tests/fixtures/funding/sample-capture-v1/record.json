@@ -1,0 +1,123 @@
+{
+  "schema_version": "1",
+  "capture_id": "cap-7ee0a0bfa1e245f395cde11fb70c87d2",
+  "organization_id": "demo-org",
+  "opportunity_id": null,
+  "stream_id": null,
+  "cycle_id": null,
+  "candidate_id": "cand-4eac66401a73d11f3ce283a1",
+  "search_id": "srch-33a5f76981fe49bc82b8dc560e67e11d",
+  "requested_url": "https://demo-funder.example/programs/community-grants",
+  "normalized_url": "https://demo-funder.example/programs/community-grants",
+  "final_url": "https://demo-funder.example/programs/community-grants",
+  "final_url_status": "provider_reported",
+  "redirect_chain": "unknown",
+  "provider": "fixture-capture",
+  "provider_mode": "fixture",
+  "provider_request_params": {
+    "fixture": true
+  },
+  "source_http_status": 200,
+  "source_content_type": "text/html; charset=utf-8",
+  "page_title": "FIXTURE Demo Funder - Community Grants Program",
+  "captured_at": "2026-11-08T02:18:57.627856Z",
+  "capture_pipeline_version": "b1-disc-001/1",
+  "artifacts": [
+    {
+      "artifact_id": "cap-7ee0a0bfa1e245f395cde11fb70c87d2-markdown",
+      "representation": "provider_markdown",
+      "media_type": "text/markdown",
+      "encoding": "utf-8",
+      "size_bytes": 419,
+      "sha256": "20331fcd5fe23bb4989e7dba6e7947a09b6191b3ea9865c835420810006aabbd",
+      "locator_scheme": "markdown_heading_char_offsets",
+      "sections": [
+        {
+          "heading": "FIXTURE Community Grants Program",
+          "level": 1,
+          "start_char": 0,
+          "end_char": 113
+        },
+        {
+          "heading": "About the program",
+          "level": 2,
+          "start_char": 113,
+          "end_char": 234
+        },
+        {
+          "heading": "Application questions",
+          "level": 2,
+          "start_char": 234,
+          "end_char": 352
+        },
+        {
+          "heading": "Deadline",
+          "level": 2,
+          "start_char": 352,
+          "end_char": 419
+        }
+      ],
+      "b2_importable": false
+    },
+    {
+      "artifact_id": "cap-7ee0a0bfa1e245f395cde11fb70c87d2-html",
+      "representation": "provider_html",
+      "media_type": "text/html",
+      "encoding": "utf-8",
+      "size_bytes": 725,
+      "sha256": "093dd3d8a278318da42cda34c7cbe37aed402d5382edf16f693a340f70d577d6",
+      "locator_scheme": "none",
+      "sections": [],
+      "b2_importable": true
+    },
+    {
+      "artifact_id": "cap-7ee0a0bfa1e245f395cde11fb70c87d2-raw-html",
+      "representation": "provider_raw_html",
+      "media_type": "text/html",
+      "encoding": "utf-8",
+      "size_bytes": 1300,
+      "sha256": "e212379e37adbcad5886afca2a5cd82cc152b6ca0475836211d8c7569982da53",
+      "locator_scheme": "none",
+      "sections": [],
+      "b2_importable": true
+    }
+  ],
+  "coverage": "complete",
+  "warnings": [
+    "FIXTURE MODE: synthetic page, not a live capture.",
+    "Representations were rendered/returned by the capture provider; they are not asserted to be the origin server's original bytes.",
+    "Redirect chain is unknown; the final URL is as reported by the provider.",
+    "Content completeness is not verified: login walls, paywalls or blocked pages can look like ordinary content.",
+    "The capture provider performed the network fetch; destination checks here cannot observe which addresses the provider contacted (partial SEC-03 coverage)."
+  ],
+  "authority_review": "confirmed_official",
+  "authority_basis": "FIXTURE configured discovery seed (seed fixture-demo-funder: Demo Funder (synthetic))",
+  "provenance": {
+    "provenance_class": "simulated",
+    "is_simulated": true,
+    "note": "FIXTURE: synthetic page capture from strongstart_api funding fixture data."
+  },
+  "source_reference": {
+    "source_id": "web-4eac66401a73d11f3ce283a1",
+    "source_version_id": "cap-7ee0a0bfa1e245f395cde11fb70c87d2",
+    "locator": null,
+    "provenance": {
+      "provenance_class": "simulated",
+      "is_simulated": true,
+      "note": "FIXTURE: synthetic page capture from strongstart_api funding fixture data."
+    },
+    "captured_at": "2026-11-08T02:18:57.627856Z",
+    "publication_date": {
+      "status": "unknown",
+      "value": null
+    },
+    "reporting_period": null,
+    "content_hash": "093dd3d8a278318da42cda34c7cbe37aed402d5382edf16f693a340f70d577d6",
+    "verification_status": "unverified"
+  },
+  "supported_import_representations": [
+    "provider_html",
+    "provider_raw_html"
+  ],
+  "storage_capability": "development_local_store"
+}

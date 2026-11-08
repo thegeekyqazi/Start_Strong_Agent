@@ -44,3 +44,6 @@ storage-state*.json
 .idea/
 .vscode/
 .DS_Store
+
+# Development-only local data (funding capture store, per worktree)
+.local-data/

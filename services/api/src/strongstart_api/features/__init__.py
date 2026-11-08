@@ -12,6 +12,7 @@ from fastapi import APIRouter
 
 from strongstart_contracts import Capability
 
+from ..config import Settings
 from . import applications, automation, funding, knowledge
 
 FEATURE_ROUTERS: list[APIRouter] = [
@@ -27,3 +28,14 @@ FEATURE_CAPABILITIES: list[Capability] = [
     *automation.CAPABILITIES,
     *applications.CAPABILITIES,
 ]
+
+
+def feature_capabilities(settings: Settings) -> list[Capability]:
+    """Runtime capabilities. A feature module may expose ``capabilities_for(settings)``
+    to report configuration-dependent status; otherwise its static CAPABILITIES apply.
+    """
+    out: list[Capability] = []
+    for module in (knowledge, funding, automation, applications):
+        provider = getattr(module, "capabilities_for", None)
+        out.extend(provider(settings) if provider is not None else module.CAPABILITIES)
+    return out
