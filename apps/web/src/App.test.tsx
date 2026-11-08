@@ -44,7 +44,7 @@ describe('App shell', () => {
               environment: 'test',
               storage: 'unconfigured',
               status: 'unavailable',
-              detail: 'STRONGSTART_DATABASE_URL is not configured.',
+              detail: 'Database storage is not configured.',
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } },
           ),
