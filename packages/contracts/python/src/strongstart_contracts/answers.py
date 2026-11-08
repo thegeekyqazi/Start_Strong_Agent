@@ -154,6 +154,7 @@ class RenderedAnswer(ContractModel):
 
     text: str
     text_sha256: Sha256Hex
+    renderer_version: Literal["c-fact-renderer/1"] = "c-fact-renderer/1"
     bindings: list[ClaimBinding]
     unsupported_markers: list[UnsupportedMarker]
 

@@ -10,6 +10,8 @@ organization-scoped: unknown and other-org IDs raise the same ``NotFoundInStore`
 
 from __future__ import annotations
 
+import copy
+import secrets
 import threading
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -95,8 +97,20 @@ class _OrgData:
     audit: list[AuditEvent] = field(default_factory=list)
 
 
+@dataclass(frozen=True)
+class ApprovalRead:
+    version: StoredVersion
+    decision: StoredDecision
+    revision: int
+    epoch: str
+
+
 class AnswerStore(Protocol):
     is_fixture: bool
+
+    def capture_approval(self, organization_id: str, approval_id: str) -> ApprovalRead: ...
+
+    def approval_read_current(self, organization_id: str, captured: ApprovalRead) -> bool: ...
 
     def append_version(
         self,
@@ -151,6 +165,34 @@ class InMemoryAnswerStore:
     def __init__(self) -> None:
         self._lock = threading.Lock()
         self._orgs: dict[str, _OrgData] = {}
+        self.epoch = "c-store-" + secrets.token_hex(16)
+        self._revisions: dict[str, int] = {}
+
+    def _changed(self, organization_id: str) -> None:
+        self._revisions[organization_id] = self._revisions.get(organization_id, 0) + 1
+
+    def capture_approval(self, organization_id: str, approval_id: str) -> ApprovalRead:
+        with self._lock:
+            org = self._org(organization_id)
+            for history in org.versions.values():
+                for version in history:
+                    decision = org.decisions.get(version.answer_version_id)
+                    if decision is not None and decision.approval_id == approval_id:
+                        return copy.deepcopy(
+                            ApprovalRead(
+                                version,
+                                decision,
+                                self._revisions.get(organization_id, 0),
+                                self.epoch,
+                            )
+                        )
+        raise NotFoundInStore()
+
+    def approval_read_current(self, organization_id: str, captured: ApprovalRead) -> bool:
+        with self._lock:
+            return captured.epoch == self.epoch and captured.revision == self._revisions.get(
+                organization_id, 0
+            )
 
     def _org(self, organization_id: str) -> _OrgData:
         return self._orgs.setdefault(organization_id, _OrgData())
@@ -168,7 +210,8 @@ class InMemoryAnswerStore:
             if expected_latest != current:
                 raise StaleExpectation("answer_version_conflict", current)
             version = build((current or 0) + 1)
-            history.append(version)
+            history.append(copy.deepcopy(version))
+            self._changed(organization_id)
             return version
 
     def versions(self, organization_id: str, question_id: str) -> list[StoredVersion]:
@@ -205,6 +248,7 @@ class InMemoryAnswerStore:
             if must_be_latest and history[-1].answer_version_id != version.answer_version_id:
                 raise StaleExpectation("not_latest_version")
             org.decisions[decision.answer_version_id] = decision
+            self._changed(organization_id)
             return decision
 
     def decision_for(self, organization_id: str, answer_version_id: str) -> StoredDecision | None:
@@ -246,7 +290,8 @@ class InMemoryAnswerStore:
         with self._lock:
             org = self._org(organization_id)
             if all(c.change_set_id != change_set.change_set_id for c in org.change_sets):
-                org.change_sets.append(change_set)
+                org.change_sets.append(change_set.model_copy(deep=True))
+                self._changed(organization_id)
             return [c.change_set_id for c in org.change_sets]
 
     def applied_change_sets(self, organization_id: str) -> list[ChangeSet]:
@@ -267,6 +312,12 @@ class UnconfiguredAnswerStore:
     migration exists). Every operation fails closed with ``CapabilityUnavailable``."""
 
     is_fixture = False
+
+    def capture_approval(self, organization_id: str, approval_id: str) -> ApprovalRead:
+        raise self._unavailable()
+
+    def approval_read_current(self, organization_id: str, captured: ApprovalRead) -> bool:
+        raise self._unavailable()
 
     @staticmethod
     def _unavailable() -> CapabilityUnavailable:

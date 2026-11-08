@@ -23,12 +23,12 @@ from datetime import UTC, datetime
 from strongstart_contracts.automation_prefill import (
     EXECUTION_TIMEOUT_MS,
     OPERATION_TIMEOUT_MS,
-    ApprovedPrefillReader,
     AttachmentEvidenceReader,
     PrefillDependencyCurrentness,
-    UnconfiguredApprovedPrefillReader,
     UnconfiguredAttachmentEvidenceReader,
 )
+
+from ..applications.public import get_approved_prefill_reader as get_approved_prefill_reader
 
 Clock = Callable[[], datetime]
 RUNTIME_EPOCH = "epoch-" + secrets.token_hex(12)
@@ -43,10 +43,6 @@ class PrefillBrowserConfig:
     max_text_chars: int = 2_000
     max_options: int = 200
     executable_path: str | None = None  # tests point this at a missing binary
-
-
-def get_approved_prefill_reader() -> ApprovedPrefillReader:
-    return UnconfiguredApprovedPrefillReader()
 
 
 def get_attachment_evidence_reader() -> AttachmentEvidenceReader:

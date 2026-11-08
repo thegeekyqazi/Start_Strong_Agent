@@ -57,6 +57,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     if settings is not None:
         app.dependency_overrides[get_settings] = lambda: settings
     cors_settings = settings or get_settings()
+    if cors_settings.fixture_mode:
+        from .features.applications.store import InMemoryAnswerStore
+
+        app.state.c3_answer_store = InMemoryAnswerStore()
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_settings.cors_origins,

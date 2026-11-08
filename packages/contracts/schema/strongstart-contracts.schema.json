@@ -12874,6 +12874,12 @@
           "title": "Bindings",
           "type": "array"
         },
+        "renderer_version": {
+          "const": "c-fact-renderer/1",
+          "default": "c-fact-renderer/1",
+          "title": "Renderer Version",
+          "type": "string"
+        },
         "text": {
           "title": "Text",
           "type": "string"

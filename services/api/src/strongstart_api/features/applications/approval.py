@@ -125,6 +125,8 @@ def current_snapshot(ctx: Context, version: StoredVersion) -> str | None:
     report = build_check_report(
         question=question, bundle=bundle, text=version.text, mode="reviewed", policy=ctx.policy
     )
+    if report.rendered != version.rendered:
+        return None
     refs = dependency_refs(question, bundle, report.rendered, ctx.policy)
     return snapshot_sha256(version.content_sha256, ctx.organization_id, refs)
 

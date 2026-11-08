@@ -330,6 +330,7 @@ export interface CheckReport {
  */
 export interface RenderedAnswer {
   bindings: ClaimBinding[]
+  renderer_version?: 'c-fact-renderer/1'
   text: string
   text_sha256: string
   unsupported_markers: UnsupportedMarker[]
