@@ -36,8 +36,11 @@ An in-process, organization-scoped read port, modelled on B1's `CapturedDocument
 ```python
 class ApplicationDefinitionReader(Protocol):
     is_fixture: bool
+
     def get_question_set(self, organization_id: str, question_set_id: str) -> QuestionSet: ...
-    def get_unresolved(self, organization_id: str, question_set_id: str) -> list[UnresolvedItem]: ...
+    def get_unresolved(
+        self, organization_id: str, question_set_id: str
+    ) -> list[UnresolvedItem]: ...
 ```
 
 Requirements C relies on:
