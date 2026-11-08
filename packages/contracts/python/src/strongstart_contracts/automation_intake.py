@@ -81,12 +81,17 @@ class CaptureLineage(ContractModel):
     original_url: str | None = None
     requested_url: str | None = None
     final_url: str | None = None
-    final_url_status: Literal["known", "unknown"]
+    final_url_status: Literal["known", "provider_reported", "unknown"]
     provider: str | None = None
     captured_at: datetime | None = None
     authority_review_status: str
     extraction_warnings: list[str] = Field(default_factory=list)
     capture_is_fixture: bool
+    producer: str = Field(default="unknown", description="e.g. b1-capture-store")
+    producer_source_reference_hash: Sha256Hex | None = Field(
+        default=None, description="Producer's SourceReference.content_hash (its chosen artifact)."
+    )
+    producer_supported_representations: list[str] | None = None
 
 
 class InputRepresentation(ContractModel):

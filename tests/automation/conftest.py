@@ -5,6 +5,7 @@ from __future__ import annotations
 import hashlib
 import json
 import socket
+import tempfile
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -26,7 +27,12 @@ def sha(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
+_STORE = Path(tempfile.mkdtemp(prefix="b2-test-b1-store-"))
+
+
 def make_client(**settings: Any) -> TestClient:
+    # Isolated (empty) B1 capture store: never read or write the shared .local-data dir.
+    settings.setdefault("funding_capture_store_dir", _STORE)
     return TestClient(create_app(Settings(_env_file=None, **settings)))
 
 

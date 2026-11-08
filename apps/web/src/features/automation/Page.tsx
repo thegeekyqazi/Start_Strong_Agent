@@ -237,6 +237,17 @@ export function AutomationPage() {
             </select>
           </label>
         )}
+        {mode === 'capture' && (
+          <label>
+            Or paste a capture reference from Find Funding (capture_id:artifact_id)
+            <input
+              type="text"
+              value={captureKey}
+              onChange={(e) => setCaptureKey(e.target.value.trim())}
+              placeholder="cap-...:cap-...-html"
+            />
+          </label>
+        )}
         {(mode === 'structured_json' || mode === 'html') && (
           <>
             <label>
@@ -297,7 +308,8 @@ export function AutomationPage() {
               <li>
                 Capture: {result.input.capture.capture_id} /{' '}
                 {result.input.capture.source_version_id} / {result.input.capture.artifact_id} (
-                {result.input.capture.capture_is_fixture ? 'fixture producer' : 'capture producer'})
+                {result.input.capture.producer}
+                {result.input.capture.capture_is_fixture ? ', fixture/simulated' : ''})
               </li>
             )}
           </ul>

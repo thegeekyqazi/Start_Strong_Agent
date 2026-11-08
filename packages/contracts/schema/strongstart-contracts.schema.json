@@ -1092,6 +1092,7 @@
         "final_url_status": {
           "enum": [
             "known",
+            "provider_reported",
             "unknown"
           ],
           "title": "Final Url Status",
@@ -1129,6 +1130,41 @@
           ],
           "default": null,
           "title": "Original Url"
+        },
+        "producer": {
+          "default": "unknown",
+          "description": "e.g. b1-capture-store",
+          "title": "Producer",
+          "type": "string"
+        },
+        "producer_source_reference_hash": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Producer's SourceReference.content_hash (its chosen artifact).",
+          "title": "Producer Source Reference Hash"
+        },
+        "producer_supported_representations": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Producer Supported Representations"
         },
         "provider": {
           "anyOf": [

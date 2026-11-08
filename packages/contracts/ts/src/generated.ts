@@ -251,10 +251,19 @@ export interface CaptureLineage {
   cycle_id?: string | null
   extraction_warnings?: string[]
   final_url?: string | null
-  final_url_status: 'known' | 'unknown'
+  final_url_status: 'known' | 'provider_reported' | 'unknown'
   opportunity_id?: string | null
   organization_scope?: 'server_verified'
   original_url?: string | null
+  /**
+   * e.g. b1-capture-store
+   */
+  producer?: string
+  /**
+   * Producer's SourceReference.content_hash (its chosen artifact).
+   */
+  producer_source_reference_hash?: string | null
+  producer_supported_representations?: string[] | null
   provider?: string | null
   representation_type: string
   requested_url?: string | null

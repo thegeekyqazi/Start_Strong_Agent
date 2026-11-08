@@ -43,7 +43,7 @@ from strongstart_contracts.ports import CapabilityUnavailable
 
 from ...config import Settings
 from . import html_form, structured
-from .capture import CaptureNotFound, CaptureRecord, CaptureSource
+from .capture import CaptureIntegrity, CaptureNotFound, CaptureRecord, CaptureSource
 from .inspection import build_form_map, check_mappings, fingerprint, observed_fields
 from .inspector import InspectionFailure, InspectorConfig, inspect_page
 from .intake_errors import (
@@ -428,10 +428,11 @@ def _capture_result(
         data = capture_source.read_artifact(org, src.capture_id, src.artifact_id)
     except (CaptureNotFound, CapabilityUnavailable):
         raise source_unavailable("captured artifact bytes are unavailable") from None
-    if len(data) > MAX_CAPTURE_BYTES:
+    except CaptureIntegrity:
+        data = None
+    if data is not None and len(data) > MAX_CAPTURE_BYTES:
         raise too_large(MAX_CAPTURE_BYTES, "captured artifact")
-    actual = _sha(data)
-    if actual != art.sha256 or len(data) != art.byte_size:
+    if data is None or _sha(data) != art.sha256 or len(data) != art.byte_size:
         raise intake_error(
             409,
             ErrorCode.VERSION_CONFLICT,
@@ -440,6 +441,7 @@ def _capture_result(
             capture_id=record.capture_id,
             artifact_id=art.artifact_id,
         )
+    fx = capture_source.is_fixture or record.producer_is_fixture
     lineage = CaptureLineage(
         capture_id=record.capture_id,
         source_version_id=record.source_version_id,
@@ -456,7 +458,10 @@ def _capture_result(
         captured_at=record.captured_at,
         authority_review_status=record.authority_review_status,
         extraction_warnings=[f"coverage={record.extraction.coverage}", *record.extraction.warnings],
-        capture_is_fixture=capture_source.is_fixture,
+        capture_is_fixture=fx,
+        producer=record.producer,
+        producer_source_reference_hash=record.source_reference_hash,
+        producer_supported_representations=record.supported_import_representations,
     )
     ctx = _Ctx(
         data=data,
@@ -466,12 +471,17 @@ def _capture_result(
         source_version_id=record.source_version_id,
         captured_at=record.captured_at,
     )
-    label = (
-        "CAPTURE (B2 FIXTURE PRODUCER) - synthetic capture record; not a live capture; "
-        "not approved."
-        if capture_source.is_fixture
-        else f"CAPTURE - authority review: {record.authority_review_status}; not approved."
-    )
+    if record.producer == "b2-fixture-producer":
+        label = (
+            "CAPTURE (B2 FIXTURE PRODUCER) - synthetic capture record; not a live capture; "
+            "not approved."
+        )
+    else:
+        label = (
+            f"CAPTURE ({record.producer}{'; FIXTURE/SIMULATED' if fx else ''}) - authority "
+            f"review: {record.authority_review_status} (producer claim, not B2 review); "
+            "not approved."
+        )
     media = art.media_type.lower()
     rep = art.representation_type
     rep_type: Any = (
@@ -481,17 +491,25 @@ def _capture_result(
     )
     if media.startswith("application/pdf") or data.startswith(b"%PDF"):
         return _unsupported_result(
-            org, data, ctx, label, capture_source.is_fixture, rep_type="pdf",
+            org, data, ctx, label, fx, rep_type="pdf",
             media_type=art.media_type, capture=lineage, code="pdf_parsing_not_implemented",
             message="Original PDF parsing is not implemented in this task; the artifact is "
             "preserved by reference and needs a manual definition.", text_excerpt=False,
         )  # fmt: skip
     if rep == "provider_markdown" or media.startswith("text/markdown"):
         return _unsupported_result(
-            org, data, ctx, label, capture_source.is_fixture, rep_type="provider_markdown",
+            org, data, ctx, label, fx, rep_type="provider_markdown",
             media_type=art.media_type, capture=lineage, code="markdown_not_parsed",
             message="Provider markdown/prose is shown as read-only context only; no questions "
             "are extracted from prose.", text_excerpt=True,
+        )  # fmt: skip
+    supported = record.supported_import_representations
+    if supported is not None and rep not in supported:
+        return _unsupported_result(
+            org, data, ctx, label, fx, rep_type=rep_type, media_type=art.media_type,
+            capture=lineage, code="no_supported_form_content",
+            message=f"The producer does not list {rep} as importable; preserved, not parsed.",
+            text_excerpt=False,
         )  # fmt: skip
     if media.startswith("text/html") and rep in (
         "provider_html",
@@ -499,12 +517,12 @@ def _capture_result(
         "original_http_bytes",
     ):
         return _html_result(
-            org, data, ctx, label, capture_source.is_fixture, rep_type=rep_type,
+            org, data, ctx, label, fx, rep_type=rep_type,
             media_type=art.media_type, capture=lineage, opportunity_id=record.opportunity_id,
             stream_id=record.stream_id, cycle_id=record.cycle_id,
         )  # fmt: skip
     return _unsupported_result(
-        org, data, ctx, label, capture_source.is_fixture, rep_type=rep_type,
+        org, data, ctx, label, fx, rep_type=rep_type,
         media_type=art.media_type, capture=lineage, code="no_supported_form_content",
         message=f"Representation {rep} ({art.media_type}) is not a supported intake format.",
         text_excerpt=False,
@@ -826,8 +844,6 @@ def build_export(
 
 
 def capture_fixture_entries(capture_source: CaptureSource, org: str) -> list[FixtureEntry]:
-    if not capture_source.is_fixture:
-        return []
     return [
         FixtureEntry(
             fixture_id=f"{r.capture_id}:{a.artifact_id}",
@@ -837,5 +853,6 @@ def capture_fixture_entries(capture_source: CaptureSource, org: str) -> list[Fix
             description=f"{a.representation_type} {a.media_type} ({r.capture_id})",
         )
         for r in capture_source.list_records(org)
+        if r.producer_is_fixture
         for a in r.artifacts
     ]

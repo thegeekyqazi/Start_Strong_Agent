@@ -39,8 +39,15 @@ from strongstart_contracts.automation_intake import (
 
 from ...config import Settings, get_settings
 from ...identity import FIXTURE_IDENTITY, Identity
+from ..funding.deps import get_capture_store as get_b1_capture_store
 from . import html_form, structured
-from .capture import CaptureSource, UnconfiguredCaptureSource, load_fixture_capture_source
+from .capture import (
+    B1CaptureSource,
+    CaptureSource,
+    ChainedCaptureSource,
+    UnconfiguredCaptureSource,
+    load_fixture_capture_source,
+)
 from .inspector import InspectorConfig
 from .intake_errors import fixture_not_allowed, intake_error, too_large
 from .registry import PORTAL_FIXTURES, fixture_entries, portal_page
@@ -78,8 +85,9 @@ CAPABILITIES: list[Capability] = [
         feature="automation.capture_intake",
         owner="B2",
         status="fixture_only",
-        detail="Consumes the B1-B2 capture record through a B2 fixture producer; real B1 "
-        "producer pending.",
+        detail="Consumes B1 CapturedDocument records via B1's development-only capture store "
+        "(hash-verified, no refetch) plus the labelled B2 fixture producer; Dev A's supported "
+        "store is pending.",
     ),
     Capability(
         feature="automation.browser_inspection",
@@ -112,9 +120,17 @@ SettingsDep = Annotated[Settings, Depends(get_settings)]
 
 
 def get_capture_source(settings: SettingsDep) -> CaptureSource:
+    """B1's org-scoped capture store first (development-only, None in production), then the
+    labelled B2 fixture producer in local fixture mode. Fails closed when neither exists."""
+    sources: list[CaptureSource] = []
+    b1_store = get_b1_capture_store(settings)
+    if b1_store is not None:
+        sources.append(B1CaptureSource(b1_store))
     if fixtures_enabled(settings):
-        return load_fixture_capture_source()
-    return UnconfiguredCaptureSource()
+        sources.append(load_fixture_capture_source())
+    if not sources:
+        return UnconfiguredCaptureSource()
+    return ChainedCaptureSource(sources)
 
 
 def get_inspector_config() -> InspectorConfig:
@@ -190,9 +206,12 @@ def availability(settings: SettingsDep, capture: CaptureDep) -> AutomationAvaila
             ),
             ImportModeInfo(
                 mode="capture",
-                status="fixture_only" if capture.is_fixture else "unavailable",
+                status="unavailable"
+                if isinstance(capture, UnconfiguredCaptureSource)
+                else ("fixture_only" if enabled else "available"),
                 max_bytes=MAX_CAPTURE_BYTES,
-                detail="Captured document via the B1-B2 capture port.",
+                detail="Captured document via B1's capture store (development-only) or the "
+                "B2 fixture producer; bytes are hash-verified, never refetched.",
             ),
         ],
         browser_status=browser_status,

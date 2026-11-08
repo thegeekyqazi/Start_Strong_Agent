@@ -151,7 +151,9 @@ def finalize_question(d: QuestionDraft) -> tuple[IntakeQuestion, list[Finding]]:
     explicit = {
         (x.unit, x.minimum, x.maximum, x.stream) for x in drafts if x.kind != "native_dom_range"
     }
-    for instr in d.instructions:
+    # Limits may be stated in the question wording itself ("... (50 words)") or in
+    # instructions; both are recorded with their own exact evidence.
+    for instr in [d.text, *d.instructions]:
         for tl in limits_from_text(instr.text, d.answer_kind):
             stream = d.primary_stream if tl.unit == "amount" else None
             if (tl.unit, tl.minimum, tl.maximum, stream) in explicit:

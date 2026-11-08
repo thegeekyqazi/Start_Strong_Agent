@@ -30,6 +30,9 @@ from typing import Any, Literal, Protocol
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
 from strongstart_contracts.common import Provenance, Sha256Hex, StableId
+from strongstart_contracts.discovery import CapturedDocument, CapturedDocumentReader
+from strongstart_contracts.discovery import CaptureIntegrityError as B1CaptureIntegrity
+from strongstart_contracts.discovery import CaptureNotFoundError as B1CaptureNotFound
 from strongstart_contracts.ports import CapabilityUnavailable
 
 CAPTURE_DIR = Path(__file__).parent / "fixtures" / "captures"
@@ -56,7 +59,7 @@ class CaptureUrls(_Strict):
     original: str | None = None
     requested: str | None = None
     final: str | None = None
-    final_status: Literal["known", "unknown"]
+    final_status: Literal["known", "provider_reported", "unknown"]
 
 
 class CaptureExtraction(_Strict):
@@ -82,6 +85,15 @@ class CaptureRecord(_Strict):
     extraction: CaptureExtraction
     provenance: Provenance
     authority_review_status: str = Field(max_length=64)
+    # Additive fields for the real B1 producer (CapturedDocument v1). ``None`` = not stated.
+    supported_import_representations: list[str] | None = None
+    producer_is_fixture: bool = False
+    producer: str = "b2-fixture-producer"
+    source_reference_hash: Sha256Hex | None = None
+
+
+class CaptureIntegrity(Exception):
+    """Stored bytes failed the producer's hash verification."""
 
 
 def parse_capture_record(data: dict[str, Any]) -> CaptureRecord:
@@ -171,10 +183,114 @@ def load_fixture_capture_source(directory: Path = CAPTURE_DIR) -> InMemoryCaptur
     doc = json.loads((directory / "records.json").read_text(encoding="utf-8"))
     items: list[tuple[CaptureRecord, dict[str, bytes]]] = []
     for raw in doc["records"]:
-        record = parse_capture_record(raw)
+        record = parse_capture_record(raw).model_copy(update={"producer_is_fixture": True})
         contents: dict[str, bytes] = {}
         for art in record.artifacts:
             if art.content_file:
                 contents[art.artifact_id] = _confined(directory, art.content_file).read_bytes()
         items.append((record, contents))
     return InMemoryCaptureSource(items, is_fixture=True)
+
+
+# --------------------------------------------------------------------------- B1 adapter
+
+
+def record_from_captured_document(doc: CapturedDocument) -> CaptureRecord:
+    """Map B1's ``CapturedDocument`` (schema "1") onto B2's consumer view, field for field.
+
+    Nothing is inferred: B1's ``final_url_status`` ("provider_reported"/"unknown"), the
+    source reference IDs, every artifact hash/representation, coverage, warnings,
+    authority review and provenance are carried over verbatim.
+    """
+    ref = doc.source_reference
+    return CaptureRecord(
+        schema_version="capture-record/1",
+        capture_id=doc.capture_id,
+        source_id=ref.source_id,
+        source_version_id=ref.source_version_id,
+        organization_id=doc.organization_id,
+        opportunity_id=doc.opportunity_id,
+        stream_id=doc.stream_id,
+        cycle_id=doc.cycle_id,
+        urls=CaptureUrls(
+            original=doc.normalized_url,
+            requested=doc.requested_url,
+            final=doc.final_url,
+            final_status=doc.final_url_status,
+        ),
+        provider=f"{doc.provider} ({doc.provider_mode})",
+        captured_at=doc.captured_at,
+        artifacts=[
+            CaptureArtifact(
+                artifact_id=a.artifact_id,
+                representation_type=a.representation,
+                media_type=a.media_type,
+                byte_size=a.size_bytes,
+                sha256=a.sha256,
+            )
+            for a in doc.artifacts
+        ],
+        extraction=CaptureExtraction(coverage=doc.coverage, warnings=list(doc.warnings)[:50]),
+        provenance=doc.provenance,
+        authority_review_status=doc.authority_review,
+        supported_import_representations=list(doc.supported_import_representations),
+        producer_is_fixture=doc.provider_mode == "fixture" or doc.provenance.is_simulated,
+        producer="b1-capture-store",
+        source_reference_hash=ref.content_hash,
+    )
+
+
+class B1CaptureSource:
+    """``CaptureSource`` over B1's org-scoped ``CapturedDocumentReader`` (no URL refetch)."""
+
+    is_fixture = False  # per-record fixture status comes from ``producer_is_fixture``
+
+    def __init__(self, reader: CapturedDocumentReader) -> None:
+        self._reader = reader
+
+    def get_record(self, organization_id: str, capture_id: str) -> CaptureRecord:
+        try:
+            return record_from_captured_document(
+                self._reader.get_record(organization_id, capture_id)
+            )
+        except B1CaptureNotFound:
+            raise CaptureNotFound(capture_id) from None
+
+    def read_artifact(self, organization_id: str, capture_id: str, artifact_id: str) -> bytes:
+        try:
+            return self._reader.read_artifact(organization_id, capture_id, artifact_id).content
+        except B1CaptureNotFound:
+            raise CaptureNotFound(artifact_id) from None
+        except B1CaptureIntegrity:
+            raise CaptureIntegrity(artifact_id) from None
+
+    def list_records(self, organization_id: str) -> list[CaptureRecord]:
+        return []  # B1's reader port has no listing; staff paste the capture reference
+
+
+class ChainedCaptureSource:
+    """Try each source in order; unknown in one source falls through to the next."""
+
+    is_fixture = False
+
+    def __init__(self, sources: list[CaptureSource]) -> None:
+        self._sources = sources
+
+    def _owner(self, organization_id: str, capture_id: str) -> tuple[CaptureSource, CaptureRecord]:
+        for src in self._sources:
+            try:
+                return src, src.get_record(organization_id, capture_id)
+            except (CaptureNotFound, CapabilityUnavailable):
+                continue
+        raise CaptureNotFound(capture_id)
+
+    def get_record(self, organization_id: str, capture_id: str) -> CaptureRecord:
+        return self._owner(organization_id, capture_id)[1]
+
+    def read_artifact(self, organization_id: str, capture_id: str, artifact_id: str) -> bytes:
+        return self._owner(organization_id, capture_id)[0].read_artifact(
+            organization_id, capture_id, artifact_id
+        )
+
+    def list_records(self, organization_id: str) -> list[CaptureRecord]:
+        return [r for s in self._sources for r in s.list_records(organization_id)]
