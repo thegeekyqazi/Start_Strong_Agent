@@ -95,3 +95,30 @@ class KnowledgeAvailability(ContractModel):
     storage: Literal["postgresql", "unconfigured"]
     status: Literal["available", "fixture_only", "unavailable"]
     detail: str
+
+
+class TextSourceImportRequest(ContractModel):
+    """Bounded plain-text input; authorization and provenance are server-derived."""
+
+    model_config = contract_model_config("draft", "A2a")
+
+    title: str = Field(min_length=1, max_length=300)
+    text: str = Field(min_length=1)
+
+
+class TextSourceImportResult(ContractModel):
+    model_config = contract_model_config("draft", "A2a")
+
+    schema_version: Literal["1"] = SCHEMA_VERSION
+    source_id: StableId
+    source_version_id: StableId
+    passage_id: StableId
+    artifact_key: str
+    content_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    size_bytes: int = Field(gt=0)
+    media_type: Literal["text/plain; charset=utf-8"]
+    parser_name: Literal["plain_text_utf8"]
+    parser_version: Literal["1"]
+    warnings: list[str]
+    locator: str
+    provenance: Provenance

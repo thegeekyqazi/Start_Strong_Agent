@@ -27,6 +27,10 @@ class Settings(BaseSettings):
         default_factory=lambda: ["http://127.0.0.1:5173", "http://localhost:5173"]
     )
 
+    # Knowledge artifact storage (owner A2a). The local adapter is development/test only.
+    knowledge_artifact_store_dir: Path = Path(".local-data/knowledge-artifacts")
+    knowledge_max_text_bytes: int = Field(default=1_000_000, ge=1_000, le=5_000_000)
+
     # Provider credentials: optional and unused by the bootstrap. Never logged or exposed.
     gemini_api_key: SecretStr | None = None
     tavily_api_key: SecretStr | None = None
