@@ -7,7 +7,7 @@
 - Task spec path/revision: `docs/specs/A4-PKG-004_Pack_Replacement_and_Invalidation.md` revision 1.0
 - Engineering version/sections and rule IDs: Engineering Plan v1.1 sections 4.1-4.3, 5.3, 9, 10.5, 10.8, 13.3, 14, 15, 19, 20.3-20.4, 21 and 23.2; PKG-01, PKG-02 and PKG-03
 - Branch and exact implementation commit: `dev-a/a4-pack-replacement`; `71f1458`
-- PR / Issue links: pending publication
+- PR / Issue links: https://github.com/thegeekyqazi/Start_Strong_Agent/pull/15
 - Supersedes / superseded by: consumes the dependency records from `a3c-val-003-numeric-validation-r1.md`
 
 ## What works
