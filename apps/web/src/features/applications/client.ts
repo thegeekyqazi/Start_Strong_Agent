@@ -37,14 +37,19 @@ export async function call<T>(path: string, init?: RequestInit): Promise<ApiResu
 }
 
 export interface ApplicationsClient {
-  workspace(): Promise<ApiResult<ApplicationWorkspace>>
+  workspace(questionSetId?: string | null): Promise<ApiResult<ApplicationWorkspace>>
   draft(questionId: string, body: DraftRequest): Promise<ApiResult<DraftProposal>>
   check(questionId: string, body: CheckRequest): Promise<ApiResult<CheckReport>>
   plan(body: PlanRequest): Promise<ApiResult<AnswerPlan>>
 }
 
 export const httpApplicationsClient: ApplicationsClient = {
-  workspace: () => call('/api/applications/workspace'),
+  workspace: (questionSetId) =>
+    call(
+      questionSetId
+        ? `/api/applications/workspace?question_set_id=${encodeURIComponent(questionSetId)}`
+        : '/api/applications/workspace',
+    ),
   draft: (questionId, body) =>
     call(`/api/applications/questions/${encodeURIComponent(questionId)}/draft`, {
       method: 'POST',
@@ -68,6 +73,11 @@ export function describeWorkspaceError(f: Failure): string {
   if (f.status === 0) return 'The server could not be reached. Check your connection and reload.'
   if (f.status === 401)
     return "You're not signed in, so this application can't be shown. Ask your workspace administrator for access."
+  const reason = reasonOf(f)
+  if (reason === 'unknown_question_set')
+    return "That saved question set wasn't found for your organization. We did not switch to other questions."
+  if (reason === 'question_set_integrity_failure')
+    return 'That saved question set failed its integrity check, so it was not used. We did not switch to other questions.'
   if (f.status === 503)
     return "The application workspace isn't set up on this server yet. Nothing is wrong with your work."
   if (f.status === 404) return "We couldn't find this application. Reload the page."

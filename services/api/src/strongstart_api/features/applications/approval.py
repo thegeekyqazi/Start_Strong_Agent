@@ -38,7 +38,13 @@ from .service import (
 )
 from .snapshot import dependency_refs, snapshot_sha256
 from .store import AnswerStore, NotFoundInStore, StoredDecision, StoredVersion
-from .workspace import WorkspaceSource
+from .workspace import (
+    QuestionSetIntegrityError,
+    WorkspaceNotFound,
+    WorkspaceSource,
+    current_question_set_id,
+    load_workspace,
+)
 
 CHANGE_KIND_TO_DEP = {
     "fact": "fact",
@@ -84,8 +90,8 @@ def can_approve(identity: SessionIdentity, settings: Settings) -> bool:
     return identity.is_fixture and settings.fixture_mode
 
 
-def _workspace(ctx: Context) -> ApplicationWorkspace:
-    return ctx.workspace_source.get(ctx.organization_id)
+def _workspace(ctx: Context, question_set_id: str | None) -> ApplicationWorkspace:
+    return load_workspace(ctx.workspace_source, ctx.organization_id, question_set_id)
 
 
 def _question(ws: ApplicationWorkspace, question_id: str) -> Question:
@@ -104,11 +110,16 @@ def _bundle(ws: ApplicationWorkspace, bundle_id: str) -> EvidenceBundle:
 def current_snapshot(ctx: Context, version: StoredVersion) -> str | None:
     """Recompute the snapshot from current dependencies; None if they no longer exist."""
     try:
-        ws = _workspace(ctx)
+        ws = _workspace(ctx, version.question_set_id)
         question = _question(ws, version.question_id)
         bundle = _bundle(ws, version.evidence_bundle_id)
-    except (QuestionNotFound, EvidenceBundleNotFound):
-        return None
+    except (
+        QuestionNotFound,
+        EvidenceBundleNotFound,
+        WorkspaceNotFound,
+        QuestionSetIntegrityError,
+    ):
+        return None  # an unreadable dependency can never leave an approval usable
     if question.question_version != version.question_version:
         return None
     report = build_check_report(
@@ -127,6 +138,14 @@ def stale_reason(ctx: Context, version: StoredVersion) -> str | None:
             kind = CHANGE_KIND_TO_DEP.get(change.kind)
             if any(d.kind == kind and d.ref_id == change.ref_id for d in version.dependencies):
                 return f"change_set_applied:{change_set.change_set_id}"
+    try:
+        current_set = current_question_set_id(
+            ctx.workspace_source, ctx.organization_id, version.question_set_id
+        )
+    except (WorkspaceNotFound, QuestionSetIntegrityError):
+        return "dependency_changed"
+    if current_set != version.question_set_id:
+        return "question_definition_revised"  # Dev B saved a newer definition version
     if current_snapshot(ctx, version) != version.snapshot_sha256:
         return "dependency_changed"
     return None
@@ -153,6 +172,7 @@ def to_contract(ctx: Context, version: StoredVersion, latest_id: str) -> AnswerV
         answer_id=version.answer_id,
         question_id=version.question_id,
         question_version=version.question_version,
+        question_set_id=version.question_set_id,
         answer_version=version.answer_version,
         is_latest=version.answer_version_id == latest_id,
         text=version.text,
@@ -190,7 +210,7 @@ def _record(ctx: Context, decision: StoredDecision, version: StoredVersion) -> A
 def save_version(
     ctx: Context, identity: SessionIdentity, body: AnswerVersionCreate
 ) -> AnswerVersion:
-    ws = _workspace(ctx)
+    ws = _workspace(ctx, body.question_set_id)
     question = _question(ws, body.question_id)
     if question.question_version != body.question_version:
         raise QuestionVersionConflict(question.question_version)
@@ -211,6 +231,7 @@ def save_version(
             question_id=question.question_id,
             question_version=question.question_version,
             answer_version=n,
+            question_set_id=body.question_set_id,
             evidence_bundle_id=bundle.bundle_id,
             text=body.text,
             content_sha256=content,
@@ -258,8 +279,8 @@ def save_version(
     return to_contract(ctx, version, version.answer_version_id)
 
 
-def history(ctx: Context, question_id: str) -> AnswerHistory:
-    _question(_workspace(ctx), question_id)
+def history(ctx: Context, question_id: str, question_set_id: str | None = None) -> AnswerHistory:
+    _question(_workspace(ctx, question_set_id), question_id)
     versions = ctx.store.versions(ctx.organization_id, question_id)
     latest_id = versions[-1].answer_version_id if versions else ""
     contracts = [to_contract(ctx, v, latest_id) for v in versions]
@@ -297,7 +318,7 @@ def decide(
     if reason is not None:
         raise SnapshotConflict(reason)
     if body.decision == "approve":
-        ws = _workspace(ctx)
+        ws = _workspace(ctx, version.question_set_id)
         fresh = build_check_report(
             question=_question(ws, version.question_id),
             bundle=_bundle(ws, version.evidence_bundle_id),

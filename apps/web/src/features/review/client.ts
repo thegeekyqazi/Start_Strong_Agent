@@ -15,7 +15,7 @@ import type {
 import { call, type ApiResult } from '../applications/client'
 
 export interface ReviewClient {
-  history(questionId: string): Promise<ApiResult<AnswerHistory>>
+  history(questionId: string, questionSetId?: string | null): Promise<ApiResult<AnswerHistory>>
   saveVersion(body: AnswerVersionCreate): Promise<ApiResult<AnswerVersion>>
   decide(body: ApprovalDecisionRequest): Promise<ApiResult<ApprovalRecord>>
   addNote(body: ReviewNoteCreate): Promise<ApiResult<ReviewNote>>
@@ -29,7 +29,8 @@ const enc = encodeURIComponent
 const post = (body: unknown): RequestInit => ({ method: 'POST', body: JSON.stringify(body) })
 
 export const httpReviewClient: ReviewClient = {
-  history: (id) => call(`/api/applications/answers/${enc(id)}`),
+  history: (id, qs) =>
+    call(`/api/applications/answers/${enc(id)}${qs ? `?question_set_id=${enc(qs)}` : ''}`),
   saveVersion: (body) => call('/api/applications/answers/versions', post(body)),
   decide: (body) => call('/api/applications/answers/decisions', post(body)),
   addNote: (body) => call('/api/applications/answers/notes', post(body)),

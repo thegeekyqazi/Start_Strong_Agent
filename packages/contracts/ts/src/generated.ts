@@ -288,6 +288,10 @@ export interface AnswerVersion {
   dependencies: DependencyRef[]
   is_latest: boolean
   question_id: string
+  /**
+   * Dev B question set this version was written for (C2b).
+   */
+  question_set_id?: string | null
   question_version: number
   rendered: RenderedAnswer
   schema_version?: '1'
@@ -421,6 +425,10 @@ export interface AnswerVersionCreate {
    */
   expected_answer_version?: number | null
   question_id: string
+  /**
+   * Dev B saved question set (C2b), resolved server-side; null = demo fixture.
+   */
+  question_set_id?: string | null
   question_version: number
   text: string
 }
@@ -830,7 +838,16 @@ export interface ApplicationWorkspace {
   evidence_bundle: EvidenceBundle
   is_fixture: boolean
   question_set: QuestionSet
+  /**
+   * Set when questions come from Dev B's reader (C2b).
+   */
+  question_set_ref?: QuestionSetRef | null
+  question_source?: 'fixture_bundle' | 'dev_b_saved_definition'
   schema_version?: '1'
+  /**
+   * Dev B's unresolved items, keyed by published IDs.
+   */
+  unresolved?: UnresolvedItem[]
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -883,6 +900,38 @@ export interface Fact {
    * Exact decimal string; null when unknown.
    */
   value: string | null
+}
+/**
+ * Which exact Dev B saved definition version supplied the questions (C2b).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "QuestionSetRef".
+ */
+export interface QuestionSetRef {
+  definition_id: string
+  definition_version: number
+  is_fixture: boolean
+  mode_label: string
+  question_set_id: string
+  review_status: string
+  saved_at: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "UnresolvedItem".
+ */
+export interface UnresolvedItem {
+  detail: string
+  kind:
+    | 'limit_conflict'
+    | 'native_maxlength_conflict'
+    | 'unknown_limit_unit'
+    | 'unknown_counting_convention'
+    | 'required_status_unknown'
+    | 'condition_unresolved'
+    | 'attachment_constraints_unknown'
+    | 'scope_unknown'
+  question_id: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1189,23 +1238,6 @@ export interface FieldMappingCheck {
    */
   requirement_hold: boolean
   status: 'matched' | 'missing' | 'ambiguous' | 'type_mismatch' | 'unsupported'
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "UnresolvedItem".
- */
-export interface UnresolvedItem {
-  detail: string
-  kind:
-    | 'limit_conflict'
-    | 'native_maxlength_conflict'
-    | 'unknown_limit_unit'
-    | 'unknown_counting_convention'
-    | 'required_status_unknown'
-    | 'condition_unresolved'
-    | 'attachment_constraints_unknown'
-    | 'scope_unknown'
-  question_id: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1549,6 +1581,10 @@ export interface CheckReport1 {
 export interface CheckRequest {
   evidence_bundle_id: string
   mode?: 'working' | 'reviewed'
+  /**
+   * Dev B saved question set (C2b), resolved server-side; null = demo fixture.
+   */
+  question_set_id?: string | null
   question_version: number
   /**
    * Editor text; may contain slot tokens.
@@ -1751,6 +1787,10 @@ export interface UnsupportedSegment {
  */
 export interface DraftRequest {
   evidence_bundle_id: string
+  /**
+   * Dev B saved question set (C2b), resolved server-side; null = demo fixture.
+   */
+  question_set_id?: string | null
   question_version: number
 }
 /**
@@ -2044,6 +2084,10 @@ export interface ExportRequest {
    * @maxItems 100
    */
   question_ids: [string, ...string[]]
+  /**
+   * Dev B saved question set (C2b), resolved server-side; null = demo fixture.
+   */
+  question_set_id?: string | null
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -2978,6 +3022,10 @@ export interface PdfSourceImportResult {
  */
 export interface PlanRequest {
   evidence_bundle_id: string
+  /**
+   * Dev B saved question set (C2b), resolved server-side; null = demo fixture.
+   */
+  question_set_id?: string | null
 }
 /**
  * Planned field entry. Only fill operations exist; submit/sign is unrepresentable.

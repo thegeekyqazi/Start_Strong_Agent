@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Response
+from fastapi import APIRouter, Depends, Query, Response
 
 from strongstart_contracts import CapabilityUnavailable, ErrorCode
 from strongstart_contracts.answers import (
@@ -59,6 +59,11 @@ from .store import AnswerStore, NotFoundInStore, StaleExpectation
 from .workspace import WorkspaceSource, fixture_change_set
 
 review_router = APIRouter()
+
+# Optional Dev B question-set selection (C2b); same pattern as StableId.
+QuestionSetQuery = Annotated[
+    str | None, Query(pattern=r"^[a-z0-9][a-z0-9._:-]{0,127}$", max_length=128)
+]
 
 StoreDep = Annotated[AnswerStore, Depends(get_answer_store)]
 SourceDep = Annotated[WorkspaceSource, Depends(get_workspace_source)]
@@ -130,9 +135,14 @@ def answer_history(
     source: SourceDep,
     policy: PolicyDep,
     settings: SettingsDep,
+    question_set_id: QuestionSetQuery = None,
 ) -> AnswerHistory:
     try:
-        return history(_ctx(store, source, policy, settings, identity.organization_id), question_id)
+        return history(
+            _ctx(store, source, policy, settings, identity.organization_id),
+            question_id,
+            question_set_id,
+        )
     except LOOKUP_ERRORS as exc:
         raise lookup_error(exc) from None
 
@@ -206,6 +216,8 @@ async def reviewer_proposal(
         )
     except NotFoundInStore:
         raise _not_found() from None
+    except LOOKUP_ERRORS as exc:
+        raise lookup_error(exc) from None
     except ModelError as exc:
         raise model_error(exc) from None
 
@@ -219,9 +231,12 @@ def create_export(
     policy: PolicyDep,
     settings: SettingsDep,
 ) -> ExportResult:
-    return build_export(
-        _ctx(store, source, policy, settings, identity.organization_id), identity, body
-    )
+    try:
+        return build_export(
+            _ctx(store, source, policy, settings, identity.organization_id), identity, body
+        )
+    except LOOKUP_ERRORS as exc:
+        raise lookup_error(exc) from None
 
 
 @review_router.get("/exports/{export_id}/docx")
@@ -286,23 +301,22 @@ def apply_fixture_change_set(
     )
     # SEC-10: record every approval this change set made stale.
     ctx = _ctx(store, source, policy, settings, identity.organization_id)
-    for question in source.get(identity.organization_id).question_set.questions:
-        for version in store.versions(identity.organization_id, question.question_id):
-            decision = store.decision_for(identity.organization_id, version.answer_version_id)
-            if decision is None or decision.decision != "approve":
-                continue
-            reason = stale_reason(ctx, version)
-            if reason == f"change_set_applied:{change_set_id}":
-                audit_log.record(
-                    store,
-                    settings,
-                    organization_id=identity.organization_id,
-                    actor_id=identity.actor_id,
-                    action="approval_staled",
-                    object_type="approval",
-                    object_id=decision.approval_id,
-                    object_version=str(version.answer_version),
-                    decision="stale",
-                    details={"reason": reason},
-                )
+    for version in store.all_versions(identity.organization_id):
+        decision = store.decision_for(identity.organization_id, version.answer_version_id)
+        if decision is None or decision.decision != "approve":
+            continue
+        reason = stale_reason(ctx, version)
+        if reason == f"change_set_applied:{change_set_id}":
+            audit_log.record(
+                store,
+                settings,
+                organization_id=identity.organization_id,
+                actor_id=identity.actor_id,
+                action="approval_staled",
+                object_type="approval",
+                object_id=decision.approval_id,
+                object_version=str(version.answer_version),
+                decision="stale",
+                details={"reason": reason},
+            )
     return applied

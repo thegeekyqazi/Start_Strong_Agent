@@ -13,6 +13,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 from .automation import QuestionSet
+from .automation_intake import UnresolvedItem
 from .common import (
     SCHEMA_VERSION,
     ContractModel,
@@ -84,6 +85,10 @@ class DraftRequest(ContractModel):
 
     question_version: int = Field(ge=1)
     evidence_bundle_id: StableId
+    question_set_id: StableId | None = Field(
+        default=None,
+        description="Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+    )
 
 
 class TextSegment(ContractModel):
@@ -173,6 +178,10 @@ class CheckRequest(ContractModel):
     evidence_bundle_id: StableId
     text: str = Field(max_length=20_000, description="Editor text; may contain slot tokens.")
     mode: Literal["working", "reviewed"] = "working"
+    question_set_id: StableId | None = Field(
+        default=None,
+        description="Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+    )
 
 
 class CheckReport(ContractModel):
@@ -194,6 +203,10 @@ class PlanRequest(ContractModel):
     model_config = _strict_request_config()
 
     evidence_bundle_id: StableId
+    question_set_id: StableId | None = Field(
+        default=None,
+        description="Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+    )
 
 
 class PlanItem(ContractModel):
@@ -253,6 +266,20 @@ class DraftProposal(ContractModel):
     )
 
 
+class QuestionSetRef(ContractModel):
+    """Which exact Dev B saved definition version supplied the questions (C2b)."""
+
+    model_config = contract_model_config("draft", "C")
+
+    question_set_id: StableId
+    definition_id: StableId
+    definition_version: int = Field(ge=1)
+    is_fixture: bool
+    mode_label: str
+    review_status: str
+    saved_at: datetime
+
+
 class ApplicationWorkspace(ContractModel):
     """Questions and evidence for one application, scoped to the server identity."""
 
@@ -264,6 +291,13 @@ class ApplicationWorkspace(ContractModel):
     evidence_bundle: EvidenceBundle
     is_fixture: bool
     data_label: str
+    question_source: Literal["fixture_bundle", "dev_b_saved_definition"] = "fixture_bundle"
+    question_set_ref: QuestionSetRef | None = Field(
+        default=None, description="Set when questions come from Dev B's reader (C2b)."
+    )
+    unresolved: list[UnresolvedItem] = Field(
+        default_factory=list, description="Dev B's unresolved items, keyed by published IDs."
+    )
 
 
 # --- C3 (docs/specs/C3-approval-and-export.md rev 1.0) ------------------------------------
@@ -287,6 +321,10 @@ class AnswerVersionCreate(ContractModel):
     expected_answer_version: int | None = Field(
         default=None, ge=1, description="Latest version the client saw; null only for the first."
     )
+    question_set_id: StableId | None = Field(
+        default=None,
+        description="Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+    )
 
 
 class AnswerVersion(ContractModel):
@@ -299,6 +337,9 @@ class AnswerVersion(ContractModel):
     answer_id: StableId
     question_id: StableId
     question_version: int = Field(ge=1)
+    question_set_id: StableId | None = Field(
+        default=None, description="Dev B question set this version was written for (C2b)."
+    )
     answer_version: int = Field(ge=1)
     is_latest: bool
     text: str
@@ -414,6 +455,10 @@ class ExportRequest(ContractModel):
 
     mode: Literal["working", "reviewed"]
     question_ids: list[StableId] = Field(min_length=1, max_length=100)
+    question_set_id: StableId | None = Field(
+        default=None,
+        description="Dev B saved question set (C2b), resolved server-side; null = demo fixture.",
+    )
 
 
 class ExportBlocker(ContractModel):

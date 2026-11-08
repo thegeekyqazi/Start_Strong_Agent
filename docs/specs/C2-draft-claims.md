@@ -1,7 +1,7 @@
 # C2: Plan and draft answers with claim bindings and visible findings
 
 - Task ID: C2 (lane Dev C)
-- Revision: 1.2 (rev 1.1 approved by the project owner 2026-11-07; s11 decisions recorded; owner focus: APP-03 scanner first, strict request typing. Rev 1.2 adds s12 implementation notes, commit cf52da5)
+- Revision: 1.3 (rev 1.1 approved 2026-11-07; rev 1.2 added s12 implementation notes; **rev 1.3 adds s13, phase C2b**, started on the owner's instruction "Do C2b" on 2026-11-08 after Dev B's PR #12 delivered the read port)
 - Branch: `dev-c/c2-draft-claims`, **stacked** on `dev-c/c1-shell-and-adapter` (`94dffc2`; C1 is not yet merged). Integration order: C1 PR first, then rebase C2 onto `main`
 - Engineering baseline: v1.1, s4.2, s7, s8.1-8.3, s9.1-9.2, s10.5 (APP), s10.6 (POL), s13.2 (SEC-12), s14.1, s15, s18, s20.3-20.4 (C2 row)
 - Lane plan: `docs/coordination/dev-c-lane-plan.md` rev 1.0, s3 "C2"
@@ -168,3 +168,40 @@ Each phase is gated: owner instruction "do not start integration" applies until 
 | 4 | Terminology scope matches the program name | Matches the program name **or** its protected acronym | "DLP tutors" must be in scope for the Demo Literacy Program rule |
 | 5 | Model results checked by the coordinator | SEC-12 keys added to the shared scan: `org_id` in model output is now `sec12_forbidden_field` (previously a generic schema error). The C1 test moved to the SEC-12 suite, still asserting rejection | A more specific rejection, not a weaker one |
 | 6 | Phase C2b consumes B2's export | **Blocked at runtime**: B2's `AutomationHandoffExport` is built on request (`persisted=false`) and there is no read port. s20.3 forbids importing B2 internals, and a client-supplied export cannot be trusted as funder questions. See the handoff for the proposal | Needs an owner/B2 decision |
+
+## 13. Phase C2b: consume Dev B's saved question sets (rev 1.3)
+
+**Producer:** Dev B's `ApplicationDefinitionReader` (`strongstart_contracts.application_publication`), with the FastAPI factory `strongstart_api.features.automation.public.get_application_definition_reader`. The envelope is `b2-published-definition/1` (handoff `docs/handoffs/dev-b/bundle-002-question-reader-r1.md`, PR #12). It answers C's `c2-question-read-port-request.md`. C imports **only** these public entry points.
+
+**Behaviour:**
+1. **Selection by ID only.** The browser sends an optional `question_set_id` and nothing else about the questions. C's server resolves it with `reader.get_version(identity.organization_id, question_set_id)`, which returns that exact immutable version and never a substituted latest. No browser-supplied question or provenance payload is accepted (B's consumer requirement).
+2. **No silent fallback.** Without a `question_set_id`, the labelled `demo-bundle@1` fixture questions are used as before (fixture mode only), as an explicit choice. With one:
+   - not found or other-org → 404 `unknown_question_set`;
+   - integrity failure → 502 `question_set_integrity_failure`;
+   - no repository (e.g. production) → 503 `capability_unavailable`.
+   
+   It **never** falls back to the demo bundle.
+3. **Nothing resolved on B's behalf.**
+   - The shared `Question` DTOs are used as-is: published IDs `def-…:<original>`, `question_version` = the definition version.
+   - Conflicts stay `limit=None` with candidates, unknown units stay `unknown`, and `required: null` stays null.
+   - B's `unresolved` items are carried in the workspace and shown as "from question data" notices.
+   - B's `mode_label`, fixture flag and `saved_not_reviewed` status are shown.
+4. **Evidence is unchanged.** It is still the labelled fixture `EvidenceBundle` (fixture mode). Real A evidence is the other half of G1 and not part of C2b.
+5. **The whole C path reads the producer.** Workspace, plan, draft, check, save version, history, approve, reviewer roles and export all carry the selected `question_set_id`. Answer versions record it.
+6. **Revision staleness (C3 seam).** If B saves a newer version of the definition (`get_current(definition_id)` returns a different question set), an approval made against the older question set becomes stale with reason `question_definition_revised`. C answers stay bound to the exact version they were written for.
+7. **Contracts (C-owned, additive):**
+   - optional `question_set_id` on `DraftRequest`, `CheckRequest`, `PlanRequest`, `AnswerVersionCreate` and `ExportRequest`;
+   - `ApplicationWorkspace` gains `question_source`, `question_set_ref` and `unresolved` (B's `UnresolvedItem`);
+   - `AnswerVersion` gains `question_set_id`.
+
+**Tests:**
+- against the **real** B repository: saved via B's public API into a temporary store, end to end through C's routes;
+- against a labelled fixture reader double built from B's committed sample;
+- not found and other-org (404, no fallback), integrity failure, unavailable reader;
+- strict typing of `question_set_id`;
+- definition revision → stale approval;
+- unresolved items and conflicts visible;
+- the existing fixture path unchanged.
+
+**G1:** this closes the B+C half ("real B questions render with limits/conflicts" in C's editor, check and draft). Full G1 still needs real A evidence.
+
