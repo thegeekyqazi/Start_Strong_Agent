@@ -9,7 +9,8 @@ revoke -> planted hostile candidate held, with screenshots, console errors and e
 
 import sys
 
-from playwright.sync_api import expect, sync_playwright
+from playwright.sync_api import ConsoleMessage, expect, sync_playwright
+from playwright.sync_api import Request as PwRequest
 
 OUT = sys.argv[1]
 BASE = sys.argv[2] if len(sys.argv) > 2 else "http://127.0.0.1:5180"
@@ -18,18 +19,27 @@ external: list[str] = []
 with sync_playwright() as p:
     b = p.chromium.launch()
     page = b.new_page(viewport={"width": 1280, "height": 900})
-    page.on("console", lambda m: m.type == "error" and errors.append(m.text))
-    page.on("request", lambda r: not r.url.startswith(BASE) and external.append(r.url))
+
+    def on_console(m: ConsoleMessage) -> None:
+        if m.type == "error":
+            errors.append(m.text)
+
+    def on_request(r: PwRequest) -> None:
+        if not r.url.startswith(BASE):
+            external.append(r.url)
+
+    page.on("console", on_console)
+    page.on("request", on_request)
     page.goto(f"{BASE}/#/skills")
     expect(page.get_by_role("heading", name="Skills", exact=True)).to_be_visible()
 
-    def shot(n):
+    def shot(n: str) -> None:
         page.screenshot(path=f"{OUT}/{n}.png", full_page=True)
 
-    def click(name):
+    def click(name: str) -> None:
         page.get_by_role("button", name=name).click()
 
-    log = []
+    log: list[str] = []
     click("Publish synthetic demo source")
     expect(
         page.get_by_role("button", name="Approve as practice authority for this scope")
