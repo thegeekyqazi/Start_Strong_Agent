@@ -6,6 +6,7 @@ export const reviewFeature: FeatureEntry = {
   id: 'review',
   label: 'Review',
   owner: 'C',
-  summary: 'Checks, evidence and exact-version approval.',
+  summary:
+    'Saved versions, exact-version approval, staleness and DOCX/audit export (fixture store).',
   Component: ReviewPage,
 }

@@ -5,6 +5,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type {
   AnswerFinding,
+  AnswerVersion,
   AnswerPlan,
   ApplicationWorkspace,
   CheckReport,
@@ -27,6 +28,7 @@ import {
   httpApplicationsClient,
   type ApplicationsClient,
 } from './client'
+import { describeReviewError, httpReviewClient, type ReviewClient } from '../review/client'
 
 const CHECK_DELAY_MS = 300
 
@@ -194,8 +196,10 @@ function QuestionTags({ q }: { q: Question }) {
 
 export function ApplicationsPage({
   client = httpApplicationsClient,
+  reviewClient = httpReviewClient,
 }: {
   client?: ApplicationsClient
+  reviewClient?: ReviewClient
 }) {
   const [load, setLoad] = useState<Load>({ kind: 'loading' })
   const [selected, setSelected] = useState<string | null>(null)
@@ -208,6 +212,9 @@ export function ApplicationsPage({
   const [planError, setPlanError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [draftError, setDraftError] = useState<string | null>(null)
+  // Latest saved version per question (C3): number for optimistic saves, server state for display.
+  const [saved, setSaved] = useState<Record<string, AnswerVersion | null>>({})
+  const [saveMessage, setSaveMessage] = useState<string | null>(null)
   // Latest editor text, read after an await so in-flight typing is never overwritten (s15).
   const textsRef = useRef(texts)
   useEffect(() => {
@@ -252,6 +259,15 @@ export function ApplicationsPage({
     }, CHECK_DELAY_MS)
     return () => clearTimeout(handle)
   }, [client, ws, question, text, mode])
+
+  // Load the latest saved version for the selected question (C3 saved versions).
+  useEffect(() => {
+    if (!question || question.question_id in saved) return
+    const qid = question.question_id
+    reviewClient.history(qid).then((r) => {
+      setSaved((s) => ({ ...s, [qid]: r.ok ? (r.data.versions.at(-1) ?? null) : null }))
+    })
+  }, [reviewClient, question, saved])
 
   if (load.kind === 'loading') return <p role="status">Loading the application…</p>
   if (load.kind === 'error' || !ws) {
@@ -410,6 +426,37 @@ export function ApplicationsPage({
                 </p>
               </div>
               {draftError && <p role="alert">{draftError}</p>}
+              <div className="save-version">
+                <button
+                  type="button"
+                  disabled={text.trim() === ''}
+                  onClick={async () => {
+                    setSaveMessage(null)
+                    const latest = saved[question.question_id] ?? null
+                    const r = await reviewClient.saveVersion({
+                      question_id: question.question_id,
+                      question_version: question.question_version,
+                      evidence_bundle_id: bundle.bundle_id,
+                      text,
+                      expected_answer_version: latest ? latest.answer_version : null,
+                    })
+                    if (r.ok) {
+                      setSaved((s) => ({ ...s, [question.question_id]: r.data }))
+                      setSaveMessage(`Saved as version ${r.data.answer_version}.`)
+                    } else setSaveMessage(describeReviewError(r))
+                  }}
+                >
+                  Save version
+                </button>{' '}
+                {saved[question.question_id] && (
+                  <span className="hint">
+                    Latest saved: version {saved[question.question_id]?.answer_version}{' '}
+                    <StatusDot status={saved[question.question_id]!.state} />{' '}
+                    <a href="#/review">Open in Review</a>
+                  </span>
+                )}
+                {saveMessage && <p role="status">{saveMessage}</p>}
+              </div>
               {suggestion && (
                 <section aria-labelledby="suggested-draft" className="suggestion">
                   <h4 id="suggested-draft">Suggested draft</h4>

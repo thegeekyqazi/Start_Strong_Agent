@@ -90,6 +90,9 @@ describe('StatusDot', () => {
     ['needs_attention', 'Needs attention'],
     ['approved', 'Approved (this exact version)'],
     ['stale', 'Out of date – approval no longer applies'],
+    ['checking', 'Checking…'],
+    ['ready_for_review', 'Ready for review – not approved'],
+    ['rejected', 'Rejected by reviewer'],
   ] as const)('%s has a text label, not colour alone', (status, label) => {
     render(<StatusDot status={status} />)
     expect(screen.getByText(label)).toBeInTheDocument()
