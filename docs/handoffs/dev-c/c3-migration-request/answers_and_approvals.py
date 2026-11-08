@@ -3,7 +3,7 @@
 NOT ACTIVE: this file lives outside ``migrations/versions`` on purpose. Dev A owns migration
 sequencing (ownership.md). Earlier drafts were numbered 0003, then 0004, then 0005; each
 number was taken by Dev A's own migrations (0005_validation_receipts and
-0006_numeric_validation are on main; 0007_pack_replacement is in A4's open PR #15). So the
+0006_numeric_validation, then 0007_pack_replacement from A4's PR #15). So the
 revision ID and down-revision are now placeholders for Dev A to assign at sequencing time.
 
 ``down_revision`` is a deliberately invalid placeholder: if this file were copied into
