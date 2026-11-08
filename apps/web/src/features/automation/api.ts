@@ -101,6 +101,14 @@ export function portalUrl(fixtureId: string): string {
 }
 
 const REASON_TEXT: Record<string, string> = {
+  managed_registration_failed:
+    'The source pack changed or could not be verified. Review the answer and prepare a new plan.',
+  managed_verifier_unavailable:
+    'Managed source verification is unavailable. Try again when it is connected.',
+  prepare_new_plan: 'This pending plan uses an old format. Prepare a new plan.',
+  mixed_evidence_context:
+    'Select approved answers from one evidence context and prepare a new plan.',
+
   malformed_request: 'The request was not in the expected shape.',
   malformed_definition: 'The definition is not valid JSON or does not match the supported format.',
   duplicate_id: 'Two items share an ID. Nothing was renumbered; fix the source and re-import.',
@@ -144,4 +152,44 @@ export function describeError(r: { status: number; error: ErrorEnvelope | null }
   const text = typeof reason === 'string' ? REASON_TEXT[reason] : undefined
   const base = text ?? r.error?.message ?? `Request failed (HTTP ${r.status}).`
   return typeof reason === 'string' ? `${base} [${reason}]` : base
+}
+
+// A lost/aborted response has uncertain effects; callers retain the same request key.
+async function prefillCall<T>(path: string, init?: RequestInit): Promise<ApiResult<T>> {
+  const abort = new AbortController()
+  const timer = setTimeout(() => abort.abort(), 45_000)
+  try {
+    return await call<T>(path, { ...init, signal: abort.signal })
+  } finally {
+    clearTimeout(timer)
+  }
+}
+
+export function preparePrefill(req: import('@strongstart/contracts').PreparePrefillPlanRequest) {
+  return prefillCall<import('@strongstart/contracts').PrefillPlan>('/prefill-plans', {
+    method: 'POST',
+    body: JSON.stringify(req),
+  })
+}
+
+export function executePrefill(
+  planId: string,
+  req: import('@strongstart/contracts').ExecutePrefillRequest,
+) {
+  return prefillCall<import('@strongstart/contracts').ExecutePrefillResult>(
+    `/prefill-plans/${encodeURIComponent(planId)}/execute`,
+    { method: 'POST', body: JSON.stringify(req) },
+  )
+}
+
+export function getPrefillPlan(planId: string) {
+  return prefillCall<import('@strongstart/contracts').PrefillPlanView>(
+    `/prefill-plans/${encodeURIComponent(planId)}`,
+  )
+}
+
+export function getPrefillRun(runId: string) {
+  return prefillCall<import('@strongstart/contracts').PrefillRunView>(
+    `/prefill-runs/${encodeURIComponent(runId)}`,
+  )
 }

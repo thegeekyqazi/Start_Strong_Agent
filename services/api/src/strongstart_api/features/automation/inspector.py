@@ -252,16 +252,35 @@ def _deadline(timeout_ms: int) -> Iterator[Callable[[], float]]:
     yield remaining
 
 
-def inspect_page(
+@dataclass
+class RestrictedSession:
+    """One live restricted fixture document (shared by read-only inspection and prefill)."""
+
+    page: Any
+    browser: Any
+    log: ActivityLog
+    server: FixtureServer
+    remaining: Callable[[], float]
+    playwright_error: type[Exception]
+    playwright_timeout: type[Exception]
+
+
+@contextmanager
+def restricted_fixture_session(
     page_html: bytes,
     *,
     ready_selector: str,
-    config: InspectorConfig,
+    timeout_ms: int,
+    executable_path: str | None = None,
     extra_pages: dict[str, bytes] | None = None,
     redirects: dict[str, str] | None = None,
     observer: Callable[[Any], None] | None = None,
-) -> RawInspection:
-    """Open the fixture page in a fresh restricted context and read its controls."""
+) -> Iterator[RestrictedSession]:
+    """Serve one registered page from an ephemeral loopback server, open it in a fresh
+    restricted Chromium context, wait for the declared readiness and yield the live page.
+
+    Context, browser, Playwright and the fixture server are closed on every exit path.
+    """
     try:
         from playwright.sync_api import Error as PlaywrightError
         from playwright.sync_api import TimeoutError as PlaywrightTimeout
@@ -271,7 +290,7 @@ def inspect_page(
 
     pages = {PORTAL_PATH: page_html, **(extra_pages or {})}
     log = ActivityLog()
-    with FixtureServer(pages, redirects) as server, _deadline(config.timeout_ms) as remaining:
+    with FixtureServer(pages, redirects) as server, _deadline(timeout_ms) as remaining:
         allowed_paths = set(pages)
         origin = server.origin
 
@@ -328,7 +347,7 @@ def inspect_page(
             try:
                 browser = pw.chromium.launch(
                     headless=True,
-                    executable_path=config.executable_path,
+                    executable_path=executable_path,
                     timeout=remaining(),
                     args=["--disable-background-networking", "--no-first-run"],
                 )
@@ -377,9 +396,11 @@ def inspect_page(
 
                 page.on("download", on_download)
                 try:
-                    page.goto(
-                        origin + PORTAL_PATH, wait_until="domcontentloaded", timeout=remaining()
-                    )
+                    # Observe the initial document commit, then the registered readiness
+                    # predicate. A hostile script may start a denied navigation before the
+                    # initial DOMContentLoaded waiter settles; that lifecycle event must not
+                    # become our readiness authority or consume the whole time budget.
+                    page.goto(origin + PORTAL_PATH, wait_until="commit", timeout=remaining())
                     # Poll the declared readiness condition with trusted code. (wait_for_selector
                     # would wait on a blocked, never-committed navigation started by the page.)
                     while not page.evaluate(READY_JS, ready_selector):
@@ -390,15 +411,15 @@ def inspect_page(
                     ) from None
                 except PlaywrightError:
                     raise InspectionFailure("timeout", "fixture page did not load") from None
-                raw = page.evaluate(
-                    ENUMERATE_JS,
-                    {
-                        "maxFields": config.max_fields,
-                        "maxText": config.max_text_chars,
-                        "maxOptions": config.max_options,
-                    },
+                yield RestrictedSession(
+                    page=page,
+                    browser=browser,
+                    log=log,
+                    server=server,
+                    remaining=remaining,
+                    playwright_error=PlaywrightError,
+                    playwright_timeout=PlaywrightTimeout,
                 )
-                version = browser.version
             finally:
                 if context is not None:
                     try:
@@ -411,11 +432,40 @@ def inspect_page(
                     pass
         finally:
             pw.stop()
-        hits = server.mutation_hits
+
+
+def inspect_page(
+    page_html: bytes,
+    *,
+    ready_selector: str,
+    config: InspectorConfig,
+    extra_pages: dict[str, bytes] | None = None,
+    redirects: dict[str, str] | None = None,
+    observer: Callable[[Any], None] | None = None,
+) -> RawInspection:
+    """Open the fixture page in a fresh restricted context and read its controls."""
+    with restricted_fixture_session(
+        page_html,
+        ready_selector=ready_selector,
+        timeout_ms=config.timeout_ms,
+        executable_path=config.executable_path,
+        extra_pages=extra_pages,
+        redirects=redirects,
+        observer=observer,
+    ) as session:
+        raw = session.page.evaluate(
+            ENUMERATE_JS,
+            {
+                "maxFields": config.max_fields,
+                "maxText": config.max_text_chars,
+                "maxOptions": config.max_options,
+            },
+        )
+        version = session.browser.version
     return RawInspection(
         fields=list(raw["fields"]),
         truncated=bool(raw["truncated"]),
-        activity=log,
-        fixture_server_mutation_hits=hits,
+        activity=session.log,
+        fixture_server_mutation_hits=session.server.mutation_hits,
         browser_version=str(version),
     )

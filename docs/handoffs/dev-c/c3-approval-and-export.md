@@ -1,3 +1,7 @@
+> INT-001 adoption (2026-11-08): engineering ownership and current producer/consumer
+> integration are recorded in the [integration handoff](../integration/int-001-approved-content-currentness-r1.md).
+> This historical note retains its original status, evidence and limitations below.
+
 # C3: Exact-version approval, invalidation, reviewer roles and DOCX/audit export (r1)
 
 - Author/lane: Dev C agent

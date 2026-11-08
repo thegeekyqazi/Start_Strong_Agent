@@ -18,7 +18,15 @@ from .jobs import ChangeSet
 from .validation import ValidationDependency
 
 DependencyTargetKind = Literal[
-    "validation", "answer", "check", "approval", "export", "browser_grant", "job", "skill"
+    "validation",
+    "answer",
+    "check",
+    "approval",
+    "export",
+    "browser_plan",
+    "browser_grant",
+    "job",
+    "skill",
 ]
 
 
@@ -117,6 +125,10 @@ class DependencyTargetState(ContractModel):
     state: Literal["current", "stale"]
     stale_change_set_id: StableId | None = None
     dependencies: list[ValidationDependency]
+    application_context: StableId | None = None
+    pack_version_id: StableId | None = None
+    active_revision: int | None = None
+    projection_sha256: Sha256Hex | None = None
 
 
 class ActivePackState(ContractModel):

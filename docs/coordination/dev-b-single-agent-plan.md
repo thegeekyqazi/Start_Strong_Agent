@@ -98,3 +98,15 @@ Check-table update: DAT-01..04 and ELG-01..04 now have implemented and tested **
 Dependencies changed since rev 1.0:
 - A3's runner merged (PR #13) with a closed source-rule registry;
 - C3 (PR #10) is open but not merged, so the resolver is still unavailable.
+
+## 9. Update 2026-11-08: B2-AUTO-002 takeover checkpoint
+
+This section supersedes the stale B2-AUTO-002 "not started" and C3/C2b dependency entries above. One Dev B agent continues the existing `dev-b/b2-auto-002-approved-prefill` branch and draft PR #17, preserving `a2b8146` and merging inspected upstream `e6df77a` normally. No parallel Dev B sessions or feature task was started.
+
+- **P0 complete; P1 fixture/harness complete:** exact approved plans, atomic single-use claims, restricted Chromium entry/live read-back/final reread, held requirements and attachment checklist, explicit Automation UI, concurrency mutation evidence and full verification. Runtime has no seeded approvals; integrated C3, real portals, upload and submission remain unavailable.
+- **P2 pending:** C3 #10 is merged; C2b #18 now consumes B's exact saved question-set IDs. The remaining C blocker is a public approved-content reader returning the consistent exact template/rendered envelope with separate hashes, live dependencies and producer epoch. The requested contract remains a proposal; C's snapshot-only resolver cannot supply text.
+- **A4:** merged at `0007_pack_replacement`; dependency/currentness HTTP contracts acknowledged as available, but the in-process B consumer factory remains requested, not integrated. No loopback HTTP/private-store bridge is added.
+- **P3:** verification/publication of the partial P1 increment. Full B2-AUTO-002/G2 remains pending P2; the PR stays draft and is not merged.
+- Applicable catalog subsets now have task evidence for AUT-02/03 and SEC-08, with AUT-01 mapping, AUT-04 checklist, SEC-03 registered-fixture routing, SEC-09 and JOB-03 bounded-action coverage. Catalog-wide statuses are not rewritten and no 86-check completion is claimed.
+
+Exact implementation ref, public versions, AUTO2-01..32 evidence, failures, omissions, test results, decisions and consumer asks: `docs/handoffs/dev-b/b2-auto-002-approved-prefill-r1.md`. Next Dev B action is P2 when C publishes/acknowledges the reader. Keep funding work sequential and separately scoped.

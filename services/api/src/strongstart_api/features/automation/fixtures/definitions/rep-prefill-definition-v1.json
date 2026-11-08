@@ -1,0 +1,158 @@
+{
+  "format": "strongstart-application-definition",
+  "format_version": "1",
+  "definition_id": "rep-prefill-definition-v1",
+  "opportunity_id": "demo-gos",
+  "stream_id": "standard",
+  "cycle_id": null,
+  "title": "FIXTURE: Prefill demonstration form (rep-prefill v1)",
+  "provenance_note": "B2-AUTO-002 dedicated prefill fixture, written by the Strong Start team. Constraints are deliberately unambiguous (native maxlength with the HTML UTF-16 convention, whole-number range, registered options). Not a funder form, not verbatim funder questions, not a verified grant cycle.",
+  "questions": [
+    {
+      "question_id": "pf-org-name",
+      "number": "1",
+      "section": "Section A: Organization",
+      "text": "Legal name of the organization.",
+      "instructions": ["Up to 120 characters (HTML maxlength, UTF-16 code units)."],
+      "scope": "organization",
+      "type": "text",
+      "required": "required",
+      "limits": [
+        {
+          "maximum": 120,
+          "unit": "characters",
+          "counting_convention": "html-maxlength-utf16-code-units",
+          "text": "Up to 120 characters (HTML maxlength, UTF-16 code units)."
+        }
+      ]
+    },
+    {
+      "question_id": "pf-summary",
+      "number": "2",
+      "section": "Section A: Organization",
+      "text": "Summarize the project in plain language.",
+      "instructions": ["Up to 1000 characters (HTML maxlength, UTF-16 code units)."],
+      "scope": "program",
+      "type": "text",
+      "required": "required",
+      "limits": [
+        {
+          "maximum": 1000,
+          "unit": "characters",
+          "counting_convention": "html-maxlength-utf16-code-units",
+          "text": "Up to 1000 characters (HTML maxlength, UTF-16 code units)."
+        }
+      ]
+    },
+    {
+      "question_id": "pf-service-area",
+      "number": "3",
+      "section": "Section A: Organization",
+      "text": "Primary service area",
+      "instructions": ["Choose one."],
+      "scope": "organization",
+      "type": "choice",
+      "required": "required",
+      "multiple": false,
+      "choices": [
+        { "value": "city", "label": "City" },
+        { "value": "region", "label": "Region" },
+        { "value": "province", "label": "Province-wide" }
+      ]
+    },
+    {
+      "question_id": "pf-languages",
+      "number": "4",
+      "section": "Section A: Organization",
+      "text": "Languages in which services are offered",
+      "instructions": ["Select all that apply."],
+      "scope": "organization",
+      "type": "choice",
+      "required": "optional",
+      "multiple": true,
+      "choices": [
+        { "value": "en", "label": "English" },
+        { "value": "fr", "label": "French" },
+        { "value": "other", "label": "Other" }
+      ]
+    },
+    {
+      "question_id": "pf-has-partners",
+      "number": "5",
+      "section": "Section B: Delivery",
+      "text": "Do you deliver this work with partners?",
+      "scope": "organization",
+      "type": "choice",
+      "required": "required",
+      "multiple": false,
+      "choices": [
+        { "value": "yes", "label": "Yes" },
+        { "value": "no", "label": "No" }
+      ]
+    },
+    {
+      "question_id": "pf-partnership",
+      "number": "6",
+      "section": "Section B: Delivery",
+      "text": "Name your delivery partners.",
+      "instructions": ["Up to 600 characters (HTML maxlength, UTF-16 code units)."],
+      "scope": "program",
+      "type": "text",
+      "required": "conditional",
+      "condition": {
+        "text": "Shown only when question 5 is Yes",
+        "depends_on": "pf-has-partners",
+        "equals": "yes"
+      },
+      "limits": [
+        {
+          "maximum": 600,
+          "unit": "characters",
+          "counting_convention": "html-maxlength-utf16-code-units",
+          "text": "Up to 600 characters (HTML maxlength, UTF-16 code units)."
+        }
+      ]
+    },
+    {
+      "question_id": "pf-mission-words",
+      "number": "7",
+      "section": "Section B: Delivery",
+      "text": "Describe your mission.",
+      "instructions": ["Maximum 100 words."],
+      "scope": "organization",
+      "type": "text",
+      "required": "required",
+      "limits": [{ "maximum": 100, "unit": "words", "text": "Maximum 100 words." }]
+    },
+    {
+      "question_id": "pf-request-amount",
+      "number": "8",
+      "section": "Section C: Request",
+      "text": "Requested amount.",
+      "instructions": ["Whole dollars from 1000 to 50000; digits only."],
+      "scope": "program",
+      "type": "number",
+      "required": "required",
+      "limits": [
+        {
+          "minimum": "1000",
+          "maximum": "50000",
+          "unit": "amount",
+          "stream": "standard",
+          "text": "Whole dollars from 1000 to 50000; digits only."
+        }
+      ]
+    },
+    {
+      "question_id": "pf-budget",
+      "number": "9",
+      "section": "Section C: Request",
+      "text": "Attach the project budget.",
+      "instructions": ["Fixture constraint: one PDF file, at most 2 MB."],
+      "scope": "program",
+      "type": "file",
+      "required": "required",
+      "attachment": { "accepted_types": [".pdf"], "max_size_bytes": 2097152, "max_count": 1 }
+    }
+  ]
+}

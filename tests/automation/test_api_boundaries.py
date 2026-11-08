@@ -131,11 +131,18 @@ def test_auto16_availability_is_granular(fixture_client: TestClient) -> None:
     caps = {c["feature"]: c["status"] for c in body["capabilities"]}
     assert caps == {
         "automation": "fixture_only",
+        "automation.saved_definitions": "fixture_only",
         "automation.intake": "available",
         "automation.capture_intake": "fixture_only",
         "automation.browser_inspection": "fixture_only",
         "automation.pdf_parsing": "not_implemented",
-        "automation.approved_prefill": "not_implemented",
+        "automation.approved_prefill": "fixture_only",
+        "automation.prefill_plan_preparation": "fixture_only",
+        "automation.prefill_execution_test_provider": "fixture_only",
+        "automation.prefill_execution_c3": "fixture_only",
+        "automation.prefill_choice_values": "unavailable",
+        "automation.attachment_checklist": "fixture_only",
+        "automation.real_portal_prefill": "unavailable",
         "automation.final_submission": "unavailable",
     }
     assert {m["mode"]: m["status"] for m in body["import_modes"]}["capture"] == "fixture_only"

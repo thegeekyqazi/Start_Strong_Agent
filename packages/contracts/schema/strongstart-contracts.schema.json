@@ -1384,6 +1384,386 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "ApprovedKnowledgeBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "active_revision": {
+          "minimum": 1,
+          "title": "Active Revision",
+          "type": "integer"
+        },
+        "application_context": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Application Context",
+          "type": "string"
+        },
+        "c_dependencies_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "C Dependencies Sha256",
+          "type": "string"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/ValidationDependency"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "mapping_version": {
+          "const": "c-a4-pack-root/1",
+          "default": "c-a4-pack-root/1",
+          "title": "Mapping Version",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "pack_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Pack Version Id",
+          "type": "string"
+        },
+        "projection_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Projection Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "organization_id",
+        "application_context",
+        "pack_version_id",
+        "active_revision",
+        "c_dependencies_sha256",
+        "dependencies",
+        "projection_sha256"
+      ],
+      "title": "ApprovedKnowledgeBinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
+    "ApprovedPrefillContent": {
+      "additionalProperties": false,
+      "description": "One consistent approved-content envelope (requested from Dev C; s5.1).\n\nC guarantees these properties. B recomputes the hashes and checks every identity.",
+      "properties": {
+        "a4_binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApprovedKnowledgeBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "answer_version": {
+          "minimum": 1,
+          "title": "Answer Version",
+          "type": "integer"
+        },
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "approval": {
+          "$ref": "#/$defs/ApprovalSnapshot"
+        },
+        "content_format": {
+          "const": "b2-requested-approved-prefill-content/1",
+          "default": "b2-requested-approved-prefill-content/1",
+          "title": "Content Format",
+          "type": "string"
+        },
+        "currentness": {
+          "const": "current",
+          "title": "Currentness",
+          "type": "string"
+        },
+        "currentness_checked_at": {
+          "format": "date-time",
+          "title": "Currentness Checked At",
+          "type": "string"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/DependencyRef"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "dependency_snapshot_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Dependency Snapshot Sha256",
+          "type": "string"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "producer_epoch": {
+          "title": "Producer Epoch",
+          "type": "string"
+        },
+        "producer_id": {
+          "title": "Producer Id",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_set_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Set Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "rendered_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Rendered Sha256",
+          "type": "string"
+        },
+        "rendered_text": {
+          "maxLength": 20000,
+          "title": "Rendered Text",
+          "type": "string"
+        },
+        "renderer_version": {
+          "title": "Renderer Version",
+          "type": "string"
+        },
+        "template_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Template Sha256",
+          "type": "string"
+        },
+        "template_text": {
+          "maxLength": 20000,
+          "title": "Template Text",
+          "type": "string"
+        },
+        "typed_value": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApprovedTypedValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "unresolved_marker_count": {
+          "minimum": 0,
+          "title": "Unresolved Marker Count",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "organization_id",
+        "approval",
+        "answer_version_id",
+        "answer_version",
+        "question_set_id",
+        "question_id",
+        "question_version",
+        "template_text",
+        "template_sha256",
+        "rendered_text",
+        "rendered_sha256",
+        "renderer_version",
+        "unresolved_marker_count",
+        "dependency_snapshot_sha256",
+        "currentness",
+        "currentness_checked_at",
+        "provenance",
+        "is_fixture",
+        "producer_id",
+        "producer_epoch"
+      ],
+      "title": "ApprovedPrefillContent",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ApprovedTypedValue": {
+      "additionalProperties": false,
+      "description": "A C-authorized typed value for choice controls. Prose is never a choice value.",
+      "properties": {
+        "kind": {
+          "const": "choice",
+          "title": "Kind",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "values"
+      ],
+      "title": "ApprovedTypedValue",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "AttachmentChecklistItem": {
+      "additionalProperties": false,
+      "description": "AUT-04 checklist coverage only. Nothing is uploaded.",
+      "properties": {
+        "accepted_types": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accepted Types"
+        },
+        "artifact_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "title": "Artifact Ids",
+          "type": "array"
+        },
+        "evidence_basis": {
+          "title": "Evidence Basis",
+          "type": "string"
+        },
+        "findings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "max_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Count"
+        },
+        "max_size_bytes": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Size Bytes"
+        },
+        "original_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Original Question Id",
+          "type": "string"
+        },
+        "published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Published Question Id",
+          "type": "string"
+        },
+        "required_status": {
+          "enum": [
+            "required",
+            "optional",
+            "conditional",
+            "unknown"
+          ],
+          "title": "Required Status",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "needs_review_unavailable",
+            "findings",
+            "matches_trusted_record"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "upload": {
+          "const": "disabled",
+          "default": "disabled",
+          "title": "Upload",
+          "type": "string"
+        }
+      },
+      "required": [
+        "original_question_id",
+        "published_question_id",
+        "required_status",
+        "status",
+        "evidence_basis"
+      ],
+      "title": "AttachmentChecklistItem",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "AttachmentSpec": {
       "additionalProperties": false,
       "description": "Only constraints the source states. ``None`` means unknown, never 'unlimited'.",
@@ -1723,6 +2103,113 @@
         "intake"
       ],
       "title": "AutomationHandoffExport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "BoundField": {
+      "additionalProperties": false,
+      "description": "Registry control bound to a published question through the publication's mapping.",
+      "properties": {
+        "control": {
+          "anyOf": [
+            {
+              "enum": [
+                "text",
+                "textarea",
+                "number",
+                "select",
+                "radio",
+                "checkbox"
+              ],
+              "type": "string"
+            },
+            {
+              "const": "file",
+              "type": "string"
+            }
+          ],
+          "title": "Control"
+        },
+        "field_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Field Id",
+          "type": "string"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minimum"
+        },
+        "native_max_length": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Native Max Length"
+        },
+        "options": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "original_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Original Question Id",
+          "type": "string"
+        },
+        "published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Published Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "original_question_id",
+        "published_question_id",
+        "question_version",
+        "field_id",
+        "control"
+      ],
+      "title": "BoundField",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
@@ -3771,6 +4258,39 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "CurrentnessCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "stage": {
+          "description": "pre_execution, before:<i>, after:<i>, completion",
+          "title": "Stage",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "current",
+            "stale",
+            "unavailable",
+            "not_checked"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "stage",
+        "status",
+        "detail"
+      ],
+      "title": "CurrentnessCheck",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "DateInput": {
       "additionalProperties": false,
       "properties": {
@@ -4241,6 +4761,32 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "DependencyCurrentness": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "current",
+            "stale",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status",
+        "detail"
+      ],
+      "title": "DependencyCurrentness",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "DependencyRef": {
       "additionalProperties": false,
       "properties": {
@@ -4311,6 +4857,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"
@@ -4332,6 +4879,33 @@
     "DependencyTargetState": {
       "additionalProperties": false,
       "properties": {
+        "active_revision": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Active Revision"
+        },
+        "application_context": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Application Context"
+        },
         "dependencies": {
           "items": {
             "$ref": "#/$defs/ValidationDependency"
@@ -4345,6 +4919,34 @@
           "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
           "title": "Organization Id",
           "type": "string"
+        },
+        "pack_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pack Version Id"
+        },
+        "projection_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Projection Sha256"
         },
         "revision": {
           "minimum": 1,
@@ -4388,6 +4990,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"
@@ -5233,6 +5836,50 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "ExecutePrefillRequest": {
+      "additionalProperties": false,
+      "description": "Body of POST /api/automation/prefill-plans/{plan_id}/execute (\"Fill these fields\").",
+      "properties": {
+        "expected_plan_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Expected Plan Sha256",
+          "type": "string"
+        },
+        "idempotency_key": {
+          "pattern": "^[A-Za-z0-9._:-]{8,128}$",
+          "title": "Idempotency Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "expected_plan_sha256",
+        "idempotency_key"
+      ],
+      "title": "ExecutePrefillRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ExecutePrefillResult": {
+      "additionalProperties": false,
+      "properties": {
+        "replayed": {
+          "title": "Replayed",
+          "type": "boolean"
+        },
+        "run": {
+          "$ref": "#/$defs/PrefillRunView"
+        }
+      },
+      "required": [
+        "replayed",
+        "run"
+      ],
+      "title": "ExecutePrefillResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "ExportBlocker": {
       "additionalProperties": false,
       "properties": {
@@ -5818,6 +6465,206 @@
         "message"
       ],
       "title": "FieldMappingCheck",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "FieldReceipt": {
+      "additionalProperties": false,
+      "properties": {
+        "action_index": {
+          "minimum": 0,
+          "title": "Action Index",
+          "type": "integer"
+        },
+        "actual_length_utf16": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actual Length Utf16"
+        },
+        "actual_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Actual Sha256"
+        },
+        "actual_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Live DOM value/checked values.",
+          "title": "Actual Value"
+        },
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "approval_snapshot_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Approval Snapshot Id",
+          "type": "string"
+        },
+        "compared_actual_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compared Actual Sha256"
+        },
+        "compared_intended_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Compared Intended Sha256"
+        },
+        "comparison": {
+          "enum": [
+            "b2-readback-exact/1",
+            "b2-readback-textarea-crlf/1",
+            "b2-readback-choice-exact/1"
+          ],
+          "title": "Comparison",
+          "type": "string"
+        },
+        "field_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Field Id",
+          "type": "string"
+        },
+        "intended_length_utf16": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intended Length Utf16"
+        },
+        "intended_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Intended Sha256",
+          "type": "string"
+        },
+        "next_action": {
+          "title": "Next Action",
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "fill",
+            "select_option",
+            "check"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Published Question Id",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "rendered_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Rendered Sha256",
+          "type": "string"
+        },
+        "result": {
+          "enum": [
+            "match",
+            "mismatch",
+            "not_compared"
+          ],
+          "title": "Result",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "not_attempted",
+            "blocked_before_write",
+            "write_in_flight",
+            "entered_verified",
+            "entered_then_stale",
+            "mismatch",
+            "overwritten_after_verify",
+            "write_failed",
+            "outcome_unknown"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action_index",
+        "published_question_id",
+        "field_id",
+        "operation",
+        "approval_snapshot_id",
+        "answer_version_id",
+        "rendered_sha256",
+        "state",
+        "intended_sha256",
+        "comparison",
+        "result",
+        "next_action"
+      ],
+      "title": "FieldReceipt",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
@@ -7376,6 +8223,162 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "GrantedFieldOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "action_index": {
+          "minimum": 0,
+          "title": "Action Index",
+          "type": "integer"
+        },
+        "approval_snapshot_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Approval Snapshot Id",
+          "type": "string"
+        },
+        "field_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Field Id",
+          "type": "string"
+        },
+        "intended_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Intended Sha256",
+          "type": "string"
+        },
+        "operation": {
+          "enum": [
+            "fill",
+            "select_option",
+            "check"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Published Question Id",
+          "type": "string"
+        },
+        "rendered_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Rendered Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action_index",
+        "field_id",
+        "operation",
+        "published_question_id",
+        "approval_snapshot_id",
+        "rendered_sha256",
+        "intended_sha256"
+      ],
+      "title": "GrantedFieldOperation",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "HeldField": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_snapshot_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approval Snapshot Id"
+        },
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "field_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Id"
+        },
+        "original_question_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Question Id"
+        },
+        "published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Published Question Id",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "held_unresolved_requirement",
+            "held_counter_unavailable",
+            "held_unconfirmed_convention",
+            "held_value_format",
+            "held_value_too_long",
+            "held_value_empty",
+            "held_choice_value_unavailable",
+            "held_choice_not_registered",
+            "held_condition_unsupported",
+            "held_parent_not_selected",
+            "held_unsupported_control",
+            "held_attachment_upload_disabled",
+            "mapping_missing",
+            "approval_not_usable",
+            "approval_identity_mismatch",
+            "approval_integrity_mismatch",
+            "unresolved_fact_token"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "published_question_id",
+        "reason",
+        "detail"
+      ],
+      "title": "HeldField",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "HtmlIntakeSource": {
       "additionalProperties": false,
       "properties": {
@@ -8143,6 +9146,7 @@
             "check",
             "approval",
             "export",
+            "browser_plan",
             "browser_grant",
             "job",
             "skill"
@@ -8531,6 +9535,44 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "A1"
+    },
+    "KnowledgeRegistration": {
+      "additionalProperties": false,
+      "properties": {
+        "binding": {
+          "$ref": "#/$defs/ApprovedKnowledgeBinding"
+        },
+        "target_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "target_kind": {
+          "enum": [
+            "browser_plan",
+            "browser_grant"
+          ],
+          "title": "Target Kind",
+          "type": "string"
+        },
+        "target_revision": {
+          "minimum": 1,
+          "title": "Target Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "target_kind",
+        "target_id",
+        "target_revision",
+        "binding"
+      ],
+      "title": "KnowledgeRegistration",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
     },
     "KnowledgeRetrievalHit": {
       "additionalProperties": false,
@@ -9758,6 +10800,123 @@
       "x-contract-status": "draft",
       "x-owner": "A2b"
     },
+    "PlanCondition": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "const": "structured_definition_and_registry",
+          "title": "Basis",
+          "type": "string"
+        },
+        "expected_value": {
+          "title": "Expected Value",
+          "type": "string"
+        },
+        "parent_published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Parent Published Question Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "parent_published_question_id",
+        "expected_value",
+        "basis"
+      ],
+      "title": "PlanCondition",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PlanDefinitionRef": {
+      "additionalProperties": false,
+      "properties": {
+        "definition_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Definition Id",
+          "type": "string"
+        },
+        "definition_version": {
+          "minimum": 1,
+          "title": "Definition Version",
+          "type": "integer"
+        },
+        "funding_case_digest": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funding Case Digest"
+        },
+        "funding_case_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funding Case Id"
+        },
+        "funding_case_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Funding Case Version"
+        },
+        "input_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Input Sha256",
+          "type": "string"
+        },
+        "publication_digest": {
+          "description": "normalized_digest of the publication.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Publication Digest",
+          "type": "string"
+        },
+        "question_set_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Set Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "definition_id",
+        "definition_version",
+        "question_set_id",
+        "publication_digest",
+        "input_sha256"
+      ],
+      "title": "PlanDefinitionRef",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "PlanItem": {
       "additionalProperties": false,
       "properties": {
@@ -9847,6 +11006,288 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "C"
+    },
+    "PlannedFieldAction": {
+      "additionalProperties": false,
+      "properties": {
+        "a4_binding": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApprovedKnowledgeBinding"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "action_index": {
+          "minimum": 0,
+          "title": "Action Index",
+          "type": "integer"
+        },
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "approval_provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "approval_snapshot_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Approval Snapshot Id",
+          "type": "string"
+        },
+        "comparison": {
+          "enum": [
+            "b2-readback-exact/1",
+            "b2-readback-textarea-crlf/1",
+            "b2-readback-choice-exact/1"
+          ],
+          "title": "Comparison",
+          "type": "string"
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PlanCondition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "control": {
+          "enum": [
+            "text",
+            "textarea",
+            "number",
+            "select",
+            "radio",
+            "checkbox"
+          ],
+          "title": "Control",
+          "type": "string"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/DependencyRef"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "dependency_snapshot_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Dependency Snapshot Sha256",
+          "type": "string"
+        },
+        "field_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Field Id",
+          "type": "string"
+        },
+        "intended_choices": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Intended Choices",
+          "type": "array"
+        },
+        "intended_length_utf16": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Intended Length Utf16"
+        },
+        "intended_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Intended Sha256",
+          "type": "string"
+        },
+        "intended_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Text/number: exact string.",
+          "title": "Intended Value"
+        },
+        "operation": {
+          "enum": [
+            "fill",
+            "select_option",
+            "check"
+          ],
+          "title": "Operation",
+          "type": "string"
+        },
+        "original_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Original Question Id",
+          "type": "string"
+        },
+        "producer_epoch": {
+          "title": "Producer Epoch",
+          "type": "string"
+        },
+        "producer_id": {
+          "title": "Producer Id",
+          "type": "string"
+        },
+        "published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Published Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "rendered_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Rendered Sha256",
+          "type": "string"
+        },
+        "requirement_refs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Requirement Refs",
+          "type": "array"
+        },
+        "template_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Template Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "action_index",
+        "published_question_id",
+        "original_question_id",
+        "question_version",
+        "field_id",
+        "control",
+        "operation",
+        "approval_snapshot_id",
+        "answer_version_id",
+        "producer_id",
+        "producer_epoch",
+        "template_sha256",
+        "rendered_sha256",
+        "dependency_snapshot_sha256",
+        "intended_sha256",
+        "comparison",
+        "approval_provenance"
+      ],
+      "title": "PlannedFieldAction",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PortalBinding": {
+      "additionalProperties": false,
+      "description": "Versioned bound form map for one saved definition and one registered fixture.",
+      "properties": {
+        "binding_format": {
+          "const": "b2-bound-form-map/1",
+          "default": "b2-bound-form-map/1",
+          "title": "Binding Format",
+          "type": "string"
+        },
+        "expected_fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Expected Fingerprint",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/BoundField"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "fingerprint_algorithm": {
+          "const": "b2-form-fp/1",
+          "default": "b2-form-fp/1",
+          "title": "Fingerprint Algorithm",
+          "type": "string"
+        },
+        "form_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Form Id",
+          "type": "string"
+        },
+        "form_version": {
+          "minimum": 1,
+          "title": "Form Version",
+          "type": "integer"
+        },
+        "logical_origin": {
+          "pattern": "^fixture://[a-z0-9.-]+$",
+          "title": "Logical Origin",
+          "type": "string"
+        },
+        "page_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Page Sha256",
+          "type": "string"
+        },
+        "portal_fixture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Portal Fixture Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "portal_fixture_id",
+        "form_id",
+        "form_version",
+        "page_sha256",
+        "expected_fingerprint",
+        "logical_origin",
+        "fields"
+      ],
+      "title": "PortalBinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
     },
     "PrefillAction": {
       "additionalProperties": false,
@@ -9947,6 +11388,869 @@
         "approval_snapshot_id"
       ],
       "title": "PrefillAction",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PrefillActivity": {
+      "additionalProperties": false,
+      "properties": {
+        "blocked_log": {
+          "items": {
+            "$ref": "#/$defs/NetworkLogEntry"
+          },
+          "title": "Blocked Log",
+          "type": "array"
+        },
+        "blocked_log_truncated": {
+          "default": false,
+          "title": "Blocked Log Truncated",
+          "type": "boolean"
+        },
+        "downloads_blocked": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Downloads Blocked",
+          "type": "integer"
+        },
+        "fixture_server_mutation_hits": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Fixture Server Mutation Hits",
+          "type": "integer"
+        },
+        "mutation_requests_blocked": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Mutation Requests Blocked",
+          "type": "integer"
+        },
+        "navigations_blocked": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Navigations Blocked",
+          "type": "integer"
+        },
+        "operations_performed": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Operations Performed",
+          "type": "array"
+        },
+        "popups_blocked": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Popups Blocked",
+          "type": "integer"
+        },
+        "requests_allowed": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Requests Allowed",
+          "type": "integer"
+        },
+        "requests_blocked": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Requests Blocked",
+          "type": "integer"
+        },
+        "websockets_blocked": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Websockets Blocked",
+          "type": "integer"
+        }
+      },
+      "title": "PrefillActivity",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PrefillBudgets": {
+      "additionalProperties": false,
+      "properties": {
+        "automatic_write_retries": {
+          "const": 0,
+          "default": 0,
+          "title": "Automatic Write Retries",
+          "type": "integer"
+        },
+        "browser_executions_per_grant": {
+          "const": 1,
+          "default": 1,
+          "title": "Browser Executions Per Grant",
+          "type": "integer"
+        },
+        "execution_timeout_ms": {
+          "default": 30000,
+          "title": "Execution Timeout Ms",
+          "type": "integer"
+        },
+        "max_actions": {
+          "default": 20,
+          "title": "Max Actions",
+          "type": "integer"
+        },
+        "operation_timeout_ms": {
+          "default": 5000,
+          "title": "Operation Timeout Ms",
+          "type": "integer"
+        },
+        "plan_ttl_seconds": {
+          "default": 120,
+          "title": "Plan Ttl Seconds",
+          "type": "integer"
+        }
+      },
+      "title": "PrefillBudgets",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PrefillGrant": {
+      "additionalProperties": false,
+      "description": "Single-use, short-lived authorization derived by the server from one exact plan.",
+      "properties": {
+        "a4_registration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgeRegistration"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "actor_id": {
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "budgets": {
+          "$ref": "#/$defs/PrefillBudgets"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "expected_fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Expected Fingerprint",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "forbidden_operations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Operations",
+          "type": "array"
+        },
+        "form_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Form Id",
+          "type": "string"
+        },
+        "form_version": {
+          "minimum": 1,
+          "title": "Form Version",
+          "type": "integer"
+        },
+        "grant_format": {
+          "default": "b2-prefill-grant/1",
+          "enum": [
+            "b2-prefill-grant/1",
+            "b2-prefill-grant/2"
+          ],
+          "title": "Grant Format",
+          "type": "string"
+        },
+        "grant_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Grant Id",
+          "type": "string"
+        },
+        "grant_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Grant Sha256",
+          "type": "string"
+        },
+        "logical_origin": {
+          "title": "Logical Origin",
+          "type": "string"
+        },
+        "nonce": {
+          "title": "Nonce",
+          "type": "string"
+        },
+        "operations": {
+          "items": {
+            "$ref": "#/$defs/GrantedFieldOperation"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Operations",
+          "type": "array"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "page_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Page Sha256",
+          "type": "string"
+        },
+        "plan_id": {
+          "pattern": "^pfp-[0-9a-f]{26}$",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "plan_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Plan Sha256",
+          "type": "string"
+        },
+        "portal_fixture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Portal Fixture Id",
+          "type": "string"
+        },
+        "runtime_epoch": {
+          "title": "Runtime Epoch",
+          "type": "string"
+        },
+        "runtime_origin": {
+          "const": "ephemeral_loopback_fixture_server",
+          "default": "ephemeral_loopback_fixture_server",
+          "title": "Runtime Origin",
+          "type": "string"
+        }
+      },
+      "required": [
+        "grant_id",
+        "grant_sha256",
+        "plan_id",
+        "plan_sha256",
+        "organization_id",
+        "actor_id",
+        "portal_fixture_id",
+        "logical_origin",
+        "form_id",
+        "form_version",
+        "expected_fingerprint",
+        "page_sha256",
+        "operations",
+        "created_at",
+        "expires_at",
+        "nonce",
+        "runtime_epoch",
+        "budgets"
+      ],
+      "title": "PrefillGrant",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PrefillPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "a4_registration": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/KnowledgeRegistration"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "actions": {
+          "items": {
+            "$ref": "#/$defs/PlannedFieldAction"
+          },
+          "maxItems": 20,
+          "title": "Actions",
+          "type": "array"
+        },
+        "attachments": {
+          "items": {
+            "$ref": "#/$defs/AttachmentChecklistItem"
+          },
+          "title": "Attachments",
+          "type": "array"
+        },
+        "budgets": {
+          "$ref": "#/$defs/PrefillBudgets"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "definition": {
+          "$ref": "#/$defs/PlanDefinitionRef"
+        },
+        "dependency_union": {
+          "items": {
+            "$ref": "#/$defs/DependencyRef"
+          },
+          "title": "Dependency Union",
+          "type": "array"
+        },
+        "executable": {
+          "title": "Executable",
+          "type": "boolean"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "forbidden_operations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Forbidden Operations",
+          "type": "array"
+        },
+        "held": {
+          "items": {
+            "$ref": "#/$defs/HeldField"
+          },
+          "title": "Held",
+          "type": "array"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "mode_label": {
+          "title": "Mode Label",
+          "type": "string"
+        },
+        "not_executable_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Not Executable Reasons",
+          "type": "array"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "plan_format": {
+          "default": "b2-approved-prefill/2",
+          "enum": [
+            "b2-approved-prefill/1",
+            "b2-approved-prefill/2"
+          ],
+          "title": "Plan Format",
+          "type": "string"
+        },
+        "plan_id": {
+          "pattern": "^pfp-[0-9a-f]{26}$",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "plan_sha256": {
+          "description": "sha256 of the canonical plan without this field.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Plan Sha256",
+          "type": "string"
+        },
+        "portal": {
+          "$ref": "#/$defs/PortalBinding"
+        },
+        "producers": {
+          "$ref": "#/$defs/ProducerLabel"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "runtime_epoch": {
+          "title": "Runtime Epoch",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "const": "selected_fields_demo_only",
+          "default": "selected_fields_demo_only",
+          "title": "Scope",
+          "type": "string"
+        },
+        "scope_note": {
+          "title": "Scope Note",
+          "type": "string"
+        },
+        "submission": {
+          "const": "not_possible",
+          "default": "not_possible",
+          "title": "Submission",
+          "type": "string"
+        },
+        "unselected_requirements": {
+          "items": {
+            "$ref": "#/$defs/UnselectedRequirement"
+          },
+          "title": "Unselected Requirements",
+          "type": "array"
+        }
+      },
+      "required": [
+        "plan_id",
+        "plan_sha256",
+        "organization_id",
+        "created_by",
+        "created_at",
+        "expires_at",
+        "runtime_epoch",
+        "definition",
+        "portal",
+        "actions",
+        "executable",
+        "scope_note",
+        "producers",
+        "budgets",
+        "provenance",
+        "is_fixture",
+        "mode_label"
+      ],
+      "title": "PrefillPlan",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PrefillPlanView": {
+      "additionalProperties": false,
+      "description": "GET result: the saved plan exactly as hashed, plus separately computed availability.",
+      "properties": {
+        "availability": {
+          "enum": [
+            "executable",
+            "expired",
+            "runtime_epoch_changed",
+            "claimed",
+            "empty",
+            "stale",
+            "dependency_unavailable",
+            "prepare_new_plan"
+          ],
+          "title": "Availability",
+          "type": "string"
+        },
+        "availability_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Availability Reason"
+        },
+        "next_action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Action"
+        },
+        "plan": {
+          "$ref": "#/$defs/PrefillPlan"
+        },
+        "run_id": {
+          "anyOf": [
+            {
+              "pattern": "^pfr-[0-9a-f]{26}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Run Id"
+        }
+      },
+      "required": [
+        "plan",
+        "availability"
+      ],
+      "title": "PrefillPlanView",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PrefillRun": {
+      "additionalProperties": false,
+      "description": "One immutable version of a run's history (v1 = claim, later versions = progress).",
+      "properties": {
+        "activity": {
+          "$ref": "#/$defs/PrefillActivity"
+        },
+        "actor_id": {
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "browser_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Browser Version"
+        },
+        "checks": {
+          "items": {
+            "$ref": "#/$defs/CurrentnessCheck"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "claimed_at": {
+          "format": "date-time",
+          "title": "Claimed At",
+          "type": "string"
+        },
+        "deadline_at": {
+          "format": "date-time",
+          "title": "Deadline At",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/FieldReceipt"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "final_reread": {
+          "default": "not_run",
+          "enum": [
+            "all_match",
+            "mismatch",
+            "not_run"
+          ],
+          "title": "Final Reread",
+          "type": "string"
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finished At"
+        },
+        "grant": {
+          "$ref": "#/$defs/PrefillGrant"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "outcome": {
+          "enum": [
+            "in_progress",
+            "selected_fields_verified",
+            "stopped_with_partial_entry",
+            "blocked_before_entry",
+            "outcome_unknown"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "outcome_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Outcome Reason"
+        },
+        "plan_id": {
+          "pattern": "^pfp-[0-9a-f]{26}$",
+          "title": "Plan Id",
+          "type": "string"
+        },
+        "plan_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Plan Sha256",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "receipt_note": {
+          "title": "Receipt Note",
+          "type": "string"
+        },
+        "run_format": {
+          "const": "b2-prefill-run/1",
+          "default": "b2-prefill-run/1",
+          "title": "Run Format",
+          "type": "string"
+        },
+        "run_id": {
+          "pattern": "^pfr-[0-9a-f]{26}$",
+          "title": "Run Id",
+          "type": "string"
+        },
+        "run_version": {
+          "minimum": 1,
+          "title": "Run Version",
+          "type": "integer"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "scope": {
+          "const": "selected_fields_demo_only",
+          "default": "selected_fields_demo_only",
+          "title": "Scope",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "claimed",
+            "running",
+            "completed"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "submitted": {
+          "const": false,
+          "default": false,
+          "title": "Submitted",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "run_id",
+        "run_version",
+        "plan_id",
+        "plan_sha256",
+        "organization_id",
+        "actor_id",
+        "status",
+        "outcome",
+        "grant",
+        "claimed_at",
+        "deadline_at",
+        "fields",
+        "receipt_note",
+        "provenance",
+        "is_fixture"
+      ],
+      "title": "PrefillRun",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PrefillRunView": {
+      "additionalProperties": false,
+      "description": "A stored run version plus labels computed at read time (never rewritten).",
+      "properties": {
+        "effective_outcome": {
+          "enum": [
+            "in_progress",
+            "selected_fields_verified",
+            "stopped_with_partial_entry",
+            "blocked_before_entry",
+            "outcome_unknown"
+          ],
+          "title": "Effective Outcome",
+          "type": "string"
+        },
+        "history_note": {
+          "title": "History Note",
+          "type": "string"
+        },
+        "interrupted": {
+          "description": "True when an incomplete run passed its deadline.",
+          "title": "Interrupted",
+          "type": "boolean"
+        },
+        "run": {
+          "$ref": "#/$defs/PrefillRun"
+        }
+      },
+      "required": [
+        "run",
+        "effective_outcome",
+        "interrupted",
+        "history_note"
+      ],
+      "title": "PrefillRunView",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PrefillSelection": {
+      "additionalProperties": false,
+      "description": "One published question the staff selected, and the C approval naming it.",
+      "properties": {
+        "approval_snapshot_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Approval Snapshot Id",
+          "type": "string"
+        },
+        "published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Published Question Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "published_question_id",
+        "approval_snapshot_id"
+      ],
+      "title": "PrefillSelection",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "PreparePrefillPlanRequest": {
+      "additionalProperties": false,
+      "description": "Body of POST /api/automation/prefill-plans. Identity and content come from the server.",
+      "properties": {
+        "portal_fixture_id": {
+          "pattern": "^[a-z0-9][a-z0-9-]{0,63}$",
+          "title": "Portal Fixture Id",
+          "type": "string"
+        },
+        "question_set_id": {
+          "pattern": "^qs-def-[0-9a-f]{26}-v[0-9]{1,2}$",
+          "title": "Question Set Id",
+          "type": "string"
+        },
+        "selections": {
+          "items": {
+            "$ref": "#/$defs/PrefillSelection"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "title": "Selections",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_set_id",
+        "portal_fixture_id",
+        "selections"
+      ],
+      "title": "PreparePrefillPlanRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ProducerLabel": {
+      "additionalProperties": false,
+      "properties": {
+        "approval_reader": {
+          "enum": [
+            "explicit_test_provider",
+            "c_reader"
+          ],
+          "title": "Approval Reader",
+          "type": "string"
+        },
+        "approval_reader_is_fixture": {
+          "title": "Approval Reader Is Fixture",
+          "type": "boolean"
+        },
+        "attachment_evidence": {
+          "enum": [
+            "unavailable",
+            "explicit_test_provider",
+            "artifact_reader"
+          ],
+          "title": "Attachment Evidence",
+          "type": "string"
+        },
+        "dependency_currentness": {
+          "enum": [
+            "not_integrated",
+            "explicit_test_provider",
+            "a4_adapter"
+          ],
+          "title": "Dependency Currentness",
+          "type": "string"
+        }
+      },
+      "required": [
+        "approval_reader",
+        "approval_reader_is_fixture",
+        "dependency_currentness",
+        "attachment_evidence"
+      ],
+      "title": "ProducerLabel",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
@@ -10824,6 +13128,12 @@
           },
           "title": "Bindings",
           "type": "array"
+        },
+        "renderer_version": {
+          "const": "c-fact-renderer/1",
+          "default": "c-fact-renderer/1",
+          "title": "Renderer Version",
+          "type": "string"
         },
         "text": {
           "title": "Text",
@@ -13403,6 +15713,71 @@
       "x-contract-status": "draft",
       "x-owner": "A2a"
     },
+    "TrustedAttachmentRecord": {
+      "additionalProperties": false,
+      "description": "Server-resolved artifact evidence for an attachment question (never client-claimed).",
+      "properties": {
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "basis": {
+          "enum": [
+            "trusted_synthetic_test_record",
+            "authorized_artifact_reader"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "detected_media_type": {
+          "description": "From the bytes, not a filename or MIME claim.",
+          "title": "Detected Media Type",
+          "type": "string"
+        },
+        "exists": {
+          "title": "Exists",
+          "type": "boolean"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "original_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Original Question Id",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "artifact_id",
+        "original_question_id",
+        "detected_media_type",
+        "size_bytes",
+        "sha256",
+        "exists",
+        "basis",
+        "is_fixture"
+      ],
+      "title": "TrustedAttachmentRecord",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "UnresolvedItem": {
       "additionalProperties": false,
       "properties": {
@@ -13438,6 +15813,50 @@
         "detail"
       ],
       "title": "UnresolvedItem",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "UnselectedRequirement": {
+      "additionalProperties": false,
+      "description": "A required/conditional question outside the selection. It stays visible.",
+      "properties": {
+        "answer_kind": {
+          "title": "Answer Kind",
+          "type": "string"
+        },
+        "original_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Original Question Id",
+          "type": "string"
+        },
+        "published_question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Published Question Id",
+          "type": "string"
+        },
+        "required_status": {
+          "enum": [
+            "required",
+            "optional",
+            "conditional",
+            "unknown"
+          ],
+          "title": "Required Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "published_question_id",
+        "original_question_id",
+        "required_status",
+        "answer_kind"
+      ],
+      "title": "UnselectedRequirement",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"

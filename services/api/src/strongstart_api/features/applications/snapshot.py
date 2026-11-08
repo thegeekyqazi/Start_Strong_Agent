@@ -15,9 +15,9 @@ import json
 
 from strongstart_contracts import EvidenceBundle, Fact, Question
 from strongstart_contracts.answers import DependencyRef, RenderedAnswer
+from strongstart_contracts.approval_integrity import approval_snapshot_sha256
 
 from .rules.checks import RULE_VERSION
-from .rules.counters import COUNTERS
 from .rules.policy import WritingPolicy
 
 EVALUATION_TIME_POLICY = "live-at-action"
@@ -62,12 +62,4 @@ def dependency_refs(
 
 
 def snapshot_sha256(content_sha256: str, organization_id: str, refs: list[DependencyRef]) -> str:
-    return _digest(
-        {
-            "content_sha256": content_sha256,
-            "organization_id": organization_id,
-            "dependencies": sorted((r.kind, r.ref_id, r.version) for r in refs),
-            "counters": sorted(COUNTERS),
-            "evaluation_time_policy": EVALUATION_TIME_POLICY,
-        }
-    )
+    return approval_snapshot_sha256(content_sha256, organization_id, refs)

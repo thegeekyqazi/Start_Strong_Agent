@@ -490,9 +490,14 @@ def _rewrite(path: Path, mutate: Callable[[dict[str, Any]], None], *, redigest: 
 
 @pytest.mark.parametrize("redigest", [False, True])
 def test_bnd13_altered_limit_withholds_content(
-    client: TestClient, settings: Settings, redigest: bool
+    client: TestClient, settings: Settings, redigest: bool, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    import uuid
+
     pub = saved(client)
+    # The raw-response leak assertion must not match an unrelated random correlation
+    # ID (a real run generated one containing "5000"). Preserve the assertion itself.
+    monkeypatch.setattr("strongstart_api.errors.uuid.uuid4", lambda: uuid.UUID(int=1))
 
     def change_limit(rec: dict[str, Any]) -> None:
         rec["question_set"]["questions"][0]["limit"]["maximum"] = 5000
