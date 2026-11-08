@@ -33,6 +33,16 @@ def _secrets(settings: Settings) -> list[str]:
         value = key.get_secret_value() if key is not None else ""
         if value:
             out.append(value)
+    if settings.database_url:
+        out.append(settings.database_url)
+        from sqlalchemy.engine import make_url
+
+        try:
+            password = make_url(settings.database_url).password
+            if password:
+                out.append(password)
+        except ValueError:
+            pass
     return out
 
 

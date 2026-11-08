@@ -21,7 +21,7 @@ from tests.conftest import REPO_ROOT
 
 @dataclass
 class Database:
-    url: str
+    url: str = field(repr=False)
     engine: Engine
     name: str
     admin: Engine

@@ -31,7 +31,7 @@ from strongstart_contracts.answers import (
 from . import audit
 from .approval import Context, stale_reason, to_contract
 from .service import build_check_report
-from .store import StoredExport, StoredVersion
+from .store import ExportTooLarge, StoredExport, StoredVersion
 from .workspace import load_workspace
 
 LABEL_WORKING = "WORKING DRAFT - NOT REVIEWED"
@@ -116,6 +116,7 @@ def _blockers(
 
 
 def build_export(ctx: Context, identity: SessionIdentity, body: ExportRequest) -> ExportResult:
+    expected_state = ctx.store.state(ctx.organization_id)
     ws = load_workspace(ctx.workspace_source, ctx.organization_id, body.question_set_id)
     questions = {q.question_id: q for q in ws.question_set.questions}
     bundle = ws.evidence_bundle
@@ -187,27 +188,33 @@ def build_export(ctx: Context, identity: SessionIdentity, body: ExportRequest) -
         audit_sha256=hashlib.sha256(audit_bytes).hexdigest(),
         created_at=now,
     )
-    ctx.store.add_export(
-        ctx.organization_id,
-        StoredExport(
-            organization_id=ctx.organization_id, result=result, docx=docx_bytes, audit=audit_bytes
-        ),
-    )
-    audit.record(
-        ctx.store,
-        ctx.settings,
-        organization_id=ctx.organization_id,
-        actor_id=identity.actor_id,
-        action="export_created",
-        object_type="export",
-        object_id=export_id,
-        object_version=body.mode,
-        decision="created",
-        details={
-            "docx_sha256": result.docx_sha256 or "",
-            "audit_sha256": result.audit_sha256 or "",
-        },
-    )
+    if len(docx_bytes) + len(audit_bytes) > ctx.settings.max_export_bytes:
+        raise ExportTooLarge()
+    with ctx.store.unit_of_work(ctx.organization_id, expected_state):
+        ctx.store.add_export(
+            ctx.organization_id,
+            StoredExport(
+                organization_id=ctx.organization_id,
+                result=result,
+                docx=docx_bytes,
+                audit=audit_bytes,
+            ),
+        )
+        audit.record(
+            ctx.store,
+            ctx.settings,
+            organization_id=ctx.organization_id,
+            actor_id=identity.actor_id,
+            action="export_created",
+            object_type="export",
+            object_id=export_id,
+            object_version=body.mode,
+            decision="created",
+            details={
+                "docx_sha256": result.docx_sha256 or "",
+                "audit_sha256": result.audit_sha256 or "",
+            },
+        )
     return result
 
 

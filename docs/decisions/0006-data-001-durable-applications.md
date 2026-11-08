@@ -72,3 +72,19 @@ rollback/re-upgrade and a non-owner/non-DDL runtime role. The shared DB was not 
 or reset: schema tests create/drop only uniquely named disposable databases and test roles.
 Runtime role grants include parent-row locking, C state/head updates and append/read C
 records; no DDL or table ownership. Data/state CRUD parity is verified at M2.
+
+## M2 implementation and verification
+
+PostgresAnswerStore implements every C port operation without a process cache. Frozen typed
+payload version 1 plus relational identities/hashes are validated on reads. SQL units of
+work cover saved/staled events, decisions, notes, proposals, change sets and exports with
+required audit; external checks/model calls/DOCX compilation precede the commit guard.
+Unknown commit outcomes discard the connection and require read/reconciliation, with no
+command replay. Note text is no longer duplicated in decision audit metadata: only its
+presence is recorded; authorized decision/note application data is preserved.
+
+Real process tests observe pg_blocking_pids and Lock waits before releasing the parent
+transaction; events control approval/read/export races. The targeted C predicate mutation
+fails specifically on stale_export_publication, restores exact bytes and passes protected.
+Test DBs/roles are uniquely created and removed, never shared resets. Commit-fault injection
+is explicitly labelled injection; connection termination and timeout tests use real SQL.

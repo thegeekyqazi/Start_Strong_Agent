@@ -13,7 +13,14 @@ import uuid
 from dataclasses import dataclass
 from datetime import UTC, datetime
 
-from strongstart_contracts import EvidenceBundle, Question, SessionIdentity
+from strongstart_contracts import (
+    ChangeSet,
+    EvidenceBundle,
+    Provenance,
+    ProvenanceClass,
+    Question,
+    SessionIdentity,
+)
 from strongstart_contracts.answers import (
     AnswerFinding,
     AnswerHistory,
@@ -213,6 +220,7 @@ def _record(ctx: Context, decision: StoredDecision, version: StoredVersion) -> A
 def save_version(
     ctx: Context, identity: SessionIdentity, body: AnswerVersionCreate
 ) -> AnswerVersion:
+    expected_state = ctx.store.state(ctx.organization_id)
     ws = _workspace(ctx, body.question_set_id)
     question = _question(ws, body.question_id)
     if question.question_version != body.question_version:
@@ -247,40 +255,47 @@ def save_version(
             created_by=identity.actor_id,
             created_at=now,
             a4_binding=managed_binding,
+            provenance=Provenance(
+                provenance_class=ProvenanceClass.SIMULATED
+                if ws.is_fixture or any(f.provenance.is_simulated for f in bundle.facts)
+                else ProvenanceClass.SUPPLIED,
+                is_simulated=ws.is_fixture or any(f.provenance.is_simulated for f in bundle.facts),
+            ),
         )
 
-    previous = ctx.store.versions(ctx.organization_id, question.question_id)
-    version = ctx.store.append_version(
-        ctx.organization_id, question.question_id, body.expected_answer_version, build
-    )
-    audit.record(
-        ctx.store,
-        ctx.settings,
-        organization_id=ctx.organization_id,
-        actor_id=identity.actor_id,
-        action="answer_version_saved",
-        object_type="answer_version",
-        object_id=version.answer_version_id,
-        object_version=str(version.answer_version),
-        decision="saved",
-        details={"content_sha256": content, "snapshot_sha256": snap},
-    )
-    if previous:
-        prior = previous[-1]
-        prior_decision = ctx.store.decision_for(ctx.organization_id, prior.answer_version_id)
-        if prior_decision is not None and prior_decision.decision == "approve":
-            audit.record(
-                ctx.store,
-                ctx.settings,
-                organization_id=ctx.organization_id,
-                actor_id=identity.actor_id,
-                action="approval_staled",
-                object_type="approval",
-                object_id=prior_decision.approval_id,
-                object_version=str(prior.answer_version),
-                decision="stale",
-                details={"reason": "newer_version_saved"},
-            )
+    with ctx.store.unit_of_work(ctx.organization_id, expected_state):
+        previous = ctx.store.versions(ctx.organization_id, question.question_id)
+        version = ctx.store.append_version(
+            ctx.organization_id, question.question_id, body.expected_answer_version, build
+        )
+        audit.record(
+            ctx.store,
+            ctx.settings,
+            organization_id=ctx.organization_id,
+            actor_id=identity.actor_id,
+            action="answer_version_saved",
+            object_type="answer_version",
+            object_id=version.answer_version_id,
+            object_version=str(version.answer_version),
+            decision="saved",
+            details={"content_sha256": content, "snapshot_sha256": snap},
+        )
+        if previous:
+            prior = previous[-1]
+            prior_decision = ctx.store.decision_for(ctx.organization_id, prior.answer_version_id)
+            if prior_decision is not None and prior_decision.decision == "approve":
+                audit.record(
+                    ctx.store,
+                    ctx.settings,
+                    organization_id=ctx.organization_id,
+                    actor_id=identity.actor_id,
+                    action="approval_staled",
+                    object_type="approval",
+                    object_id=prior_decision.approval_id,
+                    object_version=str(prior.answer_version),
+                    decision="stale",
+                    details={"reason": "newer_version_saved"},
+                )
     return to_contract(ctx, version, version.answer_version_id)
 
 
@@ -314,6 +329,7 @@ def decide(
 ) -> ApprovalRecord:
     if not can_approve(identity, ctx.settings):
         raise ApprovalForbidden()
+    expected_state = ctx.store.state(ctx.organization_id)
     version = ctx.store.get_version(ctx.organization_id, body.answer_version_id)
     if body.expected_content_sha256 != version.content_sha256:
         raise SnapshotConflict("content_changed")
@@ -337,62 +353,66 @@ def decide(
         open_items = [f for f in fresh.findings if f.result.outcome == "needs_review"]
         if open_items and not body.acknowledge_review_items:
             raise GateBlocked("review_items_not_acknowledged", open_items)
-    decision = ctx.store.record_decision(
-        ctx.organization_id,
-        StoredDecision(
-            approval_id="apr-" + uuid.uuid4().hex[:24],
-            answer_version_id=version.answer_version_id,
+    with ctx.store.unit_of_work(ctx.organization_id, expected_state):
+        decision = ctx.store.record_decision(
+            ctx.organization_id,
+            StoredDecision(
+                approval_id="apr-" + uuid.uuid4().hex[:24],
+                answer_version_id=version.answer_version_id,
+                decision=body.decision,
+                content_sha256=version.content_sha256,
+                snapshot_sha256=version.snapshot_sha256,
+                reviewer_id=identity.actor_id,
+                reviewer_is_fixture_identity=identity.is_fixture,
+                acknowledged_review_items=body.acknowledge_review_items,
+                note=body.note,
+                decided_at=datetime.now(UTC),
+            ),
+            must_be_latest=True,
+        )
+        audit.record(
+            ctx.store,
+            ctx.settings,
+            organization_id=ctx.organization_id,
+            actor_id=identity.actor_id,
+            action="approval_decided",
+            object_type="answer_version",
+            object_id=version.answer_version_id,
+            object_version=str(version.answer_version),
             decision=body.decision,
-            content_sha256=version.content_sha256,
-            snapshot_sha256=version.snapshot_sha256,
-            reviewer_id=identity.actor_id,
-            reviewer_is_fixture_identity=identity.is_fixture,
-            acknowledged_review_items=body.acknowledge_review_items,
-            note=body.note,
-            decided_at=datetime.now(UTC),
-        ),
-        must_be_latest=True,
-    )
-    audit.record(
-        ctx.store,
-        ctx.settings,
-        organization_id=ctx.organization_id,
-        actor_id=identity.actor_id,
-        action="approval_decided",
-        object_type="answer_version",
-        object_id=version.answer_version_id,
-        object_version=str(version.answer_version),
-        decision=body.decision,
-        details={"content_sha256": version.content_sha256, "note": body.note},
-    )
+            details={
+                "content_sha256": version.content_sha256,
+                "note_present": str(bool(body.note)),
+            },
+        )
     return _record(ctx, decision, version)
 
 
 def add_note(ctx: Context, identity: SessionIdentity, body: ReviewNoteCreate) -> ReviewNote:
     """Secondary reviewers may comment; notes never change state or grant approval."""
+    expected_state = ctx.store.state(ctx.organization_id)
     version = ctx.store.get_version(ctx.organization_id, body.answer_version_id)
-    note = ctx.store.add_note(
-        ctx.organization_id,
-        ReviewNote(
-            note_id="note-" + uuid.uuid4().hex[:24],
-            answer_version_id=version.answer_version_id,
-            author_id=identity.actor_id,
-            text=body.text,
-            created_at=datetime.now(UTC),
-        ),
+    note = ReviewNote(
+        note_id="note-" + uuid.uuid4().hex[:24],
+        answer_version_id=version.answer_version_id,
+        author_id=identity.actor_id,
+        text=body.text,
+        created_at=datetime.now(UTC),
     )
-    audit.record(
-        ctx.store,
-        ctx.settings,
-        organization_id=ctx.organization_id,
-        actor_id=identity.actor_id,
-        action="review_note_added",
-        object_type="answer_version",
-        object_id=version.answer_version_id,
-        object_version=str(version.answer_version),
-        decision="note",
-        details={"note_id": note.note_id},
-    )
+    with ctx.store.unit_of_work(ctx.organization_id, expected_state):
+        ctx.store.add_note(ctx.organization_id, note)
+        audit.record(
+            ctx.store,
+            ctx.settings,
+            organization_id=ctx.organization_id,
+            actor_id=identity.actor_id,
+            action="review_note_added",
+            object_type="answer_version",
+            object_id=version.answer_version_id,
+            object_version=str(version.answer_version),
+            decision="note",
+            details={"note_id": note.note_id},
+        )
     return note
 
 
@@ -409,3 +429,55 @@ __all__ = [
     "save_version",
     "stale_reason",
 ]
+
+
+def apply_changes(ctx: Context, identity: SessionIdentity, change_set: ChangeSet) -> list[str]:
+    expected = ctx.store.state(ctx.organization_id)
+    previous = ctx.store.applied_change_sets(ctx.organization_id)
+    found = next((c for c in previous if c.change_set_id == change_set.change_set_id), None)
+    if found is not None:
+        if found != change_set:
+            from .store import StaleExpectation
+
+            raise StaleExpectation("change_set_payload_conflict")
+        return [c.change_set_id for c in previous]
+    affected = []
+    for version in ctx.store.all_versions(ctx.organization_id):
+        d = ctx.store.decision_for(ctx.organization_id, version.answer_version_id)
+        if (
+            d is not None
+            and d.decision == "approve"
+            and any(
+                ref.kind == CHANGE_KIND_TO_DEP.get(change.kind) and ref.ref_id == change.ref_id
+                for ref in version.dependencies
+                for change in change_set.changes
+            )
+        ):
+            affected.append((version, d))
+    with ctx.store.unit_of_work(ctx.organization_id, expected):
+        applied = ctx.store.apply_change_set(ctx.organization_id, change_set)
+        audit.record(
+            ctx.store,
+            ctx.settings,
+            organization_id=ctx.organization_id,
+            actor_id=identity.actor_id,
+            action="change_set_applied",
+            object_type="change_set",
+            object_id=change_set.change_set_id,
+            object_version="1",
+            decision="applied",
+        )
+        for version, d in affected:
+            audit.record(
+                ctx.store,
+                ctx.settings,
+                organization_id=ctx.organization_id,
+                actor_id=identity.actor_id,
+                action="approval_staled",
+                object_type="approval",
+                object_id=d.approval_id,
+                object_version=str(version.answer_version),
+                decision="stale",
+                details={"reason": "change_set_applied:" + change_set.change_set_id},
+            )
+    return applied
