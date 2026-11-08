@@ -26,6 +26,8 @@ Treat the engineering plan as a baseline, and the task spec as its feature-speci
 | Dev B | Discovery/capture, funder requirements, application intake, browser mapping/prefill/read-back, network controls and deployment/CI. |
 | Dev C | Model adapters, drafting/claims, application/review UI, approval, exports and practice-skill generation/screening/release. |
 
+Dev B is one agent that owns both Dev B modules, funding (`B1-*` tasks) and automation (`B2-*` tasks), and works on them sequentially (decision 0004, `docs/coordination/dev-b-single-agent-plan.md`). Tiger Data/database integration belongs to Dev A.
+
 Each owner delivers their feature UI, API, checks and tests. Use the actual repo layout. Shared contracts have explicit producer/consumer owners. A owns migration sequencing after initial setup; C coordinates application integration; B coordinates deployment. These are responsibilities, not permission for one agent to rewrite every module.
 
 Use a separate clone or Git worktree per agent. Never run two write-capable sessions in the same working directory. Preserve teammates' edits, follow local conventions and keep changes within the task. For cross-module work, publish a contract proposal/handoff with affected consumers; implement a compatible version or coordinate the migration. Do not secretly change another lane's public contract.

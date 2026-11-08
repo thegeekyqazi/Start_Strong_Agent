@@ -7,7 +7,7 @@
 - Engineering path/version/sections: v1.1 s2, s3, s19, s22, s23.1
 - Feature spec path/revision: `docs/specs/INIT-001_Repo_Initialization.md` rev 1.0, s4, s5, s8
 - PR / Issue: not published (no remote)
-- Supersedes / superseded by: none
+- Supersedes / superseded by: none. Row 7's Tiger Data confirmation is reassigned from B1 to Dev A by `0004-dev-b-single-agent.md` (2026-11-07); the stack choice itself is unchanged
 
 ## Original requirement
 
