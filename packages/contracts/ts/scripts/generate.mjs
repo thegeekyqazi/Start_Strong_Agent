@@ -20,13 +20,18 @@ const schema = JSON.parse(await readFile(schemaPath, 'utf8'))
 
 // Pydantic adds a `title` to every property; json-schema-to-typescript would turn each
 // into a named alias. Keep titles only on the named $defs so output stays readable.
+// Maps whose keys are names (not schema keywords) must not lose an entry called "title".
+const NAME_MAPS = new Set(['$defs', 'properties', 'patternProperties', 'dependentSchemas'])
 function stripPropertyTitles(node, keep) {
   if (Array.isArray(node)) return node.forEach((n) => stripPropertyTitles(n, false))
   if (node === null || typeof node !== 'object') return
-  if (!keep) delete node.title
+  if (!keep && typeof node.title === 'string') delete node.title
   for (const [key, value] of Object.entries(node)) {
-    if (key === '$defs') Object.values(value).forEach((d) => stripPropertyTitles(d, true))
-    else stripPropertyTitles(value, false)
+    if (NAME_MAPS.has(key) && value && typeof value === 'object') {
+      for (const child of Object.values(value)) stripPropertyTitles(child, key === '$defs')
+    } else {
+      stripPropertyTitles(value, false)
+    }
   }
 }
 stripPropertyTitles(schema, true)

@@ -92,6 +92,15 @@ export interface ApprovalSnapshot {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CandidateDuplicate".
+ */
+export interface CandidateDuplicate {
+  original_url: string
+  provider_rank: number
+  reason: 'same_normalized_url'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "Capability".
  */
 export interface Capability {
@@ -113,6 +122,146 @@ export interface CapabilityReport {
    */
   fixture_mode: boolean
   schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureArtifact".
+ */
+export interface CaptureArtifact {
+  artifact_id: string
+  /**
+   * True only for HTML representations.
+   */
+  b2_importable: boolean
+  encoding?: 'utf-8'
+  locator_scheme: 'markdown_heading_char_offsets' | 'none'
+  media_type: 'text/markdown' | 'text/html'
+  representation: 'provider_markdown' | 'provider_html' | 'provider_raw_html'
+  sections?: SectionLocator[]
+  /**
+   * SHA-256 of exactly the stored bytes.
+   */
+  sha256: string
+  size_bytes: number
+}
+/**
+ * Character-offset range within the exact stored (UTF-8 decoded) representation.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SectionLocator".
+ */
+export interface SectionLocator {
+  end_char: number
+  heading: string
+  level: number
+  start_char: number
+}
+/**
+ * Authorized, integrity-verified artifact content for inert display.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureContent".
+ */
+export interface CaptureContent {
+  artifact: CaptureArtifact
+  capture_id: string
+  integrity_verified?: true
+  text: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureRequest".
+ */
+export interface CaptureRequest {
+  candidate_id?: string | null
+  cycle_id?: string | null
+  opportunity_id?: string | null
+  search_id?: string | null
+  stream_id?: string | null
+  url: string
+}
+/**
+ * Semantic v1 capture record shared with B2 (launch agreement s3).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CapturedDocument".
+ */
+export interface CapturedDocument {
+  artifacts: CaptureArtifact[]
+  authority_basis?: string | null
+  authority_review: 'unreviewed' | 'confirmed_official' | 'other'
+  candidate_id?: string | null
+  capture_id: string
+  capture_pipeline_version?: string
+  /**
+   * Actual provider call completion time only.
+   */
+  captured_at: string
+  coverage: 'complete' | 'partial' | 'empty'
+  cycle_id?: string | null
+  /**
+   * Provider-reported final URL; null = unknown.
+   */
+  final_url: string | null
+  final_url_status: 'provider_reported' | 'unknown'
+  normalized_url: string
+  opportunity_id?: string | null
+  /**
+   * Server-derived organization scope.
+   */
+  organization_id: string
+  page_title?: string | null
+  provenance: Provenance
+  provider: string
+  provider_mode: 'live' | 'fixture'
+  provider_request_params: {
+    [k: string]: string | number | boolean | string[]
+  }
+  redirect_chain?: 'unknown'
+  requested_url: string
+  schema_version?: '1'
+  search_id?: string | null
+  source_content_type?: string | null
+  /**
+   * As reported by provider.
+   */
+  source_http_status?: number | null
+  source_reference: SourceReference
+  storage_capability: 'development_local_store'
+  stream_id?: string | null
+  supported_import_representations: ('provider_markdown' | 'provider_html' | 'provider_raw_html')[]
+  warnings: string[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SourceReference".
+ */
+export interface SourceReference {
+  captured_at?: string | null
+  /**
+   * Hash of original bytes when actually computed; else null.
+   */
+  content_hash?: string | null
+  /**
+   * Page/section/offset/selector.
+   */
+  locator?: string | null
+  provenance: Provenance
+  publication_date: DateKnowledge
+  reporting_period?: string | null
+  source_id: string
+  source_version_id: string
+  verification_status?: 'unverified' | 'verified' | 'conflicting'
+}
+/**
+ * A date that may be unknown. Unknown is explicit; it is never a fabricated value.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DateKnowledge".
+ */
+export interface DateKnowledge {
+  status: 'known' | 'unknown' | 'not_applicable'
+  value?: string | null
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -139,16 +288,6 @@ export interface ChangedVersion {
   new_version: string
   previous_version: string | null
   ref_id: string
-}
-/**
- * A date that may be unknown. Unknown is explicit; it is never a fabricated value.
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "DateKnowledge".
- */
-export interface DateKnowledge {
-  status: 'known' | 'unknown' | 'not_applicable'
-  value?: string | null
 }
 /**
  * Safe structured error. Never include secrets or raw exception text.
@@ -211,27 +350,6 @@ export interface Fact {
    * Exact decimal string; null when unknown.
    */
   value: string | null
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "SourceReference".
- */
-export interface SourceReference {
-  captured_at?: string | null
-  /**
-   * Hash of original bytes when actually computed; else null.
-   */
-  content_hash?: string | null
-  /**
-   * Page/section/offset/selector.
-   */
-  locator?: string | null
-  provenance: Provenance
-  publication_date: DateKnowledge
-  reporting_period?: string | null
-  source_id: string
-  source_version_id: string
-  verification_status?: 'unverified' | 'verified' | 'conflicting'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -336,6 +454,7 @@ export interface Opportunity {
   source_refs: [SourceReference, ...SourceReference[]]
   stage_id?: string | null
   stream_id: string
+  title: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -454,6 +573,37 @@ export interface RequirementCondition {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingAvailability".
+ */
+export interface FundingAvailability {
+  authenticated: boolean
+  environment: string
+  identity_is_fixture: boolean
+  limits: {
+    [k: string]: number
+  }
+  notes: string[]
+  providers: ProviderAvailability[]
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ProviderAvailability".
+ */
+export interface ProviderAvailability {
+  configured: boolean
+  detail: string
+  /**
+   * This service never claims live verification by itself.
+   */
+  live_verified?: false
+  mode: ('live' | 'fixture') | ('development_only' | 'disabled')
+  operation: 'search' | 'capture' | 'capture_store'
+  provider: string
+  status: 'available' | 'fixture_only' | 'unavailable'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "JobBudget".
  */
 export interface JobBudget {
@@ -489,6 +639,15 @@ export interface JobContext {
 export interface LivenessReport {
   service: string
   status: 'alive'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "OmittedResult".
+ */
+export interface OmittedResult {
+  original_url: string | null
+  provider_rank: number
+  reason: string
 }
 /**
  * Planned field entry. Only fill operations exist; submit/sign is unrepresentable.
@@ -527,6 +686,110 @@ export interface ReadinessCheck {
 export interface ReadinessReport {
   checks: ReadinessCheck[]
   status: 'ready' | 'not_ready'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchCandidate".
+ */
+export interface SearchCandidate {
+  authority: 'unreviewed' | 'confirmed_official' | 'other'
+  authority_basis?: string | null
+  candidate_id: string
+  capture_allowed: boolean
+  capture_block_reason?: string | null
+  cycle_status?: 'unknown'
+  deadline: DateKnowledge
+  duplicates?: CandidateDuplicate[]
+  eligibility_status?: 'unassessed'
+  host: string
+  /**
+   * Public query terms found in title/excerpt.
+   */
+  matched_terms: string[]
+  normalized_url: string
+  /**
+   * URL exactly as the provider returned it.
+   */
+  original_url: string
+  /**
+   * Identical title+excerpt as another candidate; not merged.
+   */
+  possible_duplicate_of?: string | null
+  provenance: Provenance
+  /**
+   * Provider's estimated published/updated date, raw. NOT a deadline, publication date of a grant round, or reporting period.
+   */
+  provider_date_hint?: string | null
+  /**
+   * Provider-supplied snippet; not verified text.
+   */
+  provider_excerpt: string
+  provider_rank: number
+  /**
+   * Provider ranking score; not a success or eligibility score.
+   */
+  provider_relevance?: string | null
+  title: string
+}
+/**
+ * Public search inputs. Only these staff-entered public fields reach the provider.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchProfile".
+ */
+export interface SearchProfile {
+  geography?: string | null
+  /**
+   * @minItems 1
+   * @maxItems 5
+   */
+  interests:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+  program_context?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchQueryRecord".
+ */
+export interface SearchQueryRecord {
+  completed_at: string
+  mode: 'live' | 'fixture'
+  provider: string
+  provider_http_status?: number | null
+  provider_request_id?: string | null
+  provider_response_time?: string | null
+  provider_usage_credits?: string | null
+  public_fields_used: ('interests' | 'geography' | 'program_context')[]
+  query_text: string
+  requested_params: {
+    [k: string]: string | number | boolean
+  }
+  started_at: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchRequest".
+ */
+export interface SearchRequest {
+  max_results?: number
+  profile: SearchProfile
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchResult".
+ */
+export interface SearchResult {
+  candidates: SearchCandidate[]
+  duplicates_collapsed: number
+  omitted: OmittedResult[]
+  query: SearchQueryRecord
+  schema_version?: '1'
+  search_id: string
+  warnings: string[]
 }
 /**
  * Server-controlled identity. ``is_fixture`` must be shown conspicuously by clients.

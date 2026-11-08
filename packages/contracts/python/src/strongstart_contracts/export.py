@@ -35,6 +35,14 @@ from . import (
     SourceReference,
     ValidationResult,
 )
+from .discovery import (
+    CaptureContent,
+    CapturedDocument,
+    CaptureRequest,
+    FundingAvailability,
+    SearchRequest,
+    SearchResult,
+)
 
 PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     SourceReference,
@@ -57,6 +65,13 @@ PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
     CapabilityReport,
     SessionIdentity,
     FixtureBundle,
+    # B1-DISC-001 (owner B1)
+    SearchRequest,
+    SearchResult,
+    CaptureRequest,
+    CapturedDocument,
+    CaptureContent,
+    FundingAvailability,
 )
 
 
