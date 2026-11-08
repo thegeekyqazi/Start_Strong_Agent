@@ -19,6 +19,8 @@ ROLE_FOR_OPERATION = {
     "plan_application": "planner",
     "numerical_review": "numerical_reviewer",
     "meaning_review": "meaning_reviewer",
+    "propose_practice": "practice_proposer",
+    "screen_practice": "practice_screener",
 }
 
 

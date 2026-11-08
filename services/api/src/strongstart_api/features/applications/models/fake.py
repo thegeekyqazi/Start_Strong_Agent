@@ -9,6 +9,7 @@ production.
 from __future__ import annotations
 
 import json
+import re
 from typing import Any
 
 from strongstart_contracts import ProvenanceClass
@@ -37,6 +38,10 @@ class FakeAdapter:
             return self._plan(task)
         if task.operation in ("numerical_review", "meaning_review"):
             return self._review(task)
+        if task.operation == "propose_practice":
+            return self._propose_practice(task)
+        if task.operation == "screen_practice":
+            return self._screen_practice(task)
         facts: list[dict[str, Any]] = list(task.payload.get("allowed_facts", []))
         fact_ids = sorted(str(f["fact_id"]) for f in facts)[:1]
         text = (
@@ -102,3 +107,45 @@ class FakeAdapter:
                 }
             ]
         return json.dumps({"findings": findings}, sort_keys=True, separators=(",", ":"))
+
+    # C4-SKL-001 FIXTURE doubles. Labelled fixture output (is_fixture=True), never live
+    # generation/screening evidence. Production rejects this adapter (settings/deps).
+    _PREFER = re.compile(r'Prefer "([^"\n]{1,60})" over "([^"\n]{1,60})"')
+    _NAME = re.compile(r'Write the program name "([^"\n]{1,120})" exactly')
+
+    @classmethod
+    def _propose_practice(cls, task: StructuredTask) -> str:
+        """Fixed sentence patterns only; each rule cites the exact matched line."""
+        text = str(task.payload.get("source_text", ""))
+        rules: list[dict[str, Any]] = []
+        offset = 0
+        for line in text.splitlines(keepends=True):
+            body = line.rstrip("\r\n")
+            start = len(text[:offset])
+            prefer, name = cls._PREFER.search(body), cls._NAME.search(body)
+            span = {"start": start, "end": start + len(body), "quote": body}
+            if prefer:
+                rules.append(
+                    {
+                        "operator": "preferred_term",
+                        "preferred_term": prefer.group(1),
+                        "forbidden_term": prefer.group(2),
+                        "citations": [span],
+                    }
+                )
+            elif name:
+                rules.append(
+                    {"operator": "protected_name", "full_name": name.group(1), "citations": [span]}
+                )
+            offset += len(line)
+        return json.dumps({"rules": rules[:3]}, sort_keys=True, separators=(",", ":"))
+
+    @staticmethod
+    def _screen_practice(task: StructuredTask) -> str:
+        """Covers exactly the parts it was sent; reports no flags. A FIXTURE signal only."""
+        parts = [str(p["part"]) for p in task.payload.get("parts", [])]
+        return json.dumps(
+            {"signal": "no_flags", "covered_parts": parts, "findings": []},
+            sort_keys=True,
+            separators=(",", ":"),
+        )

@@ -73,7 +73,7 @@ build: ## Build the web app and Python wheels
 
 smoke: migrate seed-demo ## Imports, real API process health/readiness, DB migration/seed path
 	$(UV) pytest -q tests/unit/test_imports.py
-	$(UV) pytest -m db tests/smoke
+	$(UV) pytest -m db tests/smoke tests/skills
 	$(UV) python scripts/smoke_server.py
 
 browser-smoke: ## Build web, then Chromium browser tests (fixture read-back + Funding page e2e)

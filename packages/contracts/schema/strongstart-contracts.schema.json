@@ -1193,6 +1193,69 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "AppliedPractice": {
+      "additionalProperties": false,
+      "properties": {
+        "instruction_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Instruction Sha256",
+          "type": "string"
+        },
+        "instructions": {
+          "title": "Instructions",
+          "type": "string"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "package_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Package Sha256",
+          "type": "string"
+        },
+        "release_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Release Id",
+          "type": "string"
+        },
+        "rule_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Rule Ids",
+          "type": "array"
+        },
+        "source_text_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Text Sha256",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "release_id",
+        "package_sha256",
+        "source_version_id",
+        "source_text_sha256",
+        "instruction_sha256",
+        "instructions",
+        "rule_ids",
+        "is_fixture"
+      ],
+      "title": "AppliedPractice",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "ApprovalDecisionRequest": {
       "additionalProperties": false,
       "properties": {
@@ -4217,6 +4280,42 @@
         "rendered_text"
       ],
       "title": "ClaimBinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "CompiledPracticePackage": {
+      "additionalProperties": false,
+      "description": "Deterministic compiler output. Fixed allowlisted file map; no executable content.",
+      "properties": {
+        "compiler_version": {
+          "title": "Compiler Version",
+          "type": "string"
+        },
+        "files": {
+          "items": {
+            "$ref": "#/$defs/PackageFile"
+          },
+          "title": "Files",
+          "type": "array"
+        },
+        "package_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Package Sha256",
+          "type": "string"
+        },
+        "template_version": {
+          "title": "Template Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "compiler_version",
+        "template_version",
+        "package_sha256",
+        "files"
+      ],
+      "title": "CompiledPracticePackage",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "C"
@@ -10709,6 +10808,38 @@
       "x-contract-status": "draft",
       "x-owner": "A4"
     },
+    "PackageFile": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "path": {
+          "enum": [
+            "SKILL.md",
+            "rules.json",
+            "references/policy-excerpts.md"
+          ],
+          "title": "Path",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "sha256",
+        "content"
+      ],
+      "title": "PackageFile",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "PdfSourceImportRequest": {
       "additionalProperties": false,
       "description": "Base64 transport for a bounded PDF; bytes remain authoritative after decoding.",
@@ -11325,6 +11456,1017 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "PracticeActivateRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "idempotency_key": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Idempotency Key",
+          "type": "string"
+        },
+        "package_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Package Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "package_sha256",
+        "idempotency_key"
+      ],
+      "title": "PracticeActivateRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeAuditEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "action": {
+          "title": "Action",
+          "type": "string"
+        },
+        "actor_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "event_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "object_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Object Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "action",
+        "object_id",
+        "actor_id",
+        "at",
+        "detail"
+      ],
+      "title": "PracticeAuditEvent",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeAuthority": {
+      "additionalProperties": false,
+      "description": "Explicit staff review of a source as practice authority for one context.",
+      "properties": {
+        "approved_at": {
+          "format": "date-time",
+          "title": "Approved At",
+          "type": "string"
+        },
+        "approved_by": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Approved By",
+          "type": "string"
+        },
+        "context_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Context Id",
+          "type": "string"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "kind": {
+          "enum": [
+            "synthetic_demo",
+            "administrator_authored"
+          ],
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "context_id",
+        "approved_by",
+        "approved_at",
+        "is_fixture"
+      ],
+      "title": "PracticeAuthority",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeCandidate": {
+      "additionalProperties": false,
+      "properties": {
+        "candidate_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "context_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Context Id",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "hold_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hold Reasons",
+          "type": "array"
+        },
+        "package": {
+          "$ref": "#/$defs/CompiledPracticePackage"
+        },
+        "proposer": {
+          "$ref": "#/$defs/ModelRunInfo"
+        },
+        "review": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PracticeReview"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "rules": {
+          "items": {
+            "discriminator": {
+              "mapping": {
+                "preferred_term": "#/$defs/PreferredTermRule",
+                "protected_name": "#/$defs/ProtectedNameRule"
+              },
+              "propertyName": "operator"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/$defs/PreferredTermRule"
+              },
+              {
+                "$ref": "#/$defs/ProtectedNameRule"
+              }
+            ]
+          },
+          "title": "Rules",
+          "type": "array"
+        },
+        "scan": {
+          "$ref": "#/$defs/ScanReport"
+        },
+        "screening": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ScreeningReport"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_text_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Source Text Sha256",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "proposed",
+            "needs_review",
+            "held",
+            "approved",
+            "active",
+            "superseded",
+            "revoked",
+            "stale_source"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "tests": {
+          "$ref": "#/$defs/RuleTestReport"
+        }
+      },
+      "required": [
+        "candidate_id",
+        "context_id",
+        "source_version_id",
+        "source_text_sha256",
+        "rules",
+        "package",
+        "proposer",
+        "scan",
+        "tests",
+        "screening",
+        "review",
+        "status",
+        "hold_reasons",
+        "created_at"
+      ],
+      "title": "PracticeCandidate",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeContext": {
+      "additionalProperties": false,
+      "description": "Server-owned demo scope (spec s5). Never inferred from model prose or requests.",
+      "properties": {
+        "active_release_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Active Release Id"
+        },
+        "context_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Context Id",
+          "type": "string"
+        },
+        "current_source_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Current Source Version Id"
+        },
+        "is_simulated": {
+          "title": "Is Simulated",
+          "type": "boolean"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "program": {
+          "title": "Program",
+          "type": "string"
+        },
+        "registered_names": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Registered Names",
+          "type": "array"
+        },
+        "revision": {
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "context_id",
+        "label",
+        "program",
+        "registered_names",
+        "is_simulated",
+        "current_source_version_id",
+        "active_release_id",
+        "revision"
+      ],
+      "title": "PracticeContext",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeGenerateRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_version_id"
+      ],
+      "title": "PracticeGenerateRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeOverview": {
+      "additionalProperties": false,
+      "properties": {
+        "audit": {
+          "items": {
+            "$ref": "#/$defs/PracticeAuditEvent"
+          },
+          "title": "Audit",
+          "type": "array"
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/PracticeCandidate"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "context": {
+          "$ref": "#/$defs/PracticeContext"
+        },
+        "releases": {
+          "items": {
+            "$ref": "#/$defs/PracticeRelease"
+          },
+          "title": "Releases",
+          "type": "array"
+        },
+        "screening_live": {
+          "title": "Screening Live",
+          "type": "boolean"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/PracticeSourceVersion"
+          },
+          "title": "Sources",
+          "type": "array"
+        }
+      },
+      "required": [
+        "context",
+        "sources",
+        "candidates",
+        "releases",
+        "audit",
+        "screening_live"
+      ],
+      "title": "PracticeOverview",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticePreview": {
+      "additionalProperties": false,
+      "properties": {
+        "applied": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AppliedPractice"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "approval_permitted": {
+          "const": false,
+          "default": false,
+          "title": "Approval Permitted",
+          "type": "boolean"
+        },
+        "baseline_draft": {
+          "$ref": "#/$defs/DraftProposal"
+        },
+        "context_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Context Id",
+          "type": "string"
+        },
+        "current": {
+          "title": "Current",
+          "type": "boolean"
+        },
+        "hold_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hold Reason"
+        },
+        "next_actions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Next Actions",
+          "type": "array"
+        },
+        "practice_draft": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DraftProposal"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "preview_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Preview Id",
+          "type": "string"
+        },
+        "sample_baseline_check": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CheckReport"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sample_practice_check": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CheckReport"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "working_preview_only": {
+          "const": true,
+          "default": true,
+          "title": "Working Preview Only",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "preview_id",
+        "context_id",
+        "applied",
+        "current",
+        "hold_reason",
+        "baseline_draft",
+        "practice_draft",
+        "sample_baseline_check",
+        "sample_practice_check",
+        "next_actions"
+      ],
+      "title": "PracticePreview",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticePreviewRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evidence Bundle Id",
+          "type": "string"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question Set Id"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "sample_text": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Sample Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "question_version",
+        "evidence_bundle_id"
+      ],
+      "title": "PracticePreviewRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeRelease": {
+      "additionalProperties": false,
+      "properties": {
+        "activated_at": {
+          "format": "date-time",
+          "title": "Activated At",
+          "type": "string"
+        },
+        "activated_by": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Activated By",
+          "type": "string"
+        },
+        "candidate_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "context_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Context Id",
+          "type": "string"
+        },
+        "effective_state": {
+          "enum": [
+            "active",
+            "revoked",
+            "superseded",
+            "stale_source"
+          ],
+          "title": "Effective State",
+          "type": "string"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "package_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Package Sha256",
+          "type": "string"
+        },
+        "release_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Release Id",
+          "type": "string"
+        },
+        "review_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Review Id",
+          "type": "string"
+        },
+        "revoked_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Revoked Reason"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "release_id",
+        "candidate_id",
+        "context_id",
+        "package_sha256",
+        "source_version_id",
+        "review_id",
+        "activated_by",
+        "activated_at",
+        "effective_state",
+        "revoked_reason",
+        "is_fixture"
+      ],
+      "title": "PracticeRelease",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeReview": {
+      "additionalProperties": false,
+      "properties": {
+        "acknowledged": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Acknowledged",
+          "type": "array"
+        },
+        "candidate_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "package_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Package Sha256",
+          "type": "string"
+        },
+        "review_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Review Id",
+          "type": "string"
+        },
+        "reviewed_at": {
+          "format": "date-time",
+          "title": "Reviewed At",
+          "type": "string"
+        },
+        "reviewed_by": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Reviewed By",
+          "type": "string"
+        },
+        "scan_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Scan Sha256",
+          "type": "string"
+        },
+        "screening_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Screening Sha256",
+          "type": "string"
+        },
+        "source_supported": {
+          "title": "Source Supported",
+          "type": "boolean"
+        },
+        "tests_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Tests Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "review_id",
+        "candidate_id",
+        "package_sha256",
+        "scan_sha256",
+        "tests_sha256",
+        "screening_sha256",
+        "source_supported",
+        "acknowledged",
+        "reviewed_by",
+        "reviewed_at",
+        "is_fixture"
+      ],
+      "title": "PracticeReview",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeReviewRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "acknowledged_findings": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 20,
+          "title": "Acknowledged Findings",
+          "type": "array"
+        },
+        "package_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Package Sha256",
+          "type": "string"
+        },
+        "rationale": {
+          "default": "",
+          "maxLength": 500,
+          "title": "Rationale",
+          "type": "string"
+        },
+        "source_supported": {
+          "title": "Source Supported",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "package_sha256",
+        "source_supported"
+      ],
+      "title": "PracticeReviewRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeRevokeRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Reason",
+          "type": "string"
+        },
+        "release_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Release Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "release_id",
+        "reason"
+      ],
+      "title": "PracticeRevokeRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeSourceCreate": {
+      "additionalProperties": false,
+      "description": "Administrator-authored or synthetic practice text. Bounded plain text only.",
+      "properties": {
+        "expected_current_source_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Current Source Version Id"
+        },
+        "text": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "text"
+      ],
+      "title": "PracticeSourceCreate",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PracticeSourceVersion": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PracticeAuthority"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "authority_kind": {
+          "enum": [
+            "synthetic_demo",
+            "administrator_authored"
+          ],
+          "title": "Authority Kind",
+          "type": "string"
+        },
+        "context_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Context Id",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Created By",
+          "type": "string"
+        },
+        "is_current": {
+          "title": "Is Current",
+          "type": "boolean"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "source_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "text_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "source_version_id",
+        "source_id",
+        "version",
+        "context_id",
+        "title",
+        "text",
+        "text_sha256",
+        "provenance",
+        "authority_kind",
+        "authority",
+        "is_current",
+        "created_by",
+        "created_at"
+      ],
+      "title": "PracticeSourceVersion",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "PreferredTermRule": {
+      "additionalProperties": false,
+      "properties": {
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          },
+          "maxItems": 3,
+          "minItems": 1,
+          "title": "Citations",
+          "type": "array"
+        },
+        "forbidden_term": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Forbidden Term",
+          "type": "string"
+        },
+        "matching": {
+          "const": "whole_word_case_insensitive_plural_s_outside_quotes",
+          "title": "Matching",
+          "type": "string"
+        },
+        "operator": {
+          "const": "preferred_term",
+          "title": "Operator",
+          "type": "string"
+        },
+        "preferred_term": {
+          "maxLength": 60,
+          "minLength": 1,
+          "title": "Preferred Term",
+          "type": "string"
+        },
+        "rule_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Rule Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operator",
+        "rule_id",
+        "forbidden_term",
+        "preferred_term",
+        "matching",
+        "citations"
+      ],
+      "title": "PreferredTermRule",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "PrefillAction": {
       "additionalProperties": false,
@@ -12352,6 +13494,61 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
+    },
+    "ProtectedNameRule": {
+      "additionalProperties": false,
+      "properties": {
+        "acronym": {
+          "anyOf": [
+            {
+              "maxLength": 20,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Acronym"
+        },
+        "citations": {
+          "items": {
+            "$ref": "#/$defs/SourceSpan"
+          },
+          "maxItems": 3,
+          "minItems": 1,
+          "title": "Citations",
+          "type": "array"
+        },
+        "full_name": {
+          "maxLength": 120,
+          "minLength": 1,
+          "title": "Full Name",
+          "type": "string"
+        },
+        "operator": {
+          "const": "protected_name",
+          "title": "Operator",
+          "type": "string"
+        },
+        "rule_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Rule Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "operator",
+        "rule_id",
+        "full_name",
+        "citations"
+      ],
+      "title": "ProtectedNameRule",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "Provenance": {
       "additionalProperties": false,
@@ -14030,6 +15227,77 @@
       "x-contract-status": "draft",
       "x-owner": "A3"
     },
+    "RuleTestCase": {
+      "additionalProperties": false,
+      "properties": {
+        "case_id": {
+          "title": "Case Id",
+          "type": "string"
+        },
+        "expectation": {
+          "title": "Expectation",
+          "type": "string"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "rule_id": {
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "sample": {
+          "title": "Sample",
+          "type": "string"
+        }
+      },
+      "required": [
+        "case_id",
+        "rule_id",
+        "sample",
+        "expectation",
+        "passed"
+      ],
+      "title": "RuleTestCase",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "RuleTestReport": {
+      "additionalProperties": false,
+      "properties": {
+        "cases": {
+          "items": {
+            "$ref": "#/$defs/RuleTestCase"
+          },
+          "title": "Cases",
+          "type": "array"
+        },
+        "passed": {
+          "title": "Passed",
+          "type": "boolean"
+        },
+        "report_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Report Sha256",
+          "type": "string"
+        },
+        "tester_version": {
+          "title": "Tester Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "tester_version",
+        "report_sha256",
+        "cases",
+        "passed"
+      ],
+      "title": "RuleTestReport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "RunComparison": {
       "additionalProperties": false,
       "properties": {
@@ -14251,6 +15519,108 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "ScanFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "enum": [
+            "instruction_override",
+            "exfiltration",
+            "hidden_control",
+            "executable_request",
+            "disallowed_path",
+            "secret_canary",
+            "unregistered_name",
+            "policy_conflict",
+            "mutable_fact"
+          ],
+          "title": "Category",
+          "type": "string"
+        },
+        "excerpt": {
+          "title": "Excerpt",
+          "type": "string"
+        },
+        "finding_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Finding Id",
+          "type": "string"
+        },
+        "location": {
+          "title": "Location",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "part": {
+          "title": "Part",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "block",
+            "review"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "finding_id",
+        "severity",
+        "category",
+        "part",
+        "location",
+        "message",
+        "excerpt"
+      ],
+      "title": "ScanFinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "ScanReport": {
+      "additionalProperties": false,
+      "properties": {
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ScanFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "inspected_parts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Inspected Parts",
+          "type": "array"
+        },
+        "report_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Report Sha256",
+          "type": "string"
+        },
+        "scanner_version": {
+          "title": "Scanner Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "scanner_version",
+        "report_sha256",
+        "inspected_parts",
+        "findings"
+      ],
+      "title": "ScanReport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "ScenarioInputs": {
       "additionalProperties": false,
       "description": "Per-evaluation typed inputs. Not a knowledge base; nothing is written to A's store.",
@@ -14348,6 +15718,137 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
+    },
+    "ScreeningFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "part": {
+          "title": "Part",
+          "type": "string"
+        },
+        "reason": {
+          "maxLength": 300,
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "part",
+        "reason"
+      ],
+      "title": "ScreeningFinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "ScreeningReport": {
+      "additionalProperties": false,
+      "description": "Model-based screening signal, not a calibrated security classifier (spec s7.3).",
+      "properties": {
+        "candidate_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Candidate Id",
+          "type": "string"
+        },
+        "complete": {
+          "title": "Complete",
+          "type": "boolean"
+        },
+        "covered_parts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Covered Parts",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "expected_parts": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Expected Parts",
+          "type": "array"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ScreeningFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "hold_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Hold Reason"
+        },
+        "package_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Package Sha256",
+          "type": "string"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelRunInfo"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "report_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Report Sha256",
+          "type": "string"
+        },
+        "screening_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Screening Id",
+          "type": "string"
+        },
+        "signal": {
+          "enum": [
+            "no_flags",
+            "review",
+            "block",
+            "unknown"
+          ],
+          "title": "Signal",
+          "type": "string"
+        }
+      },
+      "required": [
+        "screening_id",
+        "candidate_id",
+        "package_sha256",
+        "report_sha256",
+        "signal",
+        "complete",
+        "expected_parts",
+        "covered_parts",
+        "findings",
+        "provider",
+        "hold_reason",
+        "created_at"
+      ],
+      "title": "ScreeningReport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "SearchCandidate": {
       "additionalProperties": false,
@@ -15381,6 +16882,51 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "A"
+    },
+    "SourceSpan": {
+      "additionalProperties": false,
+      "description": "Exact evidence: Unicode code-point offsets into an exact stored source version.",
+      "properties": {
+        "end": {
+          "minimum": 1,
+          "title": "End",
+          "type": "integer"
+        },
+        "quote": {
+          "maxLength": 600,
+          "minLength": 1,
+          "title": "Quote",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "text_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Text Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_version_id",
+        "text_sha256",
+        "start",
+        "end",
+        "quote"
+      ],
+      "title": "SourceSpan",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "SourceValidationReport": {
       "additionalProperties": false,

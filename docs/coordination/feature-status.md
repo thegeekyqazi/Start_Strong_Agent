@@ -15,4 +15,5 @@ is distinct from the required hosted gate. See [acceptance evidence](../handoffs
 | UI | Functional durable-storage label separate from synthetic/reviewer labels | Sawaab owns presentation; no redesign branch integrated |
 | Models | Existing Fake/Gemini adapter contracts retained | No paid calls/new provider/policy authority added |
 | Production | Fixture identity/prefill disabled | No production-ready auth/evidence/deployment claim |
-| Practice skills / jobs | Existing planned/unavailable boundaries retained | No general JobStore, lease or browser resume system |
+| Practice skills (C4-SKL-001 thin slice) | Working preview: synthetic/admin source authority, two finite operators, deterministic compiler/scans, labelled screening signal, exact-hash review, guarded activation/revocation, Skills-page draft preview (fixture mode + PostgreSQL) | **Deferred:** practices in saved answers/approvals/exports/B plans and normal drafting; live-provider rehearsal; full SKL-01..16; see [C4 handoff](../handoffs/dev-c/c4-skl-001-practice-preview-r1.md) |
+| Jobs | Existing planned/unavailable boundaries retained | No general JobStore, lease or browser resume system |

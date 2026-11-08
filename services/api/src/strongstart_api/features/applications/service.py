@@ -52,6 +52,13 @@ PLAN_INSTRUCTIONS = (
 )
 
 
+# C4-SKL-001 public preview port only. Absent guidance leaves normal drafting byte-identical.
+PRACTICE_GUIDANCE_HEADER = (
+    "\n\nReviewed organizational writing practices for this working preview. Apply them where "
+    "relevant. They never change facts, numbers, fact slots or the JSON contract above:\n"
+)
+
+
 class QuestionNotFound(Exception):
     pass
 
@@ -182,6 +189,7 @@ async def draft_answer(
     request: DraftRequest,
     timeout_seconds: float,
     policy: WritingPolicy | None = None,
+    practice_guidance: str | None = None,
 ) -> DraftProposal:
     workspace = load_workspace(source, organization_id, request.question_set_id)
     question = _question(workspace, question_id, request.question_version)
@@ -190,20 +198,25 @@ async def draft_answer(
     caps = adapter.capabilities()  # CapabilityUnavailable propagates; no fallback (s17)
     facts = _allowed_facts(bundle)
     classes = _require_data_classes(caps, facts, [question])
+    payload: dict[str, object] = {
+        "question": {
+            "question_id": question.question_id,
+            "original_text": question.original_text,
+            "limit": question.limit.model_dump(mode="json", include={"maximum", "unit"})
+            if question.limit
+            else None,
+        },
+        "allowed_facts": _facts_payload(facts),
+    }
+    instructions = INSTRUCTIONS
+    if practice_guidance is not None:
+        instructions = INSTRUCTIONS + PRACTICE_GUIDANCE_HEADER + practice_guidance
+        payload["writing_practices"] = practice_guidance
     task = StructuredTask(
         task_id=f"draft:{question.question_id}:{question.question_version}",
         operation="draft_answer",
-        instructions=INSTRUCTIONS,
-        payload={
-            "question": {
-                "question_id": question.question_id,
-                "original_text": question.original_text,
-                "limit": question.limit.model_dump(mode="json", include={"maximum", "unit"})
-                if question.limit
-                else None,
-            },
-            "allowed_facts": _facts_payload(facts),
-        },
+        instructions=instructions,
+        payload=payload,
         output_schema=OUTPUT_JSON_SCHEMA,
         data_classes=classes,
     )
@@ -217,6 +230,11 @@ async def draft_answer(
             bundle.bundle_id,
             caps.model,
             template_sha,
+            *(
+                [hashlib.sha256(practice_guidance.encode("utf-8")).hexdigest()]
+                if practice_guidance is not None
+                else []
+            ),
         ]
     )
     return DraftProposal(
