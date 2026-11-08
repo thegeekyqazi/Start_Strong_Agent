@@ -37,18 +37,18 @@ The reader raises `strongstart_contracts.fixture_adapters.ApprovalNotUsable(appr
 
 `ApprovedPrefillContent` must be **one consistent envelope** read under C's own consistency rules, not several unrelated reads:
 
-| Field | Meaning C must guarantee |
-| --- | --- |
-| `approval: ApprovalSnapshot` | Exactly what `resolve()` returns now, live |
-| `organization_id` | Server-derived organization, which B checks against its own |
-| `answer_version_id`, `answer_version` | Equals `approval.answer_snapshot_id`; the immutable version that was approved |
-| `question_set_id`, `question_id`, `question_version` | The question identity the approval names. For B these must be B's **published** IDs (`qs-def-…-vN`, `def-…:<original>`). `mission-q1` is a different question and cannot be relabelled |
-| `template_text`, `template_sha256` | Exact editor text; `sha256(template_text) == approval.content_sha256` |
-| `rendered_text`, `rendered_sha256`, `renderer_version` | Exact saved `RenderedAnswer.text` of **that** version and its own hash. `unresolved_marker_count` is 0 for a fillable answer |
-| `dependency_snapshot_sha256`, `dependencies` | C's approved snapshot hash. A fresh recomputation still matches (`stale_reason` is `None`) |
-| `currentness`, `currentness_checked_at` | `"current"` and the time of this check |
-| `typed_value` (optional) | A C-authorized typed choice (`kind="choice"`, `values=[…]`) for select/radio/checkbox questions. Null means text only; B then holds choice controls |
-| `provenance`, `is_fixture`, `producer_id`, `producer_epoch` | Fixture/simulation labels. `producer_epoch` changes when the process-local fixture store restarts |
+| Field                                                       | Meaning C must guarantee                                                                                                                                                               |
+| ----------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `approval: ApprovalSnapshot`                                | Exactly what `resolve()` returns now, live                                                                                                                                             |
+| `organization_id`                                           | Server-derived organization, which B checks against its own                                                                                                                            |
+| `answer_version_id`, `answer_version`                       | Equals `approval.answer_snapshot_id`; the immutable version that was approved                                                                                                          |
+| `question_set_id`, `question_id`, `question_version`        | The question identity the approval names. For B these must be B's **published** IDs (`qs-def-…-vN`, `def-…:<original>`). `mission-q1` is a different question and cannot be relabelled |
+| `template_text`, `template_sha256`                          | Exact editor text; `sha256(template_text) == approval.content_sha256`                                                                                                                  |
+| `rendered_text`, `rendered_sha256`, `renderer_version`      | Exact saved `RenderedAnswer.text` of **that** version and its own hash. `unresolved_marker_count` is 0 for a fillable answer                                                           |
+| `dependency_snapshot_sha256`, `dependencies`                | C's approved snapshot hash. A fresh recomputation still matches (`stale_reason` is `None`)                                                                                             |
+| `currentness`, `currentness_checked_at`                     | `"current"` and the time of this check                                                                                                                                                 |
+| `typed_value` (optional)                                    | A C-authorized typed choice (`kind="choice"`, `values=[…]`) for select/radio/checkbox questions. Null means text only; B then holds choice controls                                    |
+| `provenance`, `is_fixture`, `producer_id`, `producer_epoch` | Fixture/simulation labels. `producer_epoch` changes when the process-local fixture store restarts                                                                                      |
 
 B independently recomputes both hashes and refuses any mismatch, any token left in the rendered text, any identity mismatch and any epoch change. B never re-renders facts or substitutes values.
 
