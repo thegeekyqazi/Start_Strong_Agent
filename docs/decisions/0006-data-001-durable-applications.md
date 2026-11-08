@@ -102,3 +102,19 @@ legacy store_is_fixture is retained. Review changes only functional paragraphs. 
 fixtures that need memory now choose it explicitly; production fixture restrictions stay.
 Managed INT tests use actual durable C and A4 SQL, isolated per-test databases. Browser CI
 now supplies PostgreSQL for the normal runtime restart/Chromium test; no hosted secrets.
+
+## M4 hosted/recovery evidence
+
+Opt-in hosted runner requires exact owner-selected isolated manifest, opt-in, verify-full
+trust root, private separate connections and explicit temporary service budget. Read-only
+preflight, approved migration, random namespaced synthetic workflow and exact receipt-owned
+cleanup are separate phases. Sanitized mode0600 receipts precede writes; failures retain
+owned records for reconciliation. The real nonowner C/B workflow/fresh process/SQL lock
+contention scenario is verified locally; hosted preflight/TLS/migration/role/restore remain
+pending. No hostname-based provenance guess, cloud provisioning or hosted reset path.
+
+Actual local pg_dump/pg_restore into a second empty disposable DB reproduces exact state,
+IDs/export bytes/hashes/audit/revision. Operator rotation changes only recovered epoch;
+source stays unchanged. Host clients may be used, or existing explicitly local PG container
+clients in the local test only. Hosted backup/recovery uses the separate operator runbook.
+See DATA-01..42 mapping and final commands in the data handoff. Current main remainsbc5acd4.

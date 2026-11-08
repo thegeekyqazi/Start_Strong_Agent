@@ -6,6 +6,7 @@ import time
 from dataclasses import replace
 
 import pytest
+from psycopg import Error as PsycopgError
 from sqlalchemy import event, insert, select, text, update
 from sqlalchemy.exc import IntegrityError, OperationalError
 
@@ -47,7 +48,7 @@ def test_database_enforces_scoped_immutable_constraints(data_db, tmp_path, bad):
     with data_db.engine.connect() as conn:
         row = dict(conn.execute(select(c_answer_versions)).mappings().one())
         decision = dict(conn.execute(select(c_decisions)).mappings().one())
-    with pytest.raises(IntegrityError), data_db.engine.begin() as conn:
+    with pytest.raises(IntegrityError) as failure, data_db.engine.begin() as conn:
         if bad == "cross_note":
             conn.execute(
                 insert(c_notes).values(
@@ -70,6 +71,21 @@ def test_database_enforces_scoped_immutable_constraints(data_db, tmp_path, bad):
             if bad == "nonpositive":
                 row["answer_version"] = 0
             conn.execute(insert(c_answer_versions).values(**row))
+    cause = failure.value.orig
+    assert isinstance(cause, PsycopgError)
+    expected = {
+        "cross_note": "23503",
+        "cross_decision": "23503",
+        "duplicate_version": "23505",
+        "duplicate_decision": "23505",
+        "nonpositive": "23514",
+        "bad_decision": "23514",
+    }
+    assert cause.sqlstate == expected[bad]
+    if bad in {"nonpositive", "bad_decision"}:
+        assert cause.diag.constraint_name == (
+            "ck_c_version_positive" if bad == "nonpositive" else "ck_c_decision"
+        )
 
 
 def test_export_budget_corruption_and_org_scope(data_db, tmp_path):

@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
-from typing import Any
+from datetime import timedelta
+from typing import Any, cast
 
 import pytest
+from fastapi import FastAPI
 from sqlalchemy import select, update
 
 from strongstart_api.config import Settings
@@ -265,3 +267,63 @@ def test_nonowner_runtime_performs_c_workflow(data_db, tmp_path):
             == version["answer_version_id"]
         )
         assert store.audit("demo-org")
+
+
+def test_exact_decimal_bindings_order_timezone_and_audit_credentials(data_db, tmp_path):
+    from strongstart_api.features.applications.audit import redact
+    from strongstart_api.features.applications.deps import get_workspace_source
+    from strongstart_api.seed import seed_demo
+    from tests.conftest import BUNDLE_PATH
+    from tests.data.support import client_for
+    from tests.integration.support import publish
+
+    data_db.migrate()
+    seed_demo(data_db.engine, BUNDLE_PATH)
+    store = PostgresAnswerStore(data_db.engine)
+    c, settings = client_for(store, tmp_path)
+    decimal = "12345678901234567890.001230"
+
+    class ExactWorkspace(DefinitionWorkspaceSource):
+        def get(self, organization_id, question_set_id=None):
+            ws = super().get(organization_id, question_set_id)
+            facts = [
+                f.model_copy(update={"value": decimal, "raw_value": decimal})
+                if f.fact_id == "demo-fact-children-served"
+                else f
+                for f in ws.evidence_bundle.facts
+            ]
+            return ws.model_copy(
+                update={"evidence_bundle": ws.evidence_bundle.model_copy(update={"facts": facts})}
+            )
+
+    source = ExactWorkspace(build_application_definition_reader(settings), FixtureWorkspaceSource())
+    cast(FastAPI, c.app).dependency_overrides[get_workspace_source] = lambda: source
+    pub = publish(c)
+    version = save(c, pub, "pf-summary", "  {{fact:demo-fact-children-served}}.\r\n 🦎 ")
+    stored = store.get_version("demo-org", version["answer_version_id"])
+    assert decimal in stored.rendered.text
+    assert stored.rendered.bindings[0].rendered_text.startswith(decimal)
+    assert [d.model_dump() for d in stored.dependencies] == version["dependencies"]
+    assert stored.created_at.utcoffset() == stored.checked_at.utcoffset() == timedelta(0)
+    canary = Settings(_env_file=None, database_url="postgresql://user:p%40ss%3Acanary@localhost/db")
+    assert canary.database_url is not None
+    cleaned = redact(canary.database_url + " p@ss:canary", canary)
+    assert "p@ss:canary" not in cleaned and "postgresql://" not in cleaned
+    assert all(stored.text not in str(e.details) for e in store.audit("demo-org"))
+    from strongstart_api.features.applications.audit import record
+
+    event = record(
+        store,
+        canary,
+        organization_id="demo-org",
+        actor_id="canary-test",
+        action="export_blocked",
+        object_type="test",
+        object_id="canary-probe",
+        object_version="1",
+        decision="blocked",
+        details={"probe": canary.database_url + " p@ss:canary"},
+    )
+    assert store.audit("demo-org")[-1] == event
+    assert "p@ss:canary" not in str(store.audit("demo-org")[-1].details)
+    assert "postgresql://" not in str(store.audit("demo-org")[-1].details)

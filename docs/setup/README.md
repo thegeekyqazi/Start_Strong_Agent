@@ -97,3 +97,12 @@ cd ../strongstart-b1 && make bootstrap   # repeat in strongstart-b2
 ```
 
 Worktrees share one local PostgreSQL by default, so `make migrate` and `make seed-demo` are shared state. If B1 and B2 need isolated databases, give one worktree a different `STRONGSTART_LOCAL_DB_PORT` plus a different Compose project name (`docker compose -p strongstart-b2 -f infra/compose.yaml up -d`) and a matching `STRONGSTART_DATABASE_URL` in that worktree's `.env`. Separate clones work the same way.
+
+## DATA-001 durable C storage
+
+Use explicit `STRONGSTART_ANSWER_STORE_BACKEND=postgres` for the example DB setup, or
+`memory` deliberately for local fixtures. Default `unconfigured` is unavailable. See
+[TigerData connection/roles/recovery](tigerdata.md), [current feature status](../coordination/feature-status.md)
+and [DATA-001 handoff](../handoffs/data/data-001-durable-applications-r1.md). C database
+state survives restart; B files and pending-plan epochs retain their development limits.
+Hosted TigerData verification remains pending the owner's isolated target.

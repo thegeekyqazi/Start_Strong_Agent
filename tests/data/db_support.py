@@ -32,8 +32,8 @@ class Database:
         (command.downgrade if downgrade else command.upgrade)(cfg, revision)
 
 
-@pytest.fixture
-def data_db() -> Iterator[Database]:
+@contextmanager
+def disposable_database() -> Iterator[Database]:
     raw = Settings().database_url
     if not raw:
         pytest.fail("local PostgreSQL URL required for DATA-001 DB tests")
@@ -59,6 +59,12 @@ def data_db() -> Iterator[Database]:
         admin.dispose()
 
 
+@pytest.fixture
+def data_db() -> Iterator[Database]:
+    with disposable_database() as database:
+        yield database
+
+
 @dataclass
 class RuntimeRole:
     engine: Engine
@@ -79,6 +85,7 @@ def runtime_role(db: Database) -> Iterator[RuntimeRole]:
             '{name}', current_setting('data001.test_password')); END $$""")
         conn.exec_driver_sql(f'GRANT CONNECT ON DATABASE "{db.name}" TO "{name}"')
         conn.exec_driver_sql(f'GRANT USAGE ON SCHEMA public TO "{name}"')
+        conn.exec_driver_sql(f'GRANT SELECT ON alembic_version TO "{name}"')
         conn.exec_driver_sql(f'GRANT SELECT, UPDATE(id) ON organizations TO "{name}"')
         for table in APPLICATION_TABLES:
             conn.exec_driver_sql(f'GRANT SELECT, INSERT ON "{table.name}" TO "{name}"')

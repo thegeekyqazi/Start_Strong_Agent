@@ -74,6 +74,9 @@ def _decode[T](cls: type[T], row: Any, key: str = "payload") -> T:
         if cls is StoredVersion and "renderer_version" not in data["rendered"]:
             raise ValueError
         result = TypeAdapter(cls).validate_json(row[key])
+        if json.loads(TypeAdapter(cls).dump_json(result)) != data:
+            # Nested omitted defaults/coerced values cannot acquire new meaning on load.
+            raise ValueError
         for name in (
             "answer_version_id",
             "note_id",

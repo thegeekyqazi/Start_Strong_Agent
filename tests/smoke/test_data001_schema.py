@@ -36,6 +36,22 @@ def test_fresh_migration_metadata_and_disposable_rollback(data_db):
 
 def test_upgrade_populated_0008_preserves_a4_and_organization(data_db):
     data_db.migrate("0008_browser_bindings")
+    from fastapi.testclient import TestClient
+
+    from strongstart_api.app import create_app
+    from strongstart_api.config import Settings
+
+    settings = Settings(
+        _env_file=None,
+        auth_mode="fixture",
+        answer_store_backend="postgres",
+        database_url=data_db.url,
+    )
+    app = create_app(settings)
+    with TestClient(app) as client:
+        assert client.get("/health/ready").status_code == 503
+        assert client.get("/api/applications/answers/mission-q1").status_code == 503
+        assert app.state.c3_answer_store.backend == "postgres"
     seed_demo(data_db.engine, BUNDLE_PATH)
     with data_db.engine.connect() as conn:
         before = conn.execute(

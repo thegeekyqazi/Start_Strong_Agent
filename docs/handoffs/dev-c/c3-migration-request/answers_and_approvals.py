@@ -1,4 +1,8 @@
-"""DRAFT migration request from Dev C for Dev A to sequence (C3 spec s3). UNNUMBERED.
+"""HISTORICAL / SUPERSEDED migration draft (C3 spec s3). Never install this file.
+
+DATA-001 implements the complete current schema in migrations/versions/0009_durable_applications.py
+after0008. See docs/handoffs/data/data-001-durable-applications-r1.md and decision0006.
+The following original draft context is retained as history; its assignments are obsolete.
 
 NOT ACTIVE: this file lives outside ``migrations/versions`` on purpose. Dev A owns migration
 sequencing (ownership.md). Earlier drafts were numbered 0003, then 0004, then 0005; each

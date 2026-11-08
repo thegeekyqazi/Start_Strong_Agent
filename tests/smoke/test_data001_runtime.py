@@ -141,3 +141,37 @@ def test_real_api_process_restart_preserves_complete_workflow(data_db, tmp_path)
         assert replay.status_code == 200 and replay.json() == applied.json()
         events = c.get("/api/applications/audit-events").json()
         assert len([e for e in events if e["action"] == "change_set_applied"]) == 1
+
+
+def test_hosted_scenario_locally_uses_real_c_with_nonowner_role(data_db, tmp_path):
+    from sqlalchemy import insert
+
+    from scripts.data001_workflow import verify_workflow
+    from strongstart_api.db import organizations
+    from tests.data.db_support import runtime_role
+
+    data_db.migrate()
+    with data_db.engine.begin() as conn:
+        conn.execute(
+            insert(organizations).values(
+                id="data001-local-scenario",
+                display_name="SYNTHETIC local verifier",
+                provenance_class="simulated",
+                is_simulated=True,
+            )
+        )
+    with runtime_role(data_db) as role:
+        settings = Settings(
+            _env_file=None,
+            auth_mode="fixture",
+            answer_store_backend="postgres",
+            database_url=role.url,
+            dev_b_store_dir=tmp_path / "verifier-b",
+            db_pool_size=1,
+        )
+        report = verify_workflow(settings, "data001-local-scenario")
+        assert (
+            report["reopened_process"]
+            and report["cross_client_stale_conflict"]
+            and report["process_contention_observed"]
+        )

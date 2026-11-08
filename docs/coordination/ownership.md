@@ -60,7 +60,8 @@ Not created: real GitHub reviewer handles have not been supplied. Add `.github/C
 
 - C: `applications.public.get_approved_prefill_reader` resolves the app-scoped save/approve
   store, exact saved rendering and store epoch with consistent snapshots. It also supports
-  metadata resolution through the same usable-approval predicate. Process-local only.
+  metadata resolution through the same usable-approval predicate. DATA-001 adds durable
+  PostgreSQL selection and stable dataset epochs; explicit memory remains process-local.
 - A4: `knowledge.public.KnowledgeCurrentness` / `get_prefill_currentness` resolve authorized
   active evidence, project dependencies, register exact browser targets and check existing
   registrations. PostgreSQL/Alembic, compatible with the next TigerData increment.
@@ -71,3 +72,12 @@ Not created: real GitHub reviewer handles have not been supplied. Add `.github/C
 
 See [the current integration handoff](../handoffs/integration/int-001-approved-content-currentness-r1.md)
 for evidence, migration, limitations, acceptance mapping and next consumer work.
+
+## DATA-001 current durability increment
+
+Project owner owns former A/B/C engineering and migration sequencing (decision0006).
+C routes/public factory use the explicitly selected backend; migration0009 stores all C
+state and exact exports. Storage metadata is separate from synthetic provenance. B files,
+normal A-evidence/policy/A3 workspace, authentication and deployment remain subsequent.
+TigerData is mandatory; no target is supplied yet. See the [DATA-001 handoff](../handoffs/data/data-001-durable-applications-r1.md),
+[manual guide](../handoffs/data/data-001-manual-test-guide.md) and [UI contract](../handoffs/data/data-001-ui-contract.md).
