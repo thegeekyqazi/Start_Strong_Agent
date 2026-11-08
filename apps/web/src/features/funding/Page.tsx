@@ -388,14 +388,23 @@ export function FundingPage({ client = httpFundingClient }: { client?: FundingCl
       )}
       {capture.kind === 'done' && <CapturePanel doc={capture.data} client={client} />}
 
-      <SavedCaptures
-        client={client}
-        renderCapture={(doc) => <CapturePanel doc={doc} client={client} />}
-      />
+      {avail.kind === 'done' && avail.data.authenticated && (
+        <>
+          <SavedCaptures
+            client={client}
+            renderCapture={(doc) => <CapturePanel doc={doc} client={client} />}
+          />
 
-      <FundingCases client={client} />
+          <FundingCases client={client} />
 
-      <SavedSearches client={client} />
+          <SavedSearches client={client} />
+        </>
+      )}
+      {avail.kind === 'done' && !avail.data.authenticated && (
+        <p className="hint">
+          Saved captures, funding cases and saved searches appear after you sign in.
+        </p>
+      )}
     </section>
   )
 }
