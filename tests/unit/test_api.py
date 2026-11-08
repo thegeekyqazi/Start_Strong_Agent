@@ -53,7 +53,6 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     caps = {c["feature"]: c for c in body["capabilities"]}
     for feature, owner in [
         ("knowledge", "A"),
-        ("applications", "C"),
         ("review", "C"),
         ("skills", "C"),
     ]:
@@ -64,6 +63,11 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     assert caps["funding"]["owner"] == "B1"
     assert caps["funding"]["status"] == "unavailable"
     assert caps["platform.identity"]["status"] == "unavailable"
+    # C1: the workspace needs a configured producer (fixture mode only); the default
+    # model adapter is the labelled deterministic fixture, never a live provider.
+    assert caps["applications"]["owner"] == "C"
+    assert caps["applications"]["status"] == "unavailable"
+    assert caps["applications.model"]["status"] == "fixture_only"
     assert caps["automation"]["owner"] == "B2"
     # B2-AUTO-001: intake + fixture inspection only
     assert caps["automation"]["status"] == "fixture_only"
