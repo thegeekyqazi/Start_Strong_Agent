@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import type { KnowledgeAvailability, KnowledgeSnapshot } from '@strongstart/contracts'
 import { KnowledgePage } from './Page'
 import type { KnowledgeClient } from './client'
@@ -68,6 +68,23 @@ function client(overrides: Partial<KnowledgeClient> = {}): KnowledgeClient {
     availability: async () => ({ ok: true, data: availability }),
     snapshot: async () => ({ ok: true, data: snapshot }),
     evidence: async () => ({ ok: true, data: snapshot.evidence_bundles[0] }),
+    importText: async () => {
+      throw new Error('not expected')
+    },
+    importPdf: async () => {
+      throw new Error('not expected')
+    },
+    retrieve: async () => ({
+      ok: true,
+      data: {
+        schema_version: '1',
+        organization_id: 'demo-org',
+        query: 'evidence',
+        hits: [],
+        retrieval_method: 'lexical-v1',
+        truncated: false,
+      },
+    }),
     ...overrides,
   }
 }
@@ -116,5 +133,43 @@ describe('KnowledgePage', () => {
       'Content and dependent facts were withheld',
     )
     expect(screen.queryByText('children-served')).not.toBeInTheDocument()
+  })
+
+  it('renders an authorized retrieval result with its locator', async () => {
+    render(
+      <KnowledgePage
+        client={client({
+          retrieve: async (query) => ({
+            ok: true,
+            data: {
+              schema_version: '1',
+              organization_id: 'demo-org',
+              query,
+              retrieval_method: 'lexical-v1',
+              truncated: false,
+              hits: [
+                {
+                  passage: {
+                    passage_id: 'pass-1',
+                    source_id: 'source-1',
+                    source_version_id: 'source-1-v1',
+                    locator: 'page:2',
+                    exact_text: 'Exact grant evidence',
+                  },
+                  title: 'Guide',
+                  source_reference: { ...ref, locator: 'page:2' },
+                  score: 2,
+                },
+              ],
+            },
+          }),
+        })}
+      />,
+    )
+    const input = await screen.findByLabelText('Search terms')
+    fireEvent.change(input, { target: { value: 'grant evidence' } })
+    fireEvent.submit(input.closest('form')!)
+    expect(await screen.findByText('Exact grant evidence')).toBeInTheDocument()
+    expect(screen.getByText(/page:2/)).toBeInTheDocument()
   })
 })

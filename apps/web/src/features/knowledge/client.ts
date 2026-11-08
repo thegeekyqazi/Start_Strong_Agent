@@ -2,7 +2,10 @@ import type {
   ErrorEnvelope,
   EvidenceBundle,
   KnowledgeAvailability,
+  KnowledgeRetrievalResult,
   KnowledgeSnapshot,
+  PdfSourceImportResult,
+  TextSourceImportResult,
 } from '@strongstart/contracts'
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -10,9 +13,12 @@ const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
 export type KnowledgeApiResult<T> =
   { ok: true; data: T } | { ok: false; status: number; error: ErrorEnvelope | null }
 
-async function call<T>(path: string): Promise<KnowledgeApiResult<T>> {
+async function call<T>(path: string, init?: RequestInit): Promise<KnowledgeApiResult<T>> {
   try {
-    const response = await fetch(`${BASE}${path}`, { headers: { Accept: 'application/json' } })
+    const response = await fetch(`${BASE}${path}`, {
+      ...init,
+      headers: { Accept: 'application/json', ...init?.headers },
+    })
     const body: unknown = await response.json().catch(() => null)
     if (response.ok) return { ok: true, data: body as T }
     return {
@@ -29,12 +35,31 @@ export interface KnowledgeClient {
   availability(): Promise<KnowledgeApiResult<KnowledgeAvailability>>
   snapshot(): Promise<KnowledgeApiResult<KnowledgeSnapshot>>
   evidence(packVersionId: string): Promise<KnowledgeApiResult<EvidenceBundle>>
+  importText(title: string, text: string): Promise<KnowledgeApiResult<TextSourceImportResult>>
+  importPdf(
+    title: string,
+    contentBase64: string,
+  ): Promise<KnowledgeApiResult<PdfSourceImportResult>>
+  retrieve(query: string): Promise<KnowledgeApiResult<KnowledgeRetrievalResult>>
 }
 
 export const httpKnowledgeClient: KnowledgeClient = {
   availability: () => call('/api/knowledge/availability'),
   snapshot: () => call('/api/knowledge/snapshot'),
   evidence: (id) => call(`/api/knowledge/evidence/${encodeURIComponent(id)}`),
+  importText: (title, text) =>
+    call('/api/knowledge/sources/import-text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, text }),
+    }),
+  importPdf: (title, contentBase64) =>
+    call('/api/knowledge/sources/import-pdf', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content_base64: contentBase64 }),
+    }),
+  retrieve: (query) => call(`/api/knowledge/retrieve?query=${encodeURIComponent(query)}`),
 }
 
 export function describeKnowledgeError(result: {

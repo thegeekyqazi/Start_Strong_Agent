@@ -4339,6 +4339,86 @@
       "x-contract-status": "draft",
       "x-owner": "A1"
     },
+    "KnowledgeRetrievalHit": {
+      "additionalProperties": false,
+      "properties": {
+        "passage": {
+          "$ref": "#/$defs/KnowledgePassage"
+        },
+        "score": {
+          "description": "Deterministic lexical token-match score.",
+          "exclusiveMinimum": 0,
+          "title": "Score",
+          "type": "integer"
+        },
+        "source_reference": {
+          "$ref": "#/$defs/SourceReference"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "passage",
+        "title",
+        "source_reference",
+        "score"
+      ],
+      "title": "KnowledgeRetrievalHit",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A2c"
+    },
+    "KnowledgeRetrievalResult": {
+      "additionalProperties": false,
+      "properties": {
+        "hits": {
+          "items": {
+            "$ref": "#/$defs/KnowledgeRetrievalHit"
+          },
+          "title": "Hits",
+          "type": "array"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "query": {
+          "title": "Query",
+          "type": "string"
+        },
+        "retrieval_method": {
+          "const": "lexical-v1",
+          "default": "lexical-v1",
+          "title": "Retrieval Method",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "truncated": {
+          "title": "Truncated",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "organization_id",
+        "query",
+        "hits",
+        "truncated"
+      ],
+      "title": "KnowledgeRetrievalResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A2c"
+    },
     "KnowledgeSnapshot": {
       "additionalProperties": false,
       "properties": {
@@ -5002,6 +5082,134 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
+    },
+    "PdfSourceImportRequest": {
+      "additionalProperties": false,
+      "description": "Base64 transport for a bounded PDF; bytes remain authoritative after decoding.",
+      "properties": {
+        "content_base64": {
+          "description": "Strict standard base64 PDF bytes.",
+          "minLength": 4,
+          "title": "Content Base64",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "content_base64"
+      ],
+      "title": "PdfSourceImportRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A2b"
+    },
+    "PdfSourceImportResult": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_key": {
+          "title": "Artifact Key",
+          "type": "string"
+        },
+        "content_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Sha256",
+          "type": "string"
+        },
+        "media_type": {
+          "const": "application/pdf",
+          "title": "Media Type",
+          "type": "string"
+        },
+        "page_count": {
+          "exclusiveMinimum": 0,
+          "title": "Page Count",
+          "type": "integer"
+        },
+        "parser_name": {
+          "const": "pypdf",
+          "title": "Parser Name",
+          "type": "string"
+        },
+        "parser_version": {
+          "title": "Parser Version",
+          "type": "string"
+        },
+        "passage_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "title": "Passage Ids",
+          "type": "array"
+        },
+        "processed_pages": {
+          "minimum": 0,
+          "title": "Processed Pages",
+          "type": "integer"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "size_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "source_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_id",
+        "source_version_id",
+        "artifact_key",
+        "content_sha256",
+        "size_bytes",
+        "media_type",
+        "parser_name",
+        "parser_version",
+        "warnings",
+        "page_count",
+        "processed_pages",
+        "passage_ids",
+        "provenance"
+      ],
+      "title": "PdfSourceImportResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A2b"
     },
     "PrefillAction": {
       "additionalProperties": false,
@@ -6322,6 +6530,124 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "C"
+    },
+    "TextSourceImportRequest": {
+      "additionalProperties": false,
+      "description": "Bounded plain-text input; authorization and provenance are server-derived.",
+      "properties": {
+        "text": {
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        },
+        "title": {
+          "maxLength": 300,
+          "minLength": 1,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "text"
+      ],
+      "title": "TextSourceImportRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A2a"
+    },
+    "TextSourceImportResult": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_key": {
+          "title": "Artifact Key",
+          "type": "string"
+        },
+        "content_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Sha256",
+          "type": "string"
+        },
+        "locator": {
+          "title": "Locator",
+          "type": "string"
+        },
+        "media_type": {
+          "const": "text/plain; charset=utf-8",
+          "title": "Media Type",
+          "type": "string"
+        },
+        "parser_name": {
+          "const": "plain_text_utf8",
+          "title": "Parser Name",
+          "type": "string"
+        },
+        "parser_version": {
+          "const": "1",
+          "title": "Parser Version",
+          "type": "string"
+        },
+        "passage_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Passage Id",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "size_bytes": {
+          "exclusiveMinimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "source_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        },
+        "warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Warnings",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_id",
+        "source_version_id",
+        "passage_id",
+        "artifact_key",
+        "content_sha256",
+        "size_bytes",
+        "media_type",
+        "parser_name",
+        "parser_version",
+        "warnings",
+        "locator",
+        "provenance"
+      ],
+      "title": "TextSourceImportResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A2a"
     },
     "UnresolvedItem": {
       "additionalProperties": false,

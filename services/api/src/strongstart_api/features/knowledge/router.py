@@ -9,14 +9,17 @@ from __future__ import annotations
 
 from typing import Annotated, NoReturn
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from strongstart_contracts import (
     Capability,
     ErrorCode,
     EvidenceBundle,
     KnowledgeAvailability,
+    KnowledgeRetrievalResult,
     KnowledgeSnapshot,
+    PdfSourceImportRequest,
+    PdfSourceImportResult,
     TextSourceImportRequest,
     TextSourceImportResult,
 )
@@ -24,8 +27,13 @@ from strongstart_contracts import (
 from ...config import Settings, get_settings
 from ...errors import ApiError, not_implemented
 from ...identity import Identity, require_identity
-from .deps import get_knowledge_repository, get_text_ingestion_service
+from .deps import (
+    get_knowledge_repository,
+    get_pdf_ingestion_service,
+    get_text_ingestion_service,
+)
 from .ingestion import TextIngestionError, TextIngestionService
+from .pdf_ingestion import PdfIngestionService
 from .repository import (
     KnowledgeIntegrityError,
     KnowledgeNotFoundError,
@@ -54,8 +62,8 @@ def capabilities_for(settings: Settings) -> list[Capability]:
             owner="A1",
             status="fixture_only" if settings.fixture_mode else "available",
             detail=(
-                "Source/fact reads and local bounded text ingestion are implemented; "
-                "PDF/OCR and pack replacement remain planned."
+                "Source/fact reads, local text/PDF ingestion and lexical retrieval "
+                "are implemented; OCR and pack replacement remain planned."
             ),
         )
     ]
@@ -141,6 +149,54 @@ def import_text_source(
             str(exc),
             {"reason": "invalid_text_source"},
         ) from None
+
+
+@router.post("/sources/import-pdf", response_model=PdfSourceImportResult, status_code=201)
+def import_pdf_source(
+    request: PdfSourceImportRequest,
+    identity: Identity,
+    service: Annotated[PdfIngestionService | None, Depends(get_pdf_ingestion_service)],
+) -> PdfSourceImportResult:
+    if service is None:
+        raise ApiError(
+            503,
+            ErrorCode.CAPABILITY_UNAVAILABLE,
+            "PDF ingestion storage is not configured for this environment",
+        )
+    try:
+        return service.ingest(
+            identity.organization_id,
+            request.title,
+            request.content_base64,
+            is_fixture=identity.is_fixture,
+        )
+    except TextIngestionError as exc:
+        raise ApiError(
+            422,
+            ErrorCode.VALIDATION_FAILED,
+            str(exc),
+            {"reason": "invalid_pdf_source"},
+        ) from None
+
+
+@router.get("/retrieve", response_model=KnowledgeRetrievalResult)
+def retrieve_passages(
+    identity: Identity,
+    repository: Annotated[PostgresKnowledgeRepository | None, Depends(get_knowledge_repository)],
+    settings: Annotated[Settings, Depends(get_settings)],
+    query: Annotated[str, Query(min_length=2, max_length=200)],
+    limit: Annotated[int | None, Query(ge=1, le=25)] = None,
+) -> KnowledgeRetrievalResult:
+    try:
+        return _require_repository(repository).retrieve(
+            identity.organization_id,
+            query,
+            limit=min(
+                limit or settings.knowledge_retrieval_limit, settings.knowledge_retrieval_limit
+            ),
+        )
+    except KnowledgeIntegrityError:
+        raise _integrity_failure() from None
 
 
 @router.get("/snapshot", response_model=KnowledgeSnapshot)

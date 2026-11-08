@@ -30,6 +30,10 @@ class Settings(BaseSettings):
     # Knowledge artifact storage (owner A2a). The local adapter is development/test only.
     knowledge_artifact_store_dir: Path = Path(".local-data/knowledge-artifacts")
     knowledge_max_text_bytes: int = Field(default=1_000_000, ge=1_000, le=5_000_000)
+    knowledge_max_pdf_bytes: int = Field(default=5_000_000, ge=10_000, le=20_000_000)
+    knowledge_max_pdf_pages: int = Field(default=100, ge=1, le=500)
+    knowledge_max_extracted_chars: int = Field(default=1_000_000, ge=1_000, le=5_000_000)
+    knowledge_retrieval_limit: int = Field(default=8, ge=1, le=25)
 
     # Provider credentials: optional and unused by the bootstrap. Never logged or exposed.
     gemini_api_key: SecretStr | None = None

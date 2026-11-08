@@ -1339,6 +1339,31 @@ export interface KnowledgePassage {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "KnowledgeRetrievalHit".
+ */
+export interface KnowledgeRetrievalHit {
+  passage: KnowledgePassage
+  /**
+   * Deterministic lexical token-match score.
+   */
+  score: number
+  source_reference: SourceReference
+  title: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "KnowledgeRetrievalResult".
+ */
+export interface KnowledgeRetrievalResult {
+  hits: KnowledgeRetrievalHit[]
+  organization_id: string
+  query: string
+  retrieval_method?: 'lexical-v1'
+  schema_version?: '1'
+  truncated: boolean
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "KnowledgeSnapshot".
  */
 export interface KnowledgeSnapshot {
@@ -1378,6 +1403,39 @@ export interface OmittedResult {
   original_url: string | null
   provider_rank: number
   reason: string
+}
+/**
+ * Base64 transport for a bounded PDF; bytes remain authoritative after decoding.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PdfSourceImportRequest".
+ */
+export interface PdfSourceImportRequest {
+  /**
+   * Strict standard base64 PDF bytes.
+   */
+  content_base64: string
+  title: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PdfSourceImportResult".
+ */
+export interface PdfSourceImportResult {
+  artifact_key: string
+  content_sha256: string
+  media_type: 'application/pdf'
+  page_count: number
+  parser_name: 'pypdf'
+  parser_version: string
+  passage_ids: string[]
+  processed_pages: number
+  provenance: Provenance
+  schema_version?: '1'
+  size_bytes: number
+  source_id: string
+  source_version_id: string
+  warnings: string[]
 }
 /**
  * Planned field entry. Only fill operations exist; submit/sign is unrepresentable.
@@ -1533,6 +1591,35 @@ export interface SessionIdentity {
   label: string
   organization_id: string
   roles: string[]
+}
+/**
+ * Bounded plain-text input; authorization and provenance are server-derived.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "TextSourceImportRequest".
+ */
+export interface TextSourceImportRequest {
+  text: string
+  title: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "TextSourceImportResult".
+ */
+export interface TextSourceImportResult {
+  artifact_key: string
+  content_sha256: string
+  locator: string
+  media_type: 'text/plain; charset=utf-8'
+  parser_name: 'plain_text_utf8'
+  parser_version: '1'
+  passage_id: string
+  provenance: Provenance
+  schema_version?: '1'
+  size_bytes: number
+  source_id: string
+  source_version_id: string
+  warnings: string[]
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
