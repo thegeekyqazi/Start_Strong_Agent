@@ -6,6 +6,7 @@ Endpoint mapping (spec s7 labels -> actual routes under the existing /api/fundin
 - captures     -> POST /api/funding/captures           (identity required)
 - metadata     -> GET  /api/funding/captures/{capture_id}
 - content      -> GET  /api/funding/captures/{capture_id}/artifacts/{artifact_id}/content
+- library        -> GET  /api/funding/captures?cursor=&limit=  (DEV-B-BUNDLE-002 M2; bounded)
 - POST /api/funding/discovery-jobs stays an explicit 501: durable discovery jobs are
   future work (no JobStore); search/capture are bounded request operations instead.
 
@@ -16,10 +17,11 @@ from __future__ import annotations
 
 from typing import Annotated, NoReturn
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from strongstart_contracts import Capability, ErrorCode
 from strongstart_contracts.discovery import (
+    CaptureCatalogPage,
     CaptureContent,
     CapturedDocument,
     CaptureIntegrityError,
@@ -142,7 +144,43 @@ def capabilities_for(settings: Settings) -> list[Capability]:
     else:
         status = "available"
     detail = "; ".join(f"{p.operation}={p.status}" for p in providers)
-    return [Capability(feature=FEATURE, owner="B1", status=status, detail=detail)]
+    local = settings.environment != "production"
+    dev = "fixture_only" if local else "unavailable"
+    where = (
+        "development-only local repository (not a supported deployment store)"
+        if local
+        else "disabled in production (no supported repository)"
+    )
+    return [
+        Capability(feature=FEATURE, owner="B1", status=status, detail=detail),
+        Capability(
+            feature="funding.capture_library",
+            owner="B1",
+            status=dev,
+            detail=f"Saved capture catalog with bounded listing/backfill; {where}.",
+        ),
+        Capability(
+            feature="funding.reviewed_requirements",
+            owner="B1",
+            status=dev,
+            detail="Funding cases with server-verified evidence anchors and explicit, "
+            f"version-bound staff review; {where}. Not funder certification.",
+        ),
+        Capability(
+            feature="funding.saved_searches",
+            owner="B1",
+            status=dev,
+            detail="Saved public search profiles with staff-triggered reruns, comparisons and "
+            "explicit single-source rechecks. No scheduling or notifications (no JobStore).",
+        ),
+        Capability(
+            feature="funding.evaluations",
+            owner="B1",
+            status=dev,
+            detail="Deterministic deadline/eligibility rules over reviewed requirements and "
+            "staff scenario inputs; reliance is never confirmed (no verified A facts).",
+        ),
+    ]
 
 
 CAPABILITIES: list[Capability] = [
@@ -250,6 +288,19 @@ def _not_found() -> ApiError:
     )
 
 
+@router.get("/captures", response_model=CaptureCatalogPage)
+def list_captures(
+    identity: Identity,
+    store: Annotated[LocalCaptureStore | None, Depends(get_capture_store)],
+    cursor: Annotated[str | None, Query(pattern=r"^[0-9]{13}-cap-[0-9a-f]{32}$")] = None,
+    limit: Annotated[int, Query(ge=1, le=100)] = 20,
+) -> CaptureCatalogPage:
+    try:
+        return _require_store(store).list_captures(identity.organization_id, cursor, limit)
+    except CaptureNotFoundError:
+        raise _not_found() from None
+
+
 @router.get("/captures/{capture_id}", response_model=CapturedDocument)
 def get_capture(
     identity: Identity,
@@ -260,6 +311,13 @@ def get_capture(
         return _require_store(store).get_record(identity.organization_id, capture_id)
     except CaptureNotFoundError:
         raise _not_found() from None
+    except CaptureIntegrityError:
+        raise _api_error(
+            FundingError(
+                FundingErrorReason.INTEGRITY_FAILURE,
+                "stored capture record failed verification; content withheld",
+            )
+        ) from None
 
 
 @router.get("/captures/{capture_id}/artifacts/{artifact_id}/content", response_model=CaptureContent)
@@ -293,3 +351,12 @@ def get_capture_content(
 def placeholder_operation(identity: Identity) -> NoReturn:
     """Durable discovery jobs are future work; this stays explicitly not implemented."""
     raise not_implemented(FEATURE, "discovery-jobs")
+
+
+# DEV-B-BUNDLE-002 M3/M4: funding case routes under /api/funding/cases.
+from .cases_router import router as _cases_router  # noqa: E402
+from .monitoring_router import router as _monitoring_router  # noqa: E402
+
+router.include_router(_cases_router)
+# DEV-B-BUNDLE-002 M5: saved searches, manual reruns and source rechecks.
+router.include_router(_monitoring_router)

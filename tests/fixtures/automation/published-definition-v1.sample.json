@@ -1,0 +1,2207 @@
+{
+  "schema_version": "1",
+  "publication_format": "b2-published-definition/1",
+  "organization_id": "demo-org",
+  "definition_id": "def-01a1ba112583f8bb87a6c9b125",
+  "version": 1,
+  "question_set_id": "qs-def-01a1ba112583f8bb87a6c9b125-v1",
+  "revision_of_version": null,
+  "saved_by": "demo-staff",
+  "saved_at": "2026-11-08T07:30:48.322159Z",
+  "integrity": {
+    "algorithm": "dev-b-canonical-json-sha256/1",
+    "raw_input_sha256": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+    "raw_input_size": 5044,
+    "raw_input_retained": "dev_b_local_blob",
+    "normalized_digest": "d95e9211eafe83e8b30a6a375b8a14293af26a3b8fbf1a6c02fbcf712a16e7ad"
+  },
+  "question_set": {
+    "schema_version": "1",
+    "question_set_id": "qs-def-01a1ba112583f8bb87a6c9b125-v1",
+    "opportunity_id": "demo-gos",
+    "questions": [
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-mission",
+        "question_version": 1,
+        "original_text": "Describe your organization's mission.",
+        "order": 0,
+        "section": "Section A: Organization",
+        "answer_type": "text",
+        "required": true,
+        "limit": {
+          "maximum": 50,
+          "unit": "words",
+          "counting_convention": null,
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/0",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        "conflicts": [],
+        "conditions": [],
+        "attachments": [],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/0",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      },
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-services",
+        "question_version": 1,
+        "original_text": "Describe the services you provide.",
+        "order": 1,
+        "section": "Section A: Organization",
+        "answer_type": "text",
+        "required": true,
+        "limit": {
+          "maximum": 250,
+          "unit": "words",
+          "counting_convention": null,
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/1",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        "conflicts": [],
+        "conditions": [],
+        "attachments": [],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/1",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      },
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-service-area",
+        "question_version": 1,
+        "original_text": "Primary service area",
+        "order": 2,
+        "section": "Section A: Organization",
+        "answer_type": "choice",
+        "required": true,
+        "limit": null,
+        "conflicts": [],
+        "conditions": [],
+        "attachments": [],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/2",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      },
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-pending-applications",
+        "question_version": 1,
+        "original_text": "List other pending funding applications.",
+        "order": 3,
+        "section": "Section B: Funding context",
+        "answer_type": "text",
+        "required": null,
+        "limit": {
+          "maximum": 300,
+          "unit": "characters",
+          "counting_convention": null,
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/3",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        "conflicts": [],
+        "conditions": [],
+        "attachments": [],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/3",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      },
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-other-funding",
+        "question_version": 1,
+        "original_text": "Describe other funding sources.",
+        "order": 4,
+        "section": "Section B: Funding context",
+        "answer_type": "text",
+        "required": null,
+        "limit": {
+          "maximum": 300,
+          "unit": "unknown",
+          "counting_convention": null,
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/4",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        "conflicts": [],
+        "conditions": [],
+        "attachments": [],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/4",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      },
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-has-partners",
+        "question_version": 1,
+        "original_text": "Do you deliver this work with partners?",
+        "order": 5,
+        "section": "Section B: Funding context",
+        "answer_type": "choice",
+        "required": true,
+        "limit": null,
+        "conflicts": [],
+        "conditions": [],
+        "attachments": [],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/5",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      },
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-partnership",
+        "question_version": 1,
+        "original_text": "Describe your key partnerships.",
+        "order": 6,
+        "section": "Partnership details",
+        "answer_type": "text",
+        "required": null,
+        "limit": null,
+        "conflicts": [
+          {
+            "conflict_id": "rp-partnership.conflict-1",
+            "description": "Competing limits: \"Maximum 350 words.\"; \"Guide note: partnership descriptions may be up to 500 words.\"",
+            "candidate_limits": [
+              {
+                "maximum": 350,
+                "unit": "words",
+                "counting_convention": null,
+                "source_refs": [
+                  {
+                    "source_id": "fixture-rep-portal-definition-v1",
+                    "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                    "locator": "/questions/6",
+                    "provenance": {
+                      "provenance_class": "engineering_derived",
+                      "is_simulated": true,
+                      "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                    },
+                    "captured_at": null,
+                    "publication_date": {
+                      "status": "unknown",
+                      "value": null
+                    },
+                    "reporting_period": null,
+                    "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                    "verification_status": "unverified"
+                  }
+                ]
+              },
+              {
+                "maximum": 500,
+                "unit": "words",
+                "counting_convention": null,
+                "source_refs": [
+                  {
+                    "source_id": "fixture-rep-portal-definition-v1",
+                    "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                    "locator": "/questions/6",
+                    "provenance": {
+                      "provenance_class": "engineering_derived",
+                      "is_simulated": true,
+                      "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                    },
+                    "captured_at": null,
+                    "publication_date": {
+                      "status": "unknown",
+                      "value": null
+                    },
+                    "reporting_period": null,
+                    "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                    "verification_status": "unverified"
+                  }
+                ]
+              }
+            ],
+            "resolution": "unresolved"
+          }
+        ],
+        "conditions": [
+          "Shown only when question 6 is Yes"
+        ],
+        "attachments": [],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/6",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      },
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-request-amount",
+        "question_version": 1,
+        "original_text": "Standard request amount.",
+        "order": 7,
+        "section": "Section C: Request",
+        "answer_type": "amount",
+        "required": true,
+        "limit": {
+          "maximum": 100000,
+          "unit": "amount",
+          "counting_convention": null,
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/7",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        "conflicts": [],
+        "conditions": [],
+        "attachments": [],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/7",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      },
+      {
+        "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-financial-statement",
+        "question_version": 1,
+        "original_text": "Attach your most recent financial statement.",
+        "order": 8,
+        "section": "Section C: Request",
+        "answer_type": "attachment",
+        "required": true,
+        "limit": null,
+        "conflicts": [],
+        "conditions": [],
+        "attachments": [
+          "accepted_types=.pdf,.docx; max_size_bytes=5242880; max_count=1; basis=structured_definition"
+        ],
+        "source_refs": [
+          {
+            "source_id": "fixture-rep-portal-definition-v1",
+            "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+            "locator": "/questions/8",
+            "provenance": {
+              "provenance_class": "engineering_derived",
+              "is_simulated": true,
+              "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+            },
+            "captured_at": null,
+            "publication_date": {
+              "status": "unknown",
+              "value": null
+            },
+            "reporting_period": null,
+            "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+            "verification_status": "unverified"
+          }
+        ]
+      }
+    ],
+    "provenance": {
+      "provenance_class": "engineering_derived",
+      "is_simulated": true,
+      "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+    }
+  },
+  "application_definition": {
+    "schema_version": "1",
+    "application_definition_id": "appdef-def-01a1ba112583f8bb87a6c9b125-v1",
+    "opportunity_id": "demo-gos",
+    "question_set_id": "qs-def-01a1ba112583f8bb87a6c9b125-v1",
+    "form_id": null,
+    "provenance": {
+      "provenance_class": "engineering_derived",
+      "is_simulated": true,
+      "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+    }
+  },
+  "intake": {
+    "schema_version": "1",
+    "intake_format": "b2-application-intake/1",
+    "import_id": "imp-477715fd429c8c37a1f22289",
+    "application_definition_id": "rep-portal-definition-v1",
+    "opportunity_id": "demo-gos",
+    "stream_id": "standard",
+    "cycle_id": null,
+    "title": {
+      "text": "FIXTURE: Sample operating-support application (representative portal v1)",
+      "display_text": "FIXTURE: Sample operating-support application (representative portal v1)",
+      "locator": {
+        "kind": "json_pointer",
+        "value": "/title",
+        "line": null,
+        "column": null
+      }
+    },
+    "is_fixture": true,
+    "mode_label": "FIXTURE - engineering-derived representative material; not a funder source; original guide not parsed.",
+    "authority_status": "imported_provisional_unreviewed",
+    "approval_status": "not_approved",
+    "persisted": false,
+    "original_guide_present": false,
+    "input": {
+      "representation_id": "rep-16bd55080b413b992d81b41b",
+      "origin": "fixture",
+      "representation_type": "structured_json",
+      "media_type": "application/json",
+      "byte_size": 5044,
+      "sha256": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+      "integrity": "computed_on_receipt",
+      "parser_id": "b2-structured-json",
+      "parser_version": "1",
+      "normalization_version": "b2-norm/1",
+      "persisted": false,
+      "storage": "nonpersistent_response",
+      "capture": null
+    },
+    "provenance": {
+      "provenance_class": "engineering_derived",
+      "is_simulated": true,
+      "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+    },
+    "coverage": {
+      "status": "supported_complete",
+      "questions_extracted": 9,
+      "controls_seen": 0,
+      "unsupported_elements": 0,
+      "notes": []
+    },
+    "questions": [
+      {
+        "question_id": "rp-mission",
+        "question_version": 1,
+        "order": 0,
+        "original_number": "1",
+        "section": {
+          "text": "Section A: Organization",
+          "display_text": "Section A: Organization",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/0/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "Describe your organization's mission.",
+          "display_text": "Describe your organization's mission.",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/0/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [
+          {
+            "text": "Maximum 50 words.",
+            "display_text": "Maximum 50 words.",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/0/instructions/0",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "scope": "organization",
+        "answer_kind": "text",
+        "required_status": "required",
+        "conditions": [],
+        "limits": [
+          {
+            "limit_id": "rp-mission.limit-1",
+            "kind": "structured_definition",
+            "minimum": null,
+            "maximum": "50",
+            "unit": "words",
+            "counting_convention": "unknown",
+            "convention_status": "unknown_pending_confirmation",
+            "authority_status": "imported_provisional",
+            "applies_to_stream": null,
+            "evidence": {
+              "text": "Maximum 50 words.",
+              "display_text": "Maximum 50 words.",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/0/limits/0/text",
+                "line": null,
+                "column": null
+              }
+            }
+          }
+        ],
+        "limit_conflicts": [],
+        "choices": [],
+        "choice_mode": null,
+        "attachment": null,
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/0",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "no_blocker_detected_not_approved",
+        "hold_reasons": [],
+        "unrecognized_fields": {}
+      },
+      {
+        "question_id": "rp-services",
+        "question_version": 1,
+        "order": 1,
+        "original_number": "2",
+        "section": {
+          "text": "Section A: Organization",
+          "display_text": "Section A: Organization",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/1/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "Describe the services you provide.",
+          "display_text": "Describe the services you provide.",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/1/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [
+          {
+            "text": "Maximum 250 words.",
+            "display_text": "Maximum 250 words.",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/1/instructions/0",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "scope": "organization",
+        "answer_kind": "text",
+        "required_status": "required",
+        "conditions": [],
+        "limits": [
+          {
+            "limit_id": "rp-services.limit-1",
+            "kind": "structured_definition",
+            "minimum": null,
+            "maximum": "250",
+            "unit": "words",
+            "counting_convention": "unknown",
+            "convention_status": "unknown_pending_confirmation",
+            "authority_status": "imported_provisional",
+            "applies_to_stream": null,
+            "evidence": {
+              "text": "Maximum 250 words.",
+              "display_text": "Maximum 250 words.",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/1/limits/0/text",
+                "line": null,
+                "column": null
+              }
+            }
+          }
+        ],
+        "limit_conflicts": [],
+        "choices": [],
+        "choice_mode": null,
+        "attachment": null,
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/1",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "no_blocker_detected_not_approved",
+        "hold_reasons": [],
+        "unrecognized_fields": {}
+      },
+      {
+        "question_id": "rp-service-area",
+        "question_version": 1,
+        "order": 2,
+        "original_number": "3",
+        "section": {
+          "text": "Section A: Organization",
+          "display_text": "Section A: Organization",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/2/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "Primary service area",
+          "display_text": "Primary service area",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/2/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [
+          {
+            "text": "Choose one.",
+            "display_text": "Choose one.",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/2/instructions/0",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "scope": "organization",
+        "answer_kind": "choice",
+        "required_status": "required",
+        "conditions": [],
+        "limits": [],
+        "limit_conflicts": [],
+        "choices": [
+          {
+            "value": "city",
+            "label": {
+              "text": "City",
+              "display_text": "City",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/2/choices/0/label",
+                "line": null,
+                "column": null
+              }
+            }
+          },
+          {
+            "value": "region",
+            "label": {
+              "text": "Region",
+              "display_text": "Region",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/2/choices/1/label",
+                "line": null,
+                "column": null
+              }
+            }
+          },
+          {
+            "value": "province",
+            "label": {
+              "text": "Province-wide",
+              "display_text": "Province-wide",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/2/choices/2/label",
+                "line": null,
+                "column": null
+              }
+            }
+          }
+        ],
+        "choice_mode": "single",
+        "attachment": null,
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/2",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "no_blocker_detected_not_approved",
+        "hold_reasons": [],
+        "unrecognized_fields": {}
+      },
+      {
+        "question_id": "rp-pending-applications",
+        "question_version": 1,
+        "order": 3,
+        "original_number": "4",
+        "section": {
+          "text": "Section B: Funding context",
+          "display_text": "Section B: Funding context",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/3/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "List other pending funding applications.",
+          "display_text": "List other pending funding applications.",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/3/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [
+          {
+            "text": "Maximum 300 characters.",
+            "display_text": "Maximum 300 characters.",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/3/instructions/0",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "scope": "organization",
+        "answer_kind": "text",
+        "required_status": "unknown",
+        "conditions": [],
+        "limits": [
+          {
+            "limit_id": "rp-pending-applications.limit-1",
+            "kind": "structured_definition",
+            "minimum": null,
+            "maximum": "300",
+            "unit": "characters",
+            "counting_convention": "unknown",
+            "convention_status": "unknown_pending_confirmation",
+            "authority_status": "imported_provisional",
+            "applies_to_stream": null,
+            "evidence": {
+              "text": "Maximum 300 characters.",
+              "display_text": "Maximum 300 characters.",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/3/limits/0/text",
+                "line": null,
+                "column": null
+              }
+            }
+          }
+        ],
+        "limit_conflicts": [],
+        "choices": [],
+        "choice_mode": null,
+        "attachment": null,
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/3",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "no_blocker_detected_not_approved",
+        "hold_reasons": [],
+        "unrecognized_fields": {}
+      },
+      {
+        "question_id": "rp-other-funding",
+        "question_version": 1,
+        "order": 4,
+        "original_number": "5",
+        "section": {
+          "text": "Section B: Funding context",
+          "display_text": "Section B: Funding context",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/4/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "Describe other funding sources.",
+          "display_text": "Describe other funding sources.",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/4/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [
+          {
+            "text": "Max 300",
+            "display_text": "Max 300",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/4/instructions/0",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "scope": "organization",
+        "answer_kind": "text",
+        "required_status": "unknown",
+        "conditions": [],
+        "limits": [
+          {
+            "limit_id": "rp-other-funding.limit-1",
+            "kind": "structured_definition",
+            "minimum": null,
+            "maximum": "300",
+            "unit": "unknown",
+            "counting_convention": "unknown",
+            "convention_status": "unknown_pending_confirmation",
+            "authority_status": "imported_provisional",
+            "applies_to_stream": null,
+            "evidence": {
+              "text": "Max 300",
+              "display_text": "Max 300",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/4/limits/0/text",
+                "line": null,
+                "column": null
+              }
+            }
+          }
+        ],
+        "limit_conflicts": [],
+        "choices": [],
+        "choice_mode": null,
+        "attachment": null,
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/4",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "held_unresolved_requirement",
+        "hold_reasons": [
+          "unknown_limit_unit:rp-other-funding.limit-1"
+        ],
+        "unrecognized_fields": {}
+      },
+      {
+        "question_id": "rp-has-partners",
+        "question_version": 1,
+        "order": 5,
+        "original_number": "6",
+        "section": {
+          "text": "Section B: Funding context",
+          "display_text": "Section B: Funding context",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/5/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "Do you deliver this work with partners?",
+          "display_text": "Do you deliver this work with partners?",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/5/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [],
+        "scope": "organization",
+        "answer_kind": "choice",
+        "required_status": "required",
+        "conditions": [],
+        "limits": [],
+        "limit_conflicts": [],
+        "choices": [
+          {
+            "value": "yes",
+            "label": {
+              "text": "Yes",
+              "display_text": "Yes",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/5/choices/0/label",
+                "line": null,
+                "column": null
+              }
+            }
+          },
+          {
+            "value": "no",
+            "label": {
+              "text": "No",
+              "display_text": "No",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/5/choices/1/label",
+                "line": null,
+                "column": null
+              }
+            }
+          }
+        ],
+        "choice_mode": "single",
+        "attachment": null,
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/5",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "no_blocker_detected_not_approved",
+        "hold_reasons": [],
+        "unrecognized_fields": {}
+      },
+      {
+        "question_id": "rp-partnership",
+        "question_version": 1,
+        "order": 6,
+        "original_number": "7",
+        "section": {
+          "text": "Partnership details",
+          "display_text": "Partnership details",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/6/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "Describe your key partnerships.",
+          "display_text": "Describe your key partnerships.",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/6/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [
+          {
+            "text": "Maximum 350 words.",
+            "display_text": "Maximum 350 words.",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/6/instructions/0",
+              "line": null,
+              "column": null
+            }
+          },
+          {
+            "text": "Guide note: partnership descriptions may be up to 500 words.",
+            "display_text": "Guide note: partnership descriptions may be up to 500 words.",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/6/instructions/1",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "scope": "organization",
+        "answer_kind": "text",
+        "required_status": "conditional",
+        "conditions": [
+          {
+            "predicate_text": "Shown only when question 6 is Yes",
+            "depends_on_question_id": "rp-has-partners",
+            "expected_value": "yes",
+            "basis": "structured_definition",
+            "status": "declared_unverified",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/6/condition",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "limits": [
+          {
+            "limit_id": "rp-partnership.limit-1",
+            "kind": "structured_definition",
+            "minimum": null,
+            "maximum": "350",
+            "unit": "words",
+            "counting_convention": "unknown",
+            "convention_status": "unknown_pending_confirmation",
+            "authority_status": "imported_provisional",
+            "applies_to_stream": null,
+            "evidence": {
+              "text": "Maximum 350 words.",
+              "display_text": "Maximum 350 words.",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/6/limits/0/text",
+                "line": null,
+                "column": null
+              }
+            }
+          },
+          {
+            "limit_id": "rp-partnership.limit-2",
+            "kind": "structured_definition",
+            "minimum": null,
+            "maximum": "500",
+            "unit": "words",
+            "counting_convention": "unknown",
+            "convention_status": "unknown_pending_confirmation",
+            "authority_status": "imported_provisional",
+            "applies_to_stream": null,
+            "evidence": {
+              "text": "Guide note: partnership descriptions may be up to 500 words.",
+              "display_text": "Guide note: partnership descriptions may be up to 500 words.",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/6/limits/1/text",
+                "line": null,
+                "column": null
+              }
+            }
+          }
+        ],
+        "limit_conflicts": [
+          {
+            "conflict_id": "rp-partnership.conflict-1",
+            "kind": "competing_instruction_limits",
+            "limit_ids": [
+              "rp-partnership.limit-1",
+              "rp-partnership.limit-2"
+            ],
+            "description": "Competing limits: \"Maximum 350 words.\"; \"Guide note: partnership descriptions may be up to 500 words.\"",
+            "resolution": "unresolved"
+          }
+        ],
+        "choices": [],
+        "choice_mode": null,
+        "attachment": null,
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/6",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "held_unresolved_requirement",
+        "hold_reasons": [
+          "limit_conflict:rp-partnership.conflict-1"
+        ],
+        "unrecognized_fields": {}
+      },
+      {
+        "question_id": "rp-request-amount",
+        "question_version": 1,
+        "order": 7,
+        "original_number": "8",
+        "section": {
+          "text": "Section C: Request",
+          "display_text": "Section C: Request",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/7/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "Standard request amount.",
+          "display_text": "Standard request amount.",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/7/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [
+          {
+            "text": "Standard stream: 20,000 to 100,000. Whole dollars, no currency symbols or decimals.",
+            "display_text": "Standard stream: 20,000 to 100,000. Whole dollars, no currency symbols or decimals.",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/7/instructions/0",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "scope": "organization",
+        "answer_kind": "number",
+        "required_status": "required",
+        "conditions": [],
+        "limits": [
+          {
+            "limit_id": "rp-request-amount.limit-1",
+            "kind": "structured_definition",
+            "minimum": "20000",
+            "maximum": "100000",
+            "unit": "amount",
+            "counting_convention": "unknown",
+            "convention_status": "unknown_pending_confirmation",
+            "authority_status": "imported_provisional",
+            "applies_to_stream": "standard",
+            "evidence": {
+              "text": "Standard stream: 20,000 to 100,000. Whole dollars, no currency symbols or decimals.",
+              "display_text": "Standard stream: 20,000 to 100,000. Whole dollars, no currency symbols or decimals.",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/7/limits/0/text",
+                "line": null,
+                "column": null
+              }
+            }
+          },
+          {
+            "limit_id": "rp-request-amount.limit-2",
+            "kind": "structured_definition",
+            "minimum": null,
+            "maximum": "250000",
+            "unit": "amount",
+            "counting_convention": "unknown",
+            "convention_status": "unknown_pending_confirmation",
+            "authority_status": "imported_provisional",
+            "applies_to_stream": "network",
+            "evidence": {
+              "text": "Network stream maximum (separate stream; not applied to the standard request).",
+              "display_text": "Network stream maximum (separate stream; not applied to the standard request).",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/7/limits/1/text",
+                "line": null,
+                "column": null
+              }
+            }
+          }
+        ],
+        "limit_conflicts": [],
+        "choices": [],
+        "choice_mode": null,
+        "attachment": null,
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/7",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "no_blocker_detected_not_approved",
+        "hold_reasons": [],
+        "unrecognized_fields": {}
+      },
+      {
+        "question_id": "rp-financial-statement",
+        "question_version": 1,
+        "order": 8,
+        "original_number": "9",
+        "section": {
+          "text": "Section C: Request",
+          "display_text": "Section C: Request",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/8/section",
+            "line": null,
+            "column": null
+          }
+        },
+        "text": {
+          "text": "Attach your most recent financial statement.",
+          "display_text": "Attach your most recent financial statement.",
+          "locator": {
+            "kind": "json_pointer",
+            "value": "/questions/8/text",
+            "line": null,
+            "column": null
+          }
+        },
+        "instructions": [
+          {
+            "text": "Fixture constraint: one PDF or DOCX file, at most 5 MB.",
+            "display_text": "Fixture constraint: one PDF or DOCX file, at most 5 MB.",
+            "locator": {
+              "kind": "json_pointer",
+              "value": "/questions/8/instructions/0",
+              "line": null,
+              "column": null
+            }
+          }
+        ],
+        "scope": "organization",
+        "answer_kind": "file",
+        "required_status": "required",
+        "conditions": [],
+        "limits": [],
+        "limit_conflicts": [],
+        "choices": [],
+        "choice_mode": null,
+        "attachment": {
+          "accepted_types": [
+            ".pdf",
+            ".docx"
+          ],
+          "max_size_bytes": 5242880,
+          "max_count": 1,
+          "multiple": false,
+          "basis": "structured_definition",
+          "evidence": [
+            {
+              "text": "{\"accepted_types\": [\".pdf\", \".docx\"], \"max_size_bytes\": 5242880, \"max_count\": 1}",
+              "display_text": "{\"accepted_types\": [\".pdf\", \".docx\"], \"max_size_bytes\": 5242880, \"max_count\": 1}",
+              "locator": {
+                "kind": "json_pointer",
+                "value": "/questions/8/attachment",
+                "line": null,
+                "column": null
+              }
+            }
+          ]
+        },
+        "source_ref": {
+          "source_id": "fixture-rep-portal-definition-v1",
+          "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+          "locator": "/questions/8",
+          "provenance": {
+            "provenance_class": "engineering_derived",
+            "is_simulated": true,
+            "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+          },
+          "captured_at": null,
+          "publication_date": {
+            "status": "unknown",
+            "value": null
+          },
+          "reporting_period": null,
+          "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+          "verification_status": "unverified"
+        },
+        "action_state": "no_blocker_detected_not_approved",
+        "hold_reasons": [],
+        "unrecognized_fields": {}
+      }
+    ],
+    "findings": [
+      {
+        "code": "unknown_counting_convention",
+        "severity": "warning",
+        "message": "words limit 50: counting convention is unknown (pending confirmation; C's counter owns APP-01).",
+        "question_id": "rp-mission",
+        "field_id": null,
+        "locator": null
+      },
+      {
+        "code": "unknown_counting_convention",
+        "severity": "warning",
+        "message": "words limit 250: counting convention is unknown (pending confirmation; C's counter owns APP-01).",
+        "question_id": "rp-services",
+        "field_id": null,
+        "locator": null
+      },
+      {
+        "code": "unknown_counting_convention",
+        "severity": "warning",
+        "message": "characters limit 300: counting convention is unknown (pending confirmation; C's counter owns APP-01).",
+        "question_id": "rp-pending-applications",
+        "field_id": null,
+        "locator": null
+      },
+      {
+        "code": "required_status_unknown",
+        "severity": "warning",
+        "message": "The source does not state whether this question is required.",
+        "question_id": "rp-pending-applications",
+        "field_id": null,
+        "locator": null
+      },
+      {
+        "code": "unknown_limit_unit",
+        "severity": "blocker",
+        "message": "\"Max 300\" gives no unit; it is not assumed to be words or characters.",
+        "question_id": "rp-other-funding",
+        "field_id": null,
+        "locator": {
+          "kind": "json_pointer",
+          "value": "/questions/4/limits/0/text",
+          "line": null,
+          "column": null
+        }
+      },
+      {
+        "code": "required_status_unknown",
+        "severity": "warning",
+        "message": "The source does not state whether this question is required.",
+        "question_id": "rp-other-funding",
+        "field_id": null,
+        "locator": null
+      },
+      {
+        "code": "limit_conflict",
+        "severity": "blocker",
+        "message": "Imported instructions disagree (\"Maximum 350 words.\"; \"Guide note: partnership descriptions may be up to 500 words.\"). Both are kept; action is held until staff confirm the authoritative limit.",
+        "question_id": "rp-partnership",
+        "field_id": null,
+        "locator": null
+      },
+      {
+        "code": "unknown_counting_convention",
+        "severity": "warning",
+        "message": "words limit 350: counting convention is unknown (pending confirmation; C's counter owns APP-01).",
+        "question_id": "rp-partnership",
+        "field_id": null,
+        "locator": null
+      },
+      {
+        "code": "unknown_counting_convention",
+        "severity": "warning",
+        "message": "words limit 500: counting convention is unknown (pending confirmation; C's counter owns APP-01).",
+        "question_id": "rp-partnership",
+        "field_id": null,
+        "locator": null
+      },
+      {
+        "code": "stream_specific_limit",
+        "severity": "info",
+        "message": "Amount limit for stream 'network' is kept as metadata and not applied to this question's stream.",
+        "question_id": "rp-request-amount",
+        "field_id": null,
+        "locator": null
+      }
+    ],
+    "original_evidence": {
+      "provenance_note": "Engineering-derived from engineering plan v1.1 s7; original_guide_present=false. Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+    },
+    "evidence_excerpt": null,
+    "evidence_excerpt_truncated": false,
+    "question_set": {
+      "schema_version": "1",
+      "question_set_id": "qs-imp-477715fd429c8c37a1f22289",
+      "opportunity_id": "demo-gos",
+      "questions": [
+        {
+          "question_id": "rp-mission",
+          "question_version": 1,
+          "original_text": "Describe your organization's mission.",
+          "order": 0,
+          "section": "Section A: Organization",
+          "answer_type": "text",
+          "required": true,
+          "limit": {
+            "maximum": 50,
+            "unit": "words",
+            "counting_convention": null,
+            "source_refs": [
+              {
+                "source_id": "fixture-rep-portal-definition-v1",
+                "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                "locator": "/questions/0",
+                "provenance": {
+                  "provenance_class": "engineering_derived",
+                  "is_simulated": true,
+                  "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                },
+                "captured_at": null,
+                "publication_date": {
+                  "status": "unknown",
+                  "value": null
+                },
+                "reporting_period": null,
+                "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                "verification_status": "unverified"
+              }
+            ]
+          },
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/0",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "rp-services",
+          "question_version": 1,
+          "original_text": "Describe the services you provide.",
+          "order": 1,
+          "section": "Section A: Organization",
+          "answer_type": "text",
+          "required": true,
+          "limit": {
+            "maximum": 250,
+            "unit": "words",
+            "counting_convention": null,
+            "source_refs": [
+              {
+                "source_id": "fixture-rep-portal-definition-v1",
+                "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                "locator": "/questions/1",
+                "provenance": {
+                  "provenance_class": "engineering_derived",
+                  "is_simulated": true,
+                  "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                },
+                "captured_at": null,
+                "publication_date": {
+                  "status": "unknown",
+                  "value": null
+                },
+                "reporting_period": null,
+                "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                "verification_status": "unverified"
+              }
+            ]
+          },
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/1",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "rp-service-area",
+          "question_version": 1,
+          "original_text": "Primary service area",
+          "order": 2,
+          "section": "Section A: Organization",
+          "answer_type": "choice",
+          "required": true,
+          "limit": null,
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/2",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "rp-pending-applications",
+          "question_version": 1,
+          "original_text": "List other pending funding applications.",
+          "order": 3,
+          "section": "Section B: Funding context",
+          "answer_type": "text",
+          "required": null,
+          "limit": {
+            "maximum": 300,
+            "unit": "characters",
+            "counting_convention": null,
+            "source_refs": [
+              {
+                "source_id": "fixture-rep-portal-definition-v1",
+                "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                "locator": "/questions/3",
+                "provenance": {
+                  "provenance_class": "engineering_derived",
+                  "is_simulated": true,
+                  "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                },
+                "captured_at": null,
+                "publication_date": {
+                  "status": "unknown",
+                  "value": null
+                },
+                "reporting_period": null,
+                "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                "verification_status": "unverified"
+              }
+            ]
+          },
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/3",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "rp-other-funding",
+          "question_version": 1,
+          "original_text": "Describe other funding sources.",
+          "order": 4,
+          "section": "Section B: Funding context",
+          "answer_type": "text",
+          "required": null,
+          "limit": {
+            "maximum": 300,
+            "unit": "unknown",
+            "counting_convention": null,
+            "source_refs": [
+              {
+                "source_id": "fixture-rep-portal-definition-v1",
+                "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                "locator": "/questions/4",
+                "provenance": {
+                  "provenance_class": "engineering_derived",
+                  "is_simulated": true,
+                  "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                },
+                "captured_at": null,
+                "publication_date": {
+                  "status": "unknown",
+                  "value": null
+                },
+                "reporting_period": null,
+                "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                "verification_status": "unverified"
+              }
+            ]
+          },
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/4",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "rp-has-partners",
+          "question_version": 1,
+          "original_text": "Do you deliver this work with partners?",
+          "order": 5,
+          "section": "Section B: Funding context",
+          "answer_type": "choice",
+          "required": true,
+          "limit": null,
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/5",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "rp-partnership",
+          "question_version": 1,
+          "original_text": "Describe your key partnerships.",
+          "order": 6,
+          "section": "Partnership details",
+          "answer_type": "text",
+          "required": null,
+          "limit": null,
+          "conflicts": [
+            {
+              "conflict_id": "rp-partnership.conflict-1",
+              "description": "Competing limits: \"Maximum 350 words.\"; \"Guide note: partnership descriptions may be up to 500 words.\"",
+              "candidate_limits": [
+                {
+                  "maximum": 350,
+                  "unit": "words",
+                  "counting_convention": null,
+                  "source_refs": [
+                    {
+                      "source_id": "fixture-rep-portal-definition-v1",
+                      "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                      "locator": "/questions/6",
+                      "provenance": {
+                        "provenance_class": "engineering_derived",
+                        "is_simulated": true,
+                        "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                      },
+                      "captured_at": null,
+                      "publication_date": {
+                        "status": "unknown",
+                        "value": null
+                      },
+                      "reporting_period": null,
+                      "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                      "verification_status": "unverified"
+                    }
+                  ]
+                },
+                {
+                  "maximum": 500,
+                  "unit": "words",
+                  "counting_convention": null,
+                  "source_refs": [
+                    {
+                      "source_id": "fixture-rep-portal-definition-v1",
+                      "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                      "locator": "/questions/6",
+                      "provenance": {
+                        "provenance_class": "engineering_derived",
+                        "is_simulated": true,
+                        "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                      },
+                      "captured_at": null,
+                      "publication_date": {
+                        "status": "unknown",
+                        "value": null
+                      },
+                      "reporting_period": null,
+                      "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                      "verification_status": "unverified"
+                    }
+                  ]
+                }
+              ],
+              "resolution": "unresolved"
+            }
+          ],
+          "conditions": [
+            "Shown only when question 6 is Yes"
+          ],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/6",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "rp-request-amount",
+          "question_version": 1,
+          "original_text": "Standard request amount.",
+          "order": 7,
+          "section": "Section C: Request",
+          "answer_type": "amount",
+          "required": true,
+          "limit": {
+            "maximum": 100000,
+            "unit": "amount",
+            "counting_convention": null,
+            "source_refs": [
+              {
+                "source_id": "fixture-rep-portal-definition-v1",
+                "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+                "locator": "/questions/7",
+                "provenance": {
+                  "provenance_class": "engineering_derived",
+                  "is_simulated": true,
+                  "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+                },
+                "captured_at": null,
+                "publication_date": {
+                  "status": "unknown",
+                  "value": null
+                },
+                "reporting_period": null,
+                "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+                "verification_status": "unverified"
+              }
+            ]
+          },
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/7",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        },
+        {
+          "question_id": "rp-financial-statement",
+          "question_version": 1,
+          "original_text": "Attach your most recent financial statement.",
+          "order": 8,
+          "section": "Section C: Request",
+          "answer_type": "attachment",
+          "required": true,
+          "limit": null,
+          "conflicts": [],
+          "conditions": [],
+          "attachments": [
+            "accepted_types=.pdf,.docx; max_size_bytes=5242880; max_count=1; basis=structured_definition"
+          ],
+          "source_refs": [
+            {
+              "source_id": "fixture-rep-portal-definition-v1",
+              "source_version_id": "fixture-rep-portal-definition-v1-16bd55080b41",
+              "locator": "/questions/8",
+              "provenance": {
+                "provenance_class": "engineering_derived",
+                "is_simulated": true,
+                "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+              },
+              "captured_at": null,
+              "publication_date": {
+                "status": "unknown",
+                "value": null
+              },
+              "reporting_period": null,
+              "content_hash": "16bd55080b413b992d81b41b61e831e6684248c1034a433cde2de4a4ec2b3572",
+              "verification_status": "unverified"
+            }
+          ]
+        }
+      ],
+      "provenance": {
+        "provenance_class": "engineering_derived",
+        "is_simulated": true,
+        "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+      }
+    },
+    "application_definition": {
+      "schema_version": "1",
+      "application_definition_id": "rep-portal-definition-v1",
+      "opportunity_id": "demo-gos",
+      "question_set_id": "qs-imp-477715fd429c8c37a1f22289",
+      "form_id": null,
+      "provenance": {
+        "provenance_class": "engineering_derived",
+        "is_simulated": true,
+        "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+      }
+    }
+  },
+  "id_mapping": [
+    {
+      "original_question_id": "rp-mission",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-mission",
+      "question_version": 1,
+      "order": 0
+    },
+    {
+      "original_question_id": "rp-services",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-services",
+      "question_version": 1,
+      "order": 1
+    },
+    {
+      "original_question_id": "rp-service-area",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-service-area",
+      "question_version": 1,
+      "order": 2
+    },
+    {
+      "original_question_id": "rp-pending-applications",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-pending-applications",
+      "question_version": 1,
+      "order": 3
+    },
+    {
+      "original_question_id": "rp-other-funding",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-other-funding",
+      "question_version": 1,
+      "order": 4
+    },
+    {
+      "original_question_id": "rp-has-partners",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-has-partners",
+      "question_version": 1,
+      "order": 5
+    },
+    {
+      "original_question_id": "rp-partnership",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-partnership",
+      "question_version": 1,
+      "order": 6
+    },
+    {
+      "original_question_id": "rp-request-amount",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-request-amount",
+      "question_version": 1,
+      "order": 7
+    },
+    {
+      "original_question_id": "rp-financial-statement",
+      "published_question_id": "def-01a1ba112583f8bb87a6c9b125:rp-financial-statement",
+      "question_version": 1,
+      "order": 8
+    }
+  ],
+  "added_original_ids": [],
+  "removed_original_ids": [],
+  "unresolved": [
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-mission",
+      "kind": "unknown_counting_convention",
+      "detail": "50 words: counting convention unknown"
+    },
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-services",
+      "kind": "unknown_counting_convention",
+      "detail": "250 words: counting convention unknown"
+    },
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-pending-applications",
+      "kind": "unknown_counting_convention",
+      "detail": "300 characters: counting convention unknown"
+    },
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-pending-applications",
+      "kind": "required_status_unknown",
+      "detail": "not stated"
+    },
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-other-funding",
+      "kind": "unknown_limit_unit",
+      "detail": "\"Max 300\" has no unit"
+    },
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-other-funding",
+      "kind": "required_status_unknown",
+      "detail": "not stated"
+    },
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-partnership",
+      "kind": "limit_conflict",
+      "detail": "Competing limits: \"Maximum 350 words.\"; \"Guide note: partnership descriptions may be up to 500 words.\""
+    },
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-partnership",
+      "kind": "unknown_counting_convention",
+      "detail": "350 words: counting convention unknown"
+    },
+    {
+      "question_id": "def-01a1ba112583f8bb87a6c9b125:rp-partnership",
+      "kind": "unknown_counting_convention",
+      "detail": "500 words: counting convention unknown"
+    }
+  ],
+  "context": {
+    "opportunity_id": "demo-gos",
+    "opportunity_basis": "fixture_registry",
+    "declared": {
+      "opportunity_id": "demo-gos",
+      "stream_id": "standard",
+      "cycle_id": null,
+      "basis": "fixture_registry"
+    },
+    "binding": null,
+    "notes": [
+      "Opportunity ID comes from the server-registered fixture (engineering-derived)."
+    ]
+  },
+  "provenance": {
+    "provenance_class": "engineering_derived",
+    "is_simulated": true,
+    "note": "B2-AUTO-001 representative fixture derived from engineering plan v1.1 s7 (original_guide_present=false). Not the United Way portal, not verbatim funder questions, not a verified open grant cycle."
+  },
+  "is_fixture": true,
+  "mode_label": "FIXTURE - engineering-derived representative material; not a funder source; original guide not parsed.",
+  "review_status": "saved_not_reviewed",
+  "approval_status": "not_approved",
+  "prefill_permitted": false,
+  "consumer_notes": [
+    "Saved is not reviewed or approved: approval_status=not_approved, prefill_permitted=false.",
+    "Limits, conflicts, unknown units/conventions and conditions keep their imported meaning; nothing is resolved on the consumer's behalf. C owns counting (APP-01) and approval.",
+    "question_version equals the definition version; every question advances on a revision.",
+    "The rich intake keeps ORIGINAL question IDs; use id_mapping to join it to published IDs."
+  ]
+}

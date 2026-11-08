@@ -373,6 +373,9 @@ class FixtureSearchProvider:
         )
 
 
+_FIXTURE_ROTATION: dict[str, int] = {}
+
+
 @dataclass
 class FixtureCaptureProvider:
     """FIXTURE: returns synthetic pages only for registered fixture URLs."""
@@ -389,7 +392,15 @@ class FixtureCaptureProvider:
         return normalize_url(url) in self._catalog()
 
     def capture(self, url: str, timeout_s: float, max_bytes: int) -> ProviderCaptureResponse:
-        entry = self._catalog().get(normalize_url(url))
+        key = normalize_url(url)
+        entry = self._catalog().get(key)
+        if entry is not None and entry.get("variants"):
+            # FIXTURE rotation (DEV-B-BUNDLE-002 M5 recheck demos): process-local, labelled,
+            # deterministic within one API process. Never used for live captures.
+            n = _FIXTURE_ROTATION.get(key, 0)
+            _FIXTURE_ROTATION[key] = n + 1
+            variants = entry["variants"]
+            entry = {**entry, **variants[min(n, len(variants) - 1)]}
         if entry is None:
             raise ProviderError(
                 FundingErrorReason.INVALID_INPUT,

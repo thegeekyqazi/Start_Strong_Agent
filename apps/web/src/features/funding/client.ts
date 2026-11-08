@@ -1,5 +1,23 @@
 // Find Funding API client (owner: B1). Types are generated from the Python contracts.
 import type {
+  CaptureCatalogPage,
+  ChangeObservation,
+  ChangeObservationList,
+  RecheckCommand,
+  RunComparison,
+  RunSearchCommand,
+  SearchProfileCommand,
+  SearchProfileList,
+  SearchProfileVersion,
+  SearchRunList,
+  SearchRunRecord,
+  EvaluateCommand,
+  EvaluationList,
+  EvaluationReport,
+  FundingCaseCommand,
+  FundingCaseEnvelope,
+  FundingCaseList,
+  ReviewCommand,
   CaptureContent,
   CapturedDocument,
   CaptureRequest,
@@ -41,6 +59,31 @@ export interface FundingClient {
   capture(body: CaptureRequest): Promise<ApiResult<CapturedDocument>>
   getCapture(captureId: string): Promise<ApiResult<CapturedDocument>>
   content(captureId: string, artifactId: string): Promise<ApiResult<CaptureContent>>
+  listCaptures(cursor?: string | null): Promise<ApiResult<CaptureCatalogPage>>
+  listCases(): Promise<ApiResult<FundingCaseList>>
+  getCase(caseId: string, version?: number): Promise<ApiResult<FundingCaseEnvelope>>
+  saveCase(body: FundingCaseCommand, caseId?: string): Promise<ApiResult<FundingCaseEnvelope>>
+  reviewCase(
+    caseId: string,
+    version: number,
+    body: ReviewCommand,
+  ): Promise<ApiResult<FundingCaseEnvelope>>
+  evaluateCase(caseId: string, body: EvaluateCommand): Promise<ApiResult<EvaluationReport>>
+  listEvaluations(caseId: string): Promise<ApiResult<EvaluationList>>
+  listProfiles(): Promise<ApiResult<SearchProfileList>>
+  saveProfile(
+    body: SearchProfileCommand,
+    profileId?: string,
+  ): Promise<ApiResult<SearchProfileVersion>>
+  runProfile(profileId: string, body: RunSearchCommand): Promise<ApiResult<SearchRunRecord>>
+  listRuns(profileId: string): Promise<ApiResult<SearchRunList>>
+  compareRuns(
+    profileId: string,
+    baseRunId: string,
+    runId: string,
+  ): Promise<ApiResult<RunComparison>>
+  recheck(captureId: string, body: RecheckCommand): Promise<ApiResult<ChangeObservation>>
+  listObservations(captureId: string): Promise<ApiResult<ChangeObservationList>>
 }
 
 const enc = encodeURIComponent
@@ -52,6 +95,46 @@ export const httpFundingClient: FundingClient = {
   getCapture: (id) => call(`/api/funding/captures/${enc(id)}`),
   content: (id, artifactId) =>
     call(`/api/funding/captures/${enc(id)}/artifacts/${enc(artifactId)}/content`),
+  listCases: () => call('/api/funding/cases'),
+  getCase: (id, version) =>
+    call(`/api/funding/cases/${enc(id)}${version ? `/versions/${version}` : ''}`),
+  saveCase: (body, caseId) =>
+    call(caseId ? `/api/funding/cases/${enc(caseId)}/revisions` : '/api/funding/cases', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  reviewCase: (id, version, body) =>
+    call(`/api/funding/cases/${enc(id)}/versions/${version}/review`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  evaluateCase: (id, body) =>
+    call(`/api/funding/cases/${enc(id)}/evaluations`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  listEvaluations: (id) => call(`/api/funding/cases/${enc(id)}/evaluations`),
+  listProfiles: () => call('/api/funding/searches'),
+  saveProfile: (body, profileId) =>
+    call(
+      profileId ? `/api/funding/searches/${enc(profileId)}/revisions` : '/api/funding/searches',
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+    ),
+  runProfile: (id, body) =>
+    call(`/api/funding/searches/${enc(id)}/runs`, { method: 'POST', body: JSON.stringify(body) }),
+  listRuns: (id) => call(`/api/funding/searches/${enc(id)}/runs`),
+  compareRuns: (id, base, runId) =>
+    call(`/api/funding/searches/${enc(id)}/runs/${enc(runId)}/compare?base=${enc(base)}`),
+  recheck: (id, body) =>
+    call(`/api/funding/captures/${enc(id)}/recheck`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  listObservations: (id) => call(`/api/funding/captures/${enc(id)}/observations`),
+  listCaptures: (cursor) => call(`/api/funding/captures${cursor ? `?cursor=${enc(cursor)}` : ''}`),
 }
 
 /** Plain-language explanation for each failure; distinct states per B1-DISC-001 s3. */
@@ -86,6 +169,36 @@ export function describeError(result: { status: number; error: ErrorEnvelope | n
       return 'Empty extraction: the provider returned no usable content. It was recorded for inspection but is not evidence.'
     case 'capture_not_found':
       return 'Capture not found or not accessible.'
+    case 'case_not_found':
+      return 'Funding case not found or not accessible.'
+    case 'anchor_mismatch':
+      return 'The quoted passage does not exactly match the stored text at that position. Nothing was saved.'
+    case 'anchor_source_changed':
+      return 'The stored source differs from the one you quoted from. Reload it and select again.'
+    case 'anchor_too_large':
+      return 'Select a narrower passage (the quote is too long).'
+    case 'version_conflict':
+      return 'Someone saved a newer version first. Reload the case and revise that version.'
+    case 'stale_snapshot':
+      return 'The case changed since you opened it; reload before reviewing.'
+    case 'review_scope_mismatch':
+      return 'A review must name exactly every requirement in this version.'
+    case 'already_reviewed':
+      return 'This exact version is already reviewed.'
+    case 'not_current_version':
+      return 'Only the current case version can be reviewed.'
+    case 'idempotency_key_reused':
+      return 'This request was already used for different content.'
+    case 'too_large':
+      return `Too large: ${result.error?.message ?? ''}`
+    case 'not_comparable':
+      return 'These runs cannot be compared (different profile versions or a failed run).'
+    case 'profile_not_found':
+      return 'Saved search not found.'
+    case 'run_not_found':
+      return 'Search run not found.'
+    case 'history_limit':
+      return 'This item reached its version-history limit (20).'
     case 'integrity_failure':
       return 'Stored content failed its integrity check and was withheld.'
     case 'provider_error':

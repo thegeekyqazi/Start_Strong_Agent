@@ -18,6 +18,8 @@ import {
   type IntakeSource,
 } from './api'
 import { EvidencePanel, FindingList, InspectionView, QuestionTable } from './views'
+import { SavedDefinitions, type Preview } from './saved'
+import { clearIntakeReference, readIntakeReference } from './handoff'
 import './automation.css'
 
 type Mode = IntakeSource['mode']
@@ -43,9 +45,10 @@ const CAP_LABEL: Record<string, string> = {
 
 export function AutomationPage() {
   const [avail, setAvail] = useState<Load<AutomationAvailability>>({ kind: 'loading' })
-  const [mode, setMode] = useState<Mode>('fixture')
+  const [handoffRef] = useState(readIntakeReference)
+  const [mode, setMode] = useState<Mode>(handoffRef ? 'capture' : 'fixture')
   const [fixtureId, setFixtureId] = useState('rep-portal-definition-v1')
-  const [captureKey, setCaptureKey] = useState('')
+  const [captureKey, setCaptureKey] = useState(handoffRef ?? '')
   const [text, setText] = useState('')
   const [intake, setIntake] = useState<Load<ApplicationIntakeResult>>({ kind: 'idle' })
   const [lastSource, setLastSource] = useState<IntakeSource | null>(null)
@@ -53,6 +56,10 @@ export function AutomationPage() {
   const [portalId, setPortalId] = useState('rep-portal-v1')
   const [inspection, setInspection] = useState<Load<FormInspectionResult>>({ kind: 'idle' })
   const [exportState, setExportState] = useState<Load<string>>({ kind: 'idle' })
+  const [previewToken, setPreviewToken] = useState(0)
+
+  // "Use in application intake" from Find Funding passes IDs only (resolved server-side).
+  useEffect(() => clearIntakeReference(), [])
 
   useEffect(() => {
     let active = true
@@ -100,6 +107,7 @@ export function AutomationPage() {
     const r = await importDefinition(source)
     if (r.ok) {
       setLastSource(source)
+      setPreviewToken((n) => n + 1)
       setIntake({ kind: 'done', data: r.data })
       setSelected(r.data.questions?.[0]?.question_id ?? null)
     } else {
@@ -149,6 +157,13 @@ export function AutomationPage() {
   }
 
   const result = intake.kind === 'done' ? intake.data : null
+  const current = buildSource()
+  const sourceChanged =
+    result !== null && lastSource !== null && JSON.stringify(current) !== JSON.stringify(lastSource)
+  const preview: Preview | null =
+    result && lastSource && !sourceChanged
+      ? { token: previewToken, result, source: lastSource }
+      : null
   const question: IntakeQuestion | undefined = result?.questions?.find(
     (q) => q.question_id === selected,
   )
@@ -343,6 +358,13 @@ export function AutomationPage() {
           </p>
         </section>
       )}
+
+      {sourceChanged && (
+        <p role="status" className="badge badge-unavailable">
+          The source changed since this preview. Re-import before saving.
+        </p>
+      )}
+      <SavedDefinitions preview={preview} />
 
       <section aria-labelledby="inspect-heading" className="panel">
         <h3 id="inspect-heading">3. Representative portal inspection (read-only)</h3>
