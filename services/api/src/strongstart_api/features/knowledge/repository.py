@@ -34,6 +34,7 @@ from ...db import (
     knowledge_sources,
     pack_facts,
 )
+from .artifacts import ArtifactIntegrityError, ArtifactNotFoundError, ArtifactStore
 
 
 class KnowledgeNotFoundError(Exception):
@@ -47,12 +48,20 @@ class KnowledgeIntegrityError(Exception):
 class PostgresKnowledgeRepository:
     is_fixture = False
 
-    def __init__(self, engine: Engine) -> None:
+    def __init__(self, engine: Engine, artifacts: ArtifactStore | None = None) -> None:
         self.engine = engine
+        self.artifacts = artifacts
 
-    @staticmethod
-    def _verify(row: dict[str, object]) -> None:
-        content = cast(bytes, row["content_bytes"])
+    def _verify(self, row: dict[str, object]) -> None:
+        if row.get("storage_backend") == "local_artifact":
+            if self.artifacts is None or not row.get("artifact_key"):
+                raise KnowledgeIntegrityError("source artifact storage unavailable")
+            try:
+                content = self.artifacts.read(str(row["organization_id"]), str(row["artifact_key"]))
+            except (ArtifactNotFoundError, ArtifactIntegrityError):
+                raise KnowledgeIntegrityError("source version integrity failure") from None
+        else:
+            content = cast(bytes, row["content_bytes"])
         actual = hashlib.sha256(content).hexdigest()
         if actual != row["content_sha256"] or len(content) != row["size_bytes"]:
             raise KnowledgeIntegrityError("source version integrity failure")
@@ -91,6 +100,9 @@ class PostgresKnowledgeRepository:
                 knowledge_source_versions.c.id.label("source_version_id"),
                 knowledge_source_versions.c.media_type,
                 knowledge_source_versions.c.content_bytes,
+                knowledge_source_versions.c.storage_backend,
+                knowledge_source_versions.c.artifact_key,
+                knowledge_source_versions.c.organization_id,
                 knowledge_source_versions.c.content_sha256,
                 knowledge_source_versions.c.size_bytes,
                 knowledge_source_versions.c.captured_at,
@@ -149,6 +161,9 @@ class PostgresKnowledgeRepository:
                         knowledge_sources.c.provenance_note.label("source_provenance_note"),
                         knowledge_source_versions.c.id.label("source_version_id"),
                         knowledge_source_versions.c.content_bytes,
+                        knowledge_source_versions.c.storage_backend,
+                        knowledge_source_versions.c.artifact_key,
+                        knowledge_source_versions.c.organization_id,
                         knowledge_source_versions.c.content_sha256,
                         knowledge_source_versions.c.size_bytes,
                         knowledge_source_versions.c.captured_at,
