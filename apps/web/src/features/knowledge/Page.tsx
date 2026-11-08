@@ -1,5 +1,9 @@
-import { useEffect, useState } from 'react'
-import type { KnowledgeAvailability, KnowledgeSnapshot } from '@strongstart/contracts'
+import { type FormEvent, useEffect, useState } from 'react'
+import type {
+  KnowledgeAvailability,
+  KnowledgeRetrievalResult,
+  KnowledgeSnapshot,
+} from '@strongstart/contracts'
 import { describeKnowledgeError, httpKnowledgeClient, type KnowledgeClient } from './client'
 
 type State =
@@ -9,6 +13,8 @@ type State =
 
 export function KnowledgePage({ client = httpKnowledgeClient }: { client?: KnowledgeClient }) {
   const [state, setState] = useState<State>({ kind: 'loading' })
+  const [action, setAction] = useState<string | null>(null)
+  const [results, setResults] = useState<KnowledgeRetrievalResult | null>(null)
   useEffect(() => {
     let active = true
     const load = async () => {
@@ -40,6 +46,44 @@ export function KnowledgePage({ client = httpKnowledgeClient }: { client?: Knowl
   if (state.kind === 'error') return <p role="alert">{state.message}</p>
   const { availability, snapshot } = state
   const facts = snapshot?.evidence_bundles.flatMap((bundle) => bundle.facts) ?? []
+  const importText = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+    const result = await client.importText(String(form.get('title')), String(form.get('text')))
+    setAction(
+      result.ok
+        ? `Imported source version ${result.data.source_version_id}.`
+        : describeKnowledgeError(result),
+    )
+  }
+  const importPdf = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const form = new FormData(event.currentTarget)
+    const file = form.get('pdf')
+    if (!(file instanceof File) || file.size === 0) return setAction('Choose a PDF file.')
+    const encoded = await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onerror = () => reject(new Error('read failed'))
+      reader.onload = () => resolve(String(reader.result).split(',', 2)[1] ?? '')
+      reader.readAsDataURL(file)
+    }).catch(() => '')
+    if (!encoded) return setAction('The PDF could not be read.')
+    const result = await client.importPdf(String(form.get('title')), encoded)
+    setAction(
+      result.ok
+        ? `Imported ${result.data.processed_pages} PDF page(s).`
+        : describeKnowledgeError(result),
+    )
+  }
+  const retrieve = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    const query = String(new FormData(event.currentTarget).get('query'))
+    const result = await client.retrieve(query)
+    if (result.ok) {
+      setResults(result.data)
+      setAction(null)
+    } else setAction(describeKnowledgeError(result))
+  }
   return (
     <section aria-labelledby="knowledge-heading">
       <h2 id="knowledge-heading">Knowledge and evidence</h2>
@@ -51,6 +95,55 @@ export function KnowledgePage({ client = httpKnowledgeClient }: { client?: Knowl
       )}
       {!availability.authenticated && <p>Not signed in: knowledge access is denied.</p>}
       {availability.status === 'unavailable' && <p>{availability.detail}</p>}
+      {snapshot && (
+        <div className="knowledge-tools">
+          <section aria-labelledby="text-import-heading">
+            <h3 id="text-import-heading">Import plain text</h3>
+            <form onSubmit={(event) => void importText(event)}>
+              <label>
+                Title <input name="title" required maxLength={300} />
+              </label>
+              <label>
+                Evidence text <textarea name="text" required />
+              </label>
+              <button type="submit">Import text</button>
+            </form>
+          </section>
+          <section aria-labelledby="pdf-import-heading">
+            <h3 id="pdf-import-heading">Import text PDF</h3>
+            <p className="hint">Scanned or encrypted PDFs require review and are not accepted.</p>
+            <form onSubmit={(event) => void importPdf(event)}>
+              <label>
+                Title <input name="title" required maxLength={300} />
+              </label>
+              <label>
+                PDF <input name="pdf" type="file" accept="application/pdf,.pdf" required />
+              </label>
+              <button type="submit">Import PDF</button>
+            </form>
+          </section>
+          <section aria-labelledby="retrieval-heading">
+            <h3 id="retrieval-heading">Search evidence passages</h3>
+            <form onSubmit={(event) => void retrieve(event)}>
+              <label>
+                Search terms <input name="query" required minLength={2} maxLength={200} />
+              </label>
+              <button type="submit">Search</button>
+            </form>
+            {results && results.hits.length === 0 && <p>No authorized passages matched.</p>}
+            {results?.hits.map((hit) => (
+              <article className="candidate" key={hit.passage.passage_id}>
+                <h4>{hit.title}</h4>
+                <p>{hit.passage.exact_text}</p>
+                <p className="hint">
+                  {hit.passage.locator} · lexical score {hit.score}
+                </p>
+              </article>
+            ))}
+          </section>
+        </div>
+      )}
+      {action && <p role="status">{action}</p>}
       {snapshot && snapshot.source_versions.length === 0 && (
         <p role="status">No knowledge sources are available for this organization.</p>
       )}

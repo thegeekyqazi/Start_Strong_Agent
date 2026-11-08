@@ -8,16 +8,19 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 from datetime import UTC, datetime
 from typing import cast
 
-from sqlalchemy import Engine, select
+from sqlalchemy import Engine, or_, select
 
 from strongstart_contracts import (
     DateKnowledge,
     EvidenceBundle,
     Fact,
     KnowledgePassage,
+    KnowledgeRetrievalHit,
+    KnowledgeRetrievalResult,
     KnowledgeSnapshot,
     KnowledgeSourceVersion,
     Provenance,
@@ -313,4 +316,60 @@ class PostgresKnowledgeRepository:
             passages=passages,
             evidence_bundles=[self.get_bundle(organization_id, pack_id) for pack_id in pack_ids],
             is_fixture=is_fixture,
+        )
+
+    def retrieve(self, organization_id: str, query: str, *, limit: int) -> KnowledgeRetrievalResult:
+        tokens = list(dict.fromkeys(re.findall(r"[a-z0-9'-]{2,}", query.casefold())))[:12]
+        if not tokens:
+            return KnowledgeRetrievalResult(
+                organization_id=organization_id, query=query, hits=[], truncated=False
+            )
+        source_query = self._source_query(organization_id).subquery()
+        statement = (
+            select(
+                knowledge_passages.c.id.label("passage_id"),
+                knowledge_passages.c.locator,
+                knowledge_passages.c.exact_text,
+                source_query,
+            )
+            .select_from(
+                knowledge_passages.join(
+                    source_query,
+                    knowledge_passages.c.source_version_id == source_query.c.source_version_id,
+                )
+            )
+            .where(or_(*(knowledge_passages.c.exact_text.ilike(f"%{token}%") for token in tokens)))
+            .order_by(knowledge_passages.c.id)
+            .limit(limit * 10 + 1)
+        )
+        with self.engine.connect() as conn:
+            rows = [dict(row) for row in conn.execute(statement).mappings()]
+        scored: list[tuple[int, dict[str, object]]] = []
+        for row in rows:
+            self._verify(row)
+            text = str(row["exact_text"]).casefold()
+            score = sum(text.count(token) for token in tokens)
+            if score:
+                scored.append((score, row))
+        scored.sort(key=lambda item: (-item[0], str(item[1]["passage_id"])))
+        hits = [
+            KnowledgeRetrievalHit(
+                passage=KnowledgePassage(
+                    passage_id=row["passage_id"],
+                    source_id=row["source_id"],
+                    source_version_id=row["source_version_id"],
+                    locator=row["locator"],
+                    exact_text=row["exact_text"],
+                ),
+                title=row["title"],
+                source_reference=self._source_reference(row, str(row["locator"])),
+                score=score,
+            )
+            for score, row in scored[:limit]
+        ]
+        return KnowledgeRetrievalResult(
+            organization_id=organization_id,
+            query=query,
+            hits=hits,
+            truncated=len(scored) > limit or len(rows) > limit * 10,
         )

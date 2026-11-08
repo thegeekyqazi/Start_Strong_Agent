@@ -26,7 +26,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from strongstart_contracts import ReadinessCheck, ReadinessReport
 
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0003_artifact_text_ingestion"
+REQUIRED_MIGRATION_REVISION = "0004_pdf_extraction_coverage"
 
 metadata = MetaData()
 
@@ -85,6 +85,9 @@ knowledge_source_versions = Table(
     Column("parser_name", String(64)),
     Column("parser_version", String(32)),
     Column("parser_warnings", Text),
+    Column("page_count", Integer),
+    Column("processed_pages", Integer),
+    Column("extraction_status", String(24)),
     Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
 

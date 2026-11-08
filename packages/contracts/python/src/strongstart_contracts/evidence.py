@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Literal
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from .common import (
     SCHEMA_VERSION,
@@ -122,3 +122,58 @@ class TextSourceImportResult(ContractModel):
     warnings: list[str]
     locator: str
     provenance: Provenance
+
+
+class PdfSourceImportRequest(ContractModel):
+    """Base64 transport for a bounded PDF; bytes remain authoritative after decoding."""
+
+    model_config = contract_model_config("draft", "A2b")
+
+    title: str = Field(min_length=1, max_length=300)
+    content_base64: str = Field(min_length=4, description="Strict standard base64 PDF bytes.")
+
+    @field_validator("content_base64")
+    @classmethod
+    def _bounded_transport(cls, value: str) -> str:
+        if len(value) > 27_000_000:
+            raise ValueError("encoded PDF exceeds the transport limit")
+        return value
+
+
+class PdfSourceImportResult(ContractModel):
+    model_config = contract_model_config("draft", "A2b")
+
+    schema_version: Literal["1"] = SCHEMA_VERSION
+    source_id: StableId
+    source_version_id: StableId
+    artifact_key: str
+    content_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    size_bytes: int = Field(gt=0)
+    media_type: Literal["application/pdf"]
+    parser_name: Literal["pypdf"]
+    parser_version: str
+    warnings: list[str]
+    page_count: int = Field(gt=0)
+    processed_pages: int = Field(ge=0)
+    passage_ids: list[StableId]
+    provenance: Provenance
+
+
+class KnowledgeRetrievalHit(ContractModel):
+    model_config = contract_model_config("draft", "A2c")
+
+    passage: KnowledgePassage
+    title: str
+    source_reference: SourceReference
+    score: int = Field(gt=0, description="Deterministic lexical token-match score.")
+
+
+class KnowledgeRetrievalResult(ContractModel):
+    model_config = contract_model_config("draft", "A2c")
+
+    schema_version: Literal["1"] = SCHEMA_VERSION
+    organization_id: StableId
+    query: str
+    hits: list[KnowledgeRetrievalHit]
+    retrieval_method: Literal["lexical-v1"] = "lexical-v1"
+    truncated: bool

@@ -5,6 +5,8 @@ Requires the local PostgreSQL service and STRONGSTART_DATABASE_URL (make db-up).
 
 from __future__ import annotations
 
+import base64
+
 import pytest
 from alembic import command
 from alembic.config import Config
@@ -27,12 +29,14 @@ from strongstart_api.db import (
 )
 from strongstart_api.features.knowledge.artifacts import LocalArtifactStore
 from strongstart_api.features.knowledge.ingestion import TextIngestionService
+from strongstart_api.features.knowledge.pdf_ingestion import BoundedPdfParser, PdfIngestionService
 from strongstart_api.features.knowledge.repository import (
     KnowledgeIntegrityError,
     PostgresKnowledgeRepository,
 )
 from strongstart_api.seed import seed_demo
 from tests.conftest import BUNDLE_PATH, REPO_ROOT
+from tests.knowledge.pdf_fixture import make_text_pdf
 
 pytestmark = pytest.mark.db
 
@@ -151,6 +155,44 @@ def test_text_ingestion_persists_artifact_and_exact_passage(migrated: str, tmp_p
         with engine.begin() as conn:
             conn.execute(
                 delete(knowledge_passages).where(knowledge_passages.c.id == result.passage_id)
+            )
+            conn.execute(
+                delete(knowledge_source_versions).where(
+                    knowledge_source_versions.c.id == result.source_version_id
+                )
+            )
+            conn.execute(
+                delete(knowledge_sources).where(knowledge_sources.c.id == result.source_id)
+            )
+
+
+def test_pdf_ingestion_and_authorized_retrieval(migrated: str, tmp_path) -> None:
+    engine = get_engine(migrated)
+    seed_demo(engine, BUNDLE_PATH)
+    artifacts = LocalArtifactStore(tmp_path)
+    service = PdfIngestionService(
+        engine,
+        artifacts,
+        BoundedPdfParser(max_bytes=10_000, max_pages=5, max_chars=1_000),
+    )
+    encoded = base64.b64encode(make_text_pdf("Unique grant readiness evidence")).decode("ascii")
+    result = service.ingest("demo-org", "Readiness guide", encoded, is_fixture=True)
+    try:
+        repository = PostgresKnowledgeRepository(engine, artifacts)
+        retrieval = repository.retrieve("demo-org", "grant readiness", limit=5)
+        assert len(retrieval.hits) == 1
+        hit = retrieval.hits[0]
+        assert hit.passage.locator == "page:1"
+        assert hit.passage.source_version_id == result.source_version_id
+        assert hit.source_reference.content_hash == result.content_sha256
+        assert hit.source_reference.provenance.is_simulated is True
+        assert repository.retrieve("unknown-org", "grant readiness", limit=5).hits == []
+    finally:
+        with engine.begin() as conn:
+            conn.execute(
+                delete(knowledge_passages).where(
+                    knowledge_passages.c.source_version_id == result.source_version_id
+                )
             )
             conn.execute(
                 delete(knowledge_source_versions).where(

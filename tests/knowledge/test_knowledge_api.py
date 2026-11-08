@@ -17,6 +17,7 @@ from strongstart_api.features.knowledge.repository import (
 )
 from strongstart_contracts import (
     EvidenceBundle,
+    KnowledgeRetrievalResult,
     KnowledgeSnapshot,
     Provenance,
     TextSourceImportResult,
@@ -51,6 +52,17 @@ class StubRepository:
         if self.outcome == "integrity":
             raise KnowledgeIntegrityError
         return self.bundle
+
+    def retrieve(self, organization_id: str, query: str, *, limit: int) -> KnowledgeRetrievalResult:
+        self.organizations.append(organization_id)
+        if self.outcome == "integrity":
+            raise KnowledgeIntegrityError
+        return KnowledgeRetrievalResult(
+            organization_id=organization_id,
+            query=query,
+            hits=[],
+            truncated=False,
+        )
 
 
 def _client(repository: StubRepository | None, *, auth_mode: str = "fixture") -> TestClient:
@@ -176,3 +188,20 @@ def test_text_import_reports_bounded_validation_failure() -> None:
     assert response.status_code == 422
     assert response.json()["code"] == "validation_failed"
     assert response.json()["details"]["reason"] == "invalid_text_source"
+
+
+def test_retrieval_is_server_scoped_and_bounded() -> None:
+    repository = StubRepository()
+    response = _client(repository).get(
+        "/api/knowledge/retrieve?query=grant%20evidence&limit=25&organization_id=other-org"
+    )
+    assert response.status_code == 200
+    assert response.json()["organization_id"] == "demo-org"
+    assert response.json()["retrieval_method"] == "lexical-v1"
+    assert repository.organizations == ["demo-org"]
+
+
+def test_retrieval_withholds_results_on_artifact_integrity_failure() -> None:
+    response = _client(StubRepository("integrity")).get("/api/knowledge/retrieve?query=grant")
+    assert response.status_code == 500
+    assert response.json()["details"]["reason"] == "integrity_failure"
