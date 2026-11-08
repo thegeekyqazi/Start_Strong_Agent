@@ -170,3 +170,12 @@ applicable CA/system root; do not assume a CA path), DATA-03/28/39/40; engineeri
 
 Validation: hosted evidence in `docs/setup/tigerdata.md#hosted-evidence-2026-11-08` and
 the DATA-001 handoff; local suites rerun at `677060e`. Consumers: none changed.
+
+## Addendum 2026-11-08: font self-hosting superseded by main
+
+Status: `superseded` (the reconciliation font transport above). Main `693f388` (PR #21,
+196f7ed) resolved the same SEC-07 no-external-request failure by removing the remote
+import and deferring self-hosted fonts to a later reviewed presentation change. The task
+branch merged main, took main's `index.css` and removed the now-unreferenced
+`apps/web/public/fonts/` and `apps/web/src/fonts.css`, so this PR carries no typography
+change. Rollback: restore those paths from `909af9b` in a reviewed UI change.

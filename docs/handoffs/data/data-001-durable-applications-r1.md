@@ -256,3 +256,10 @@ TigerData-managed backup/PITR/fork not exercised; synthetic data only. Retained 
 data: three synthetic orgs on the source and the restored copy on the restore service,
 removable with their receipts (`--phase cleanup`) and by the owner on the disposable
 destination.
+
+## Main reconciliation after hosted verification
+
+Main advanced to `693f388` (PR #21: remote Google Fonts import removed, self-hosting
+deferred). The branch merged main, resolved `index.css` to main's version and removed the
+superseded self-hosted font assets (decision 0006 addendum). The DATA-001 frontend delta
+is again only the functional storage labels. Required checks rerun on the merged tree.
