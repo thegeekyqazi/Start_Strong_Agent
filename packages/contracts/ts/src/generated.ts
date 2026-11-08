@@ -588,15 +588,20 @@ export interface EvidenceBundle {
  * via the `definition` "Fact".
  */
 export interface Fact {
+  currency?: string | null
   fact_id: string
+  fact_version?: number
+  geography?: string | null
   metric_id: string
   population?: string | null
+  program?: string | null
   provenance: Provenance
   raw_value?: string | null
   /**
    * e.g. '2025-09/2026-06'; null = unknown.
    */
   reporting_period: string | null
+  scale?: string | null
   scope: string
   status: 'extracted' | 'needs_review' | 'verified' | 'conflicting' | 'superseded'
   /**
@@ -1096,6 +1101,7 @@ export interface RenderedAnswer {
  */
 export interface ClaimBinding {
   fact_id: string
+  fact_version?: number
   /**
    * Binding key until Fact gains a version (request to Dev A).
    */
@@ -1637,16 +1643,32 @@ export interface ReadinessReport {
 export interface RuleCapability {
   priority: 'P0' | 'P1'
   rule_id:
-    | 'SRC-01'
-    | 'SRC-02'
-    | 'SRC-03'
-    | 'SRC-04'
-    | 'SRC-05'
-    | 'SRC-06'
-    | 'SRC-07'
-    | 'SRC-08'
-    | 'SRC-09'
-    | 'SRC-10'
+    | (
+        | 'SRC-01'
+        | 'SRC-02'
+        | 'SRC-03'
+        | 'SRC-04'
+        | 'SRC-05'
+        | 'SRC-06'
+        | 'SRC-07'
+        | 'SRC-08'
+        | 'SRC-09'
+        | 'SRC-10'
+      )
+    | (
+        | 'NUM-01'
+        | 'NUM-02'
+        | 'NUM-03'
+        | 'NUM-04'
+        | 'NUM-05'
+        | 'NUM-06'
+        | 'NUM-07'
+        | 'NUM-08'
+        | 'NUM-09'
+        | 'NUM-10'
+        | 'NUM-11'
+        | 'NUM-12'
+      )
   rule_version: string
   state: 'planned' | 'implemented' | 'verified' | 'unavailable'
 }
@@ -1797,6 +1819,11 @@ export interface ValidationDependency {
     | 'passage_locator'
     | 'normalization_policy'
     | 'permission_snapshot'
+    | 'fact_version'
+    | 'pack_version'
+    | 'rounding_policy'
+    | 'formula'
+    | 'project_input'
   ref_id: string
   version: string
 }

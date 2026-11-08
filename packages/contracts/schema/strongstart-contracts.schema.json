@@ -2047,6 +2047,12 @@
           "title": "Fact Id",
           "type": "string"
         },
+        "fact_version": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Fact Version",
+          "type": "integer"
+        },
         "pack_version_id": {
           "description": "Binding key until Fact gains a version (request to Dev A).",
           "maxLength": 128,
@@ -2627,12 +2633,42 @@
     "Fact": {
       "additionalProperties": false,
       "properties": {
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency"
+        },
         "fact_id": {
           "maxLength": 128,
           "minLength": 1,
           "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
           "title": "Fact Id",
           "type": "string"
+        },
+        "fact_version": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Fact Version",
+          "type": "integer"
+        },
+        "geography": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geography"
         },
         "metric_id": {
           "maxLength": 128,
@@ -2652,6 +2688,18 @@
           ],
           "default": null,
           "title": "Population"
+        },
+        "program": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Program"
         },
         "provenance": {
           "$ref": "#/$defs/Provenance"
@@ -2679,6 +2727,18 @@
           ],
           "description": "e.g. '2025-09/2026-06'; null = unknown.",
           "title": "Reporting Period"
+        },
+        "scale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scale"
         },
         "scope": {
           "title": "Scope",
@@ -6242,20 +6302,41 @@
           "type": "string"
         },
         "rule_id": {
-          "enum": [
-            "SRC-01",
-            "SRC-02",
-            "SRC-03",
-            "SRC-04",
-            "SRC-05",
-            "SRC-06",
-            "SRC-07",
-            "SRC-08",
-            "SRC-09",
-            "SRC-10"
+          "anyOf": [
+            {
+              "enum": [
+                "SRC-01",
+                "SRC-02",
+                "SRC-03",
+                "SRC-04",
+                "SRC-05",
+                "SRC-06",
+                "SRC-07",
+                "SRC-08",
+                "SRC-09",
+                "SRC-10"
+              ],
+              "type": "string"
+            },
+            {
+              "enum": [
+                "NUM-01",
+                "NUM-02",
+                "NUM-03",
+                "NUM-04",
+                "NUM-05",
+                "NUM-06",
+                "NUM-07",
+                "NUM-08",
+                "NUM-09",
+                "NUM-10",
+                "NUM-11",
+                "NUM-12"
+              ],
+              "type": "string"
+            }
           ],
-          "title": "Rule Id",
-          "type": "string"
+          "title": "Rule Id"
         },
         "rule_version": {
           "title": "Rule Version",
@@ -7377,7 +7458,12 @@
             "artifact_hash",
             "passage_locator",
             "normalization_policy",
-            "permission_snapshot"
+            "permission_snapshot",
+            "fact_version",
+            "pack_version",
+            "rounding_policy",
+            "formula",
+            "project_input"
           ],
           "title": "Kind",
           "type": "string"

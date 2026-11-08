@@ -8,7 +8,7 @@ from ...config import Settings, get_settings
 from ...db import get_engine
 from ..knowledge.artifacts import LocalArtifactStore
 from .repository import SourceValidationRepository
-from .service import SourceValidationService
+from .service import NumericValidationService, SourceValidationService
 
 
 def get_validation_repository(
@@ -30,3 +30,9 @@ def get_source_validation_service(
     repository: Annotated[SourceValidationRepository | None, Depends(get_validation_repository)],
 ) -> SourceValidationService | None:
     return SourceValidationService(repository) if repository is not None else None
+
+
+def get_numeric_validation_service(
+    repository: Annotated[SourceValidationRepository | None, Depends(get_validation_repository)],
+) -> NumericValidationService | None:
+    return NumericValidationService(repository) if repository is not None else None

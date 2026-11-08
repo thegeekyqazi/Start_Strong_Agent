@@ -41,9 +41,12 @@ from strongstart_api.features.validation.repository import (
     SourceValidationRepository,
     ValidationSubjectNotFoundError,
 )
-from strongstart_api.features.validation.service import SourceValidationService
+from strongstart_api.features.validation.service import (
+    NumericValidationService,
+    SourceValidationService,
+)
 from strongstart_api.seed import seed_demo
-from strongstart_contracts import SourceValidationRequest
+from strongstart_contracts import NumericValidationRequest, SourceValidationRequest
 from tests.conftest import BUNDLE_PATH, REPO_ROOT
 from tests.knowledge.pdf_fixture import make_text_pdf
 
@@ -276,6 +279,44 @@ def test_source_validation_persists_and_replays_exact_receipt(migrated: str) -> 
             "artifact_hash",
             "permission_snapshot",
         }
+    finally:
+        _delete_validation_receipt(engine, report.evaluation_id)
+
+
+def test_numeric_validation_resolves_authorized_fact_and_persists_dependencies(
+    migrated: str,
+) -> None:
+    engine = get_engine(migrated)
+    seed_demo(engine, BUNDLE_PATH)
+    repository = SourceValidationRepository(engine)
+    report = NumericValidationService(repository).evaluate(
+        "demo-org",
+        "demo-staff",
+        NumericValidationRequest(
+            pack_version_id="demo-a-v1",
+            fact_id="demo-fact-children-served",
+            rule_ids=["NUM-03", "NUM-08"],
+            claimed_value="120",
+            expected_metric_id="children-served",
+        ),
+    )
+    try:
+        assert repository.get_numeric_receipt("demo-org", report.evaluation_id) == report
+        assert [item.outcome for item in report.results] == ["pass", "pass"]
+        assert report.fact_version == 1
+        assert {item.kind for item in report.dependencies} >= {
+            "fact_version",
+            "pack_version",
+            "rounding_policy",
+            "permission_snapshot",
+        }
+        with pytest.raises(ValidationSubjectNotFoundError):
+            repository.resolve_numeric(
+                "other-org",
+                NumericValidationRequest(
+                    pack_version_id="demo-a-v1", fact_id="demo-fact-children-served"
+                ),
+            )
     finally:
         _delete_validation_receipt(engine, report.evaluation_id)
 

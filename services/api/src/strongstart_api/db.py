@@ -26,7 +26,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from strongstart_contracts import ReadinessCheck, ReadinessReport
 
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0005_validation_receipts"
+REQUIRED_MIGRATION_REVISION = "0006_numeric_validation"
 
 metadata = MetaData()
 
@@ -125,18 +125,40 @@ knowledge_facts = Table(
     "knowledge_facts",
     metadata,
     Column("id", String(128), primary_key=True),
+    Column("fact_version", Integer, nullable=False, server_default="1"),
     Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
     Column("metric_id", String(128), nullable=False),
     Column("value_exact", Text),
     Column("raw_value", Text),
     Column("unit", Text),
+    Column("currency", Text),
+    Column("scale", Text),
     Column("scope", Text, nullable=False),
+    Column("program", Text),
+    Column("geography", Text),
     Column("population", Text),
     Column("reporting_period", Text),
     Column("status", String(24), nullable=False),
     Column("provenance_class", String(32), nullable=False),
     Column("is_simulated", Boolean, nullable=False),
     Column("provenance_note", Text),
+)
+
+project_numeric_inputs = Table(
+    "project_numeric_inputs",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("input_version", Integer, nullable=False, server_default="1"),
+    Column("value_exact", Text, nullable=False),
+    Column("unit", Text),
+    Column("status", String(24), nullable=False),
+    Column("is_simulated", Boolean, nullable=False, server_default="false"),
+    CheckConstraint("input_version >= 1", name="ck_project_numeric_inputs_version"),
+    CheckConstraint(
+        "status IN ('proposed','approved','revoked')",
+        name="ck_project_numeric_inputs_status",
+    ),
 )
 
 fact_source_refs = Table(
