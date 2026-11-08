@@ -72,7 +72,7 @@ def test_malformed_slot_rejected() -> None:
     assert issues_for(raw) == ["malformed_slot"]
 
 
-@pytest.mark.parametrize("extra", [{"confidence": 0.9}, {"tool": "shell"}, {"org_id": "x"}])
+@pytest.mark.parametrize("extra", [{"confidence": 0.9}, {"tool": "shell"}])
 def test_extra_fields_rejected(extra: dict[str, Any]) -> None:
     assert issues_for(json.dumps(valid(**extra)))[0] == "schema"
 

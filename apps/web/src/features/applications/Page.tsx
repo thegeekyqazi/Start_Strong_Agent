@@ -1,13 +1,17 @@
-// Applications workspace. Owner: C. C1 spec rev 1.0 s7; lane plan s6.3.
-// All data comes from the API (fixture-backed in C1). Everything renders as React text.
-// Drafts are proposals: nothing here reviews or approves an answer (SEC-14).
+// Applications workspace. Owner: C. C1 spec rev 1.1 s7; C2 spec rev 1.1 s7; lane plan s6.3.
+// All data comes from the API (fixture-backed). Everything renders as React text.
+// Fact values are rendered by the server (s8.2); findings come from deterministic checks
+// bound to the exact text. Nothing here reviews or approves an answer (SEC-14).
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import type {
+  AnswerFinding,
+  AnswerPlan,
   ApplicationWorkspace,
+  CheckReport,
   DraftProposal,
   EvidenceBundle,
-  Fact,
   Question,
+  RenderedAnswer,
 } from '@strongstart/contracts'
 import {
   EvidenceCard,
@@ -23,76 +27,73 @@ import {
   httpApplicationsClient,
   type ApplicationsClient,
 } from './client'
-import { countCharacters, countWords } from './counter'
 
-const SLOT = /\{\{fact:([a-z0-9][a-z0-9._:-]{0,127})\}\}/g
-const COUNT_NOTE = '(placeholder count; counting convention unverified)'
+const CHECK_DELAY_MS = 300
 
+type Mode = 'working' | 'reviewed'
 type Load =
   | { kind: 'loading' }
   | { kind: 'error'; message: string }
   | { kind: 'ready'; data: ApplicationWorkspace }
+type Checked = { text: string; mode: Mode; report: CheckReport }
 
-function factChipText(fact: Fact): string {
-  const value = fact.value ?? 'unknown value'
-  const unit = fact.unit ?? '(unit unknown)'
-  const period = fact.reporting_period ?? 'period unknown'
-  const prov = fact.provenance.is_simulated
-    ? 'Simulated'
-    : PROVENANCE_LABEL[fact.provenance.provenance_class]
-  return `${value} ${unit} · ${period} · ${prov} · ${factStatusLabel(fact.status)}`
-}
-
-function SlotPreview({ text, bundle }: { text: string; bundle: EvidenceBundle }) {
+/** Server spans are Unicode code-point offsets; slice by code point, not UTF-16 unit. */
+function RenderedPreview({
+  rendered,
+  bundle,
+  heading,
+}: {
+  rendered: RenderedAnswer
+  bundle: EvidenceBundle
+  heading: string
+}) {
+  const chars = Array.from(rendered.text)
+  const marks = [
+    ...rendered.bindings.map((b) => ({ start: b.span_start, end: b.span_end, fact: b.fact_id })),
+    ...rendered.unsupported_markers.map((m) => ({
+      start: m.span_start,
+      end: m.span_end,
+      fact: null as string | null,
+    })),
+  ].sort((a, b) => a.start - b.start)
   const parts: ReactNode[] = []
-  let last = 0
-  for (const m of text.matchAll(SLOT)) {
-    const start = m.index ?? 0
-    if (start > last) parts.push(text.slice(last, start))
-    const fact = bundle.facts.find((f) => f.fact_id === m[1])
+  let pos = 0
+  for (const m of marks) {
+    if (m.start > pos) parts.push(chars.slice(pos, m.start).join(''))
+    const text = chars.slice(m.start, m.end).join('')
+    const fact = m.fact ? bundle.facts.find((f) => f.fact_id === m.fact) : undefined
     parts.push(
       fact ? (
         <span
-          key={start}
+          key={m.start}
           className="fact-chip"
-          aria-label={`Linked fact ${fact.metric_id}: ${factChipText(fact)}`}
+          aria-label={`Linked fact ${fact.metric_id}: ${text}, ${
+            fact.provenance.is_simulated ? 'simulated' : 'not simulated'
+          }, ${factStatusLabel(fact.status).toLowerCase()}`}
         >
-          {factChipText(fact)}
+          {text} · {fact.provenance.is_simulated ? 'Simulated' : 'Source data'} ·{' '}
+          {factStatusLabel(fact.status)}
         </span>
       ) : (
-        <span key={start} className="fact-chip fact-chip-unknown">
-          Unknown fact – not shown
+        <span key={m.start} className="fact-chip fact-chip-unknown">
+          {text}
         </span>
       ),
     )
-    last = start + m[0].length
+    pos = m.end
   }
-  if (last < text.length) parts.push(text.slice(last))
+  if (pos < chars.length) parts.push(chars.slice(pos).join(''))
   return (
-    <section aria-labelledby="slot-preview" className="slot-preview">
-      <h4 id="slot-preview">Preview with linked facts</h4>
+    <section className="slot-preview" aria-label={heading}>
+      <h4>{heading}</h4>
       <p>{parts}</p>
     </section>
   )
 }
 
-function LimitInfo({ question, text }: { question: Question; text: string }) {
-  const words = countWords(text)
-  const chars = countCharacters(text)
+function QuestionNotices({ question }: { question: Question }) {
   const conflicts = question.conflicts ?? []
   const limit = question.limit ?? null
-  let summary: string
-  if (conflicts.length > 0) {
-    summary = `Placeholder count: ${words} words, ${chars} characters ${COUNT_NOTE}`
-  } else if (limit === null || limit.maximum === null || limit.maximum === undefined) {
-    summary = `Placeholder count: ${words} words ${COUNT_NOTE}`
-  } else if (limit.unit === 'unknown') {
-    summary = `Placeholder count: ${words} words, ${chars} characters ${COUNT_NOTE}`
-  } else {
-    const n = limit.unit === 'characters' ? chars : words
-    const over = n - limit.maximum
-    summary = `Placeholder count: ${n} of ${limit.maximum} ${limit.unit}${over > 0 ? ` – ${over} over` : ''} ${COUNT_NOTE}`
-  }
   return (
     <div className="limit-info">
       {conflicts.length === 0 && limit && limit.unit !== 'unknown' && limit.maximum != null && (
@@ -123,17 +124,62 @@ function LimitInfo({ question, text }: { question: Question; text: string }) {
           nextAction="Both counts are shown until staff confirm the unit."
         />
       )}
-      {question.required === null && (
-        <FindingRow
-          origin="question_data"
-          outcome="notice"
-          message="The guide does not say whether this question is required."
-        />
-      )}
-      <p aria-live="polite" className="counter">
-        {summary}
-      </p>
     </div>
+  )
+}
+
+function Findings({ findings, stale }: { findings: AnswerFinding[]; stale: boolean }) {
+  return (
+    <section aria-labelledby="findings-heading" className={stale ? 'findings stale' : 'findings'}>
+      <h4 id="findings-heading">Checks on this text</h4>
+      {stale && (
+        <p role="status" className="hint">
+          Out of date – the text or check mode changed since these checks ran. Re-checking…
+        </p>
+      )}
+      {findings.map((f, n) => (
+        <FindingRow
+          key={`${f.result.rule_id}-${n}`}
+          origin="check"
+          outcome={f.result.outcome}
+          message={`${f.result.rule_id}: ${f.message}`}
+          affectedText={f.affected_text ?? undefined}
+          nextAction={f.next_action ?? undefined}
+        />
+      ))}
+    </section>
+  )
+}
+
+function PlanPanel({ plan, questions }: { plan: AnswerPlan; questions: Question[] }) {
+  const label = (id: string) => questions.find((q) => q.question_id === id)?.original_text ?? id
+  return (
+    <section aria-labelledby="plan-heading" className="plan-panel">
+      <h3 id="plan-heading">Answer plan</h3>
+      <p className="hint">
+        {plan.planner.is_fixture
+          ? 'Planned by the demo planning assistant (fixed sample output, not an AI model).'
+          : `Planned by ${plan.planner.adapter} (${plan.planner.model}).`}{' '}
+        A plan suggests evidence and lists what is missing; it never invents figures.
+      </p>
+      <ol>
+        {plan.items.map((i) => (
+          <li key={i.question_id}>
+            <strong>{label(i.question_id)}</strong>
+            <div>
+              Evidence:{' '}
+              {i.evidence_fact_ids.length ? i.evidence_fact_ids.join(', ') : 'none assigned'}
+            </div>
+            {i.missing_inputs.map((m) => (
+              <div key={m}>Missing: {m} (not invented)</div>
+            ))}
+            {i.repeated_with.length > 0 && (
+              <div>Asks for the same content as: {i.repeated_with.map(label).join('; ')}</div>
+            )}
+          </li>
+        ))}
+      </ol>
+    </section>
   )
 }
 
@@ -156,6 +202,10 @@ export function ApplicationsPage({
   const [texts, setTexts] = useState<Record<string, string>>({})
   const [drafts, setDrafts] = useState<Record<string, DraftProposal>>({})
   const [pending, setPending] = useState<Record<string, DraftProposal>>({})
+  const [checked, setChecked] = useState<Record<string, Checked>>({})
+  const [mode, setMode] = useState<Mode>('working')
+  const [plan, setPlan] = useState<AnswerPlan | null>(null)
+  const [planError, setPlanError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
   const [draftError, setDraftError] = useState<string | null>(null)
   // Latest editor text, read after an await so in-flight typing is never overwritten (s15).
@@ -180,23 +230,53 @@ export function ApplicationsPage({
     }
   }, [client])
 
+  const ws = load.kind === 'ready' ? load.data : null
+  const question = ws?.question_set.questions.find((q) => q.question_id === selected) ?? null
+  const text = question ? (texts[question.question_id] ?? '') : ''
+
+  // Re-run deterministic checks after edits (debounced). Results bind to the exact text.
+  useEffect(() => {
+    if (!ws || !question) return
+    const qid = question.question_id
+    const handle = setTimeout(() => {
+      client
+        .check(qid, {
+          question_version: question.question_version,
+          evidence_bundle_id: ws.evidence_bundle.bundle_id,
+          text,
+          mode,
+        })
+        .then((r) => {
+          if (r.ok) setChecked((c) => ({ ...c, [qid]: { text, mode, report: r.data } }))
+        })
+    }, CHECK_DELAY_MS)
+    return () => clearTimeout(handle)
+  }, [client, ws, question, text, mode])
+
   if (load.kind === 'loading') return <p role="status">Loading the application…</p>
-  if (load.kind === 'error') {
+  if (load.kind === 'error' || !ws) {
     return (
       <section aria-labelledby="applications-heading">
         <h2 id="applications-heading">Applications</h2>
-        <p role="alert">{load.message}</p>
+        <p role="alert">{load.kind === 'error' ? load.message : ''}</p>
       </section>
     )
   }
 
-  const ws = load.data
   const questions = [...ws.question_set.questions].sort((a, b) => a.order - b.order)
-  const question = questions.find((q) => q.question_id === selected) ?? null
   const bundle = ws.evidence_bundle
-  const text = question ? (texts[question.question_id] ?? '') : ''
   const draft = question ? drafts[question.question_id] : undefined
   const suggestion = question ? pending[question.question_id] : undefined
+  const current = question ? checked[question.question_id] : undefined
+  const stale = !!current && (current.text !== text || current.mode !== mode)
+  const app01 = current?.report.findings.find((f) => f.result.rule_id === 'APP-01')
+
+  async function requestPlan() {
+    setPlanError(null)
+    const r = await client.plan({ evidence_bundle_id: bundle.bundle_id })
+    if (r.ok) setPlan(r.data)
+    else setPlanError(describeDraftError(r))
+  }
 
   async function requestDraft(q: Question) {
     setBusy(true)
@@ -236,6 +316,13 @@ export function ApplicationsPage({
         suggestions; nothing here is reviewed or approved.
       </p>
       {ws.is_fixture && <p className="badge badge-planned">{ws.data_label}</p>}
+      <div className="plan-actions">
+        <button type="button" onClick={requestPlan}>
+          Plan this application
+        </button>
+        {planError && <p role="alert">{planError}</p>}
+      </div>
+      {plan && <PlanPanel plan={plan} questions={questions} />}
       <div className="workspace">
         <nav aria-label="Questions" className="ws-questions">
           <h3>Questions ({questions.length})</h3>
@@ -274,7 +361,31 @@ export function ApplicationsPage({
                 {PROVENANCE_LABEL[question.source_refs[0].provenance.provenance_class] ??
                   question.source_refs[0].provenance.provenance_class}
               </p>
-              <LimitInfo question={question} text={text} />
+              <QuestionNotices question={question} />
+              <fieldset className="mode-toggle">
+                <legend>Check mode</legend>
+                <label>
+                  <input
+                    type="radio"
+                    name="mode"
+                    checked={mode === 'working'}
+                    onChange={() => setMode('working')}
+                  />{' '}
+                  Working draft (missing items are allowed and marked)
+                </label>
+                <label>
+                  <input
+                    type="radio"
+                    name="mode"
+                    checked={mode === 'reviewed'}
+                    onChange={() => setMode('reviewed')}
+                  />{' '}
+                  Review check (missing items block review)
+                </label>
+              </fieldset>
+              <p aria-live="polite" className="counter">
+                {app01 && !stale ? app01.message : 'Counting…'}
+              </p>
               <label htmlFor="answer-editor">Your answer</label>
               <textarea
                 id="answer-editor"
@@ -303,13 +414,26 @@ export function ApplicationsPage({
                 <section aria-labelledby="suggested-draft" className="suggestion">
                   <h4 id="suggested-draft">Suggested draft</h4>
                   <p>Your answer already has text, so the suggestion was not inserted.</p>
-                  <SlotPreview text={suggestion.template_text} bundle={bundle} />
+                  {suggestion.check && (
+                    <RenderedPreview
+                      rendered={suggestion.check.rendered}
+                      bundle={bundle}
+                      heading="Suggestion with linked facts"
+                    />
+                  )}
                   <button type="button" onClick={() => acceptSuggestion(question, suggestion)}>
                     Replace my text with this suggestion
                   </button>
                 </section>
               )}
-              {text.trim() !== '' && <SlotPreview text={text} bundle={bundle} />}
+              {current && text.trim() !== '' && !stale && (
+                <RenderedPreview
+                  rendered={current.report.rendered}
+                  bundle={bundle}
+                  heading="Preview with linked facts"
+                />
+              )}
+              {current && <Findings findings={current.report.findings} stale={stale} />}
               {draft && (
                 <section aria-labelledby="draft-details" className="draft-details">
                   <h4 id="draft-details">About the latest suggestion</h4>
