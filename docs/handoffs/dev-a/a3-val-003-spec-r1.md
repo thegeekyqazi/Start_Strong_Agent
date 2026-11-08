@@ -7,7 +7,7 @@
 - Task spec path/revision: `docs/specs/A3-VAL-003_Deterministic_Validation_Runner.md` rev 1.0
 - Engineering version/sections and rule IDs: v1.1 sections 4, 5, 8.2, 9, 10.1-10.2, 13.2, 14-15, 19-21 and 23.2; SRC-01-10, NUM-01-12; SEC-01/02/04/13 boundaries
 - Branch and exact implementation commit: `dev-a/a3-val-003-spec`; this handoff ships in the documentation commit, whose exact SHA is attached to the PR
-- PR / Issue links, or not published: pending publication
+- PR / Issue links, or not published: [PR #11](https://github.com/thegeekyqazi/Start_Strong_Agent/pull/11)
 - Supersedes / superseded by: none
 
 ## What works

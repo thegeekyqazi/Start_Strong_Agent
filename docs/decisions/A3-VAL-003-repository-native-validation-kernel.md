@@ -6,7 +6,7 @@
 - Decided/accepted by and evidence: project owner accepted the normal A3 plan plus the documented safeguards in the active Codex session on 2026-11-08
 - Engineering path/version/sections: `docs/engineering/StrongStart_Engineering_Plan.md` v1.1 sections 3-5, 8.2, 9, 10.1-10.2, 13.2, 14-15, 19-21 and 23.2
 - Feature spec path/revision: `docs/specs/A3-VAL-003_Deterministic_Validation_Runner.md` rev 1.0
-- PR / Issue: pending publication
+- PR / Issue: [PR #11](https://github.com/thegeekyqazi/Start_Strong_Agent/pull/11)
 - Supersedes / superseded by: none
 
 ## Original requirement
