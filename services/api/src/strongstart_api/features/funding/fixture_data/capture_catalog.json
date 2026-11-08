@@ -1,0 +1,56 @@
+{
+  "fixture": "FIXTURE: registered synthetic pages for fixture capture mode only.",
+  "pages": [
+    {
+      "url": "https://demo-funder.example/programs/community-grants",
+      "markdown_file": "community-grants.md",
+      "html_file": "community-grants.main.html",
+      "raw_html_file": "community-grants.raw.html",
+      "metadata": {
+        "title": "FIXTURE Demo Funder - Community Grants Program",
+        "sourceURL": "https://demo-funder.example/programs/community-grants",
+        "url": "https://demo-funder.example/programs/community-grants",
+        "statusCode": 200,
+        "contentType": "text/html; charset=utf-8",
+        "language": "en"
+      }
+    },
+    {
+      "url": "https://demo-funder.example/programs/community-grants?cycle=2025",
+      "markdown_file": "community-grants-2025.md",
+      "metadata": {
+        "title": "FIXTURE Community Grants Program (2025 round)",
+        "url": "https://demo-funder.example/programs/community-grants?cycle=2025",
+        "statusCode": 200,
+        "contentType": "text/html"
+      },
+      "warning": "FIXTURE: only markdown was produced for this page."
+    },
+    {
+      "url": "https://news.demo-foundation.example/2026/awards-announced",
+      "markdown_file": "awards.md",
+      "html_file": "awards.html",
+      "raw_html_file": "awards.html",
+      "metadata": {
+        "title": "FIXTURE Demo Foundation announces 2026 grant recipients",
+        "url": "https://news.demo-foundation.example/2026/awards-announced",
+        "statusCode": 200,
+        "contentType": "text/html"
+      }
+    },
+    {
+      "url": "https://demo-funder.example/empty",
+      "metadata": {"url": "https://demo-funder.example/empty", "statusCode": 200, "contentType": "text/html"}
+    },
+    {
+      "url": "https://demo-funder.example/redirect-internal",
+      "markdown_file": "awards.md",
+      "metadata": {"url": "http://169.254.169.254/latest/meta-data/", "statusCode": 200, "contentType": "text/html"}
+    },
+    {
+      "url": "https://demo-funder.example/blocked",
+      "markdown_file": "awards.md",
+      "metadata": {"url": "https://demo-funder.example/blocked", "statusCode": 403, "contentType": "text/html"}
+    }
+  ]
+}

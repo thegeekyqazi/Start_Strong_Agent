@@ -1,0 +1,12 @@
+{
+  "fixture": "FIXTURE discovery seed. A discovery seed is NOT an eligible shortlist.",
+  "sources": [
+    {
+      "seed_id": "fixture-demo-funder",
+      "label": "Demo Funder (synthetic)",
+      "hosts": ["demo-funder.example"],
+      "authority": "confirmed_official",
+      "basis": "FIXTURE configured discovery seed"
+    }
+  ]
+}

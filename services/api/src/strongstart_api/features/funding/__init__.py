@@ -1,5 +1,5 @@
-"""Find Funding feature (owner: B1). Edit only this package for B1 feature work."""
+"""Find Funding feature (owner: B1)."""
 
-from .router import CAPABILITIES, router
+from .router import CAPABILITIES, capabilities_for, router
 
-__all__ = ["CAPABILITIES", "router"]
+__all__ = ["CAPABILITIES", "capabilities_for", "router"]

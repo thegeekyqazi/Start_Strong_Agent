@@ -51,7 +51,6 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     caps = {c["feature"]: c for c in body["capabilities"]}
     for feature, owner in [
         ("knowledge", "A"),
-        ("funding", "B1"),
         ("automation", "B2"),
         ("applications", "C"),
         ("review", "C"),
@@ -59,6 +58,10 @@ def test_capabilities_are_explicit_and_features_unimplemented() -> None:
     ]:
         assert caps[feature]["status"] == "not_implemented"
         assert caps[feature]["owner"] == owner
+    # B1-DISC-001: funding reports runtime availability; without provider keys it is
+    # explicitly unavailable (never "available" by default).
+    assert caps["funding"]["owner"] == "B1"
+    assert caps["funding"]["status"] == "unavailable"
     assert caps["platform.identity"]["status"] == "unavailable"
 
 
