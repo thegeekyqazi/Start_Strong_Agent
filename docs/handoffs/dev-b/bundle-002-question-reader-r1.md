@@ -7,7 +7,7 @@
 - Task spec: `docs/specs/DEV-B-BUNDLE-002_Saved_Grant_Workspace_and_Reviewed_Research.md` rev 1.0, s5 (M1), s10, s13. It supersedes B2-AUTO-001A rev 1.0, which had no prior code.
 - Engineering: v1.1 s7, s14, s15, s20.3 (public producer interfaces), s20.7 (G1)
 - Branch: `dev-b/dev-b-bundle-002`, base `origin/main` `2adcdeb0d8a3059caf0d8734bff054403a5c7ffb`. M1 commit: see the PR's commit list ("feat(automation): saved definitions ... (M1)"). A file cannot contain its own SHA.
-- PR: draft PR from `dev-b/dev-b-bundle-002` (link posted on C2 PR #7)
+- PR: https://github.com/thegeekyqazi/Start_Strong_Agent/pull/12 (draft; link posted on C2 PR #7)
 - Answers: `docs/handoffs/dev-c/c2-question-read-port-request.md`
 
 ## What works (real persistence, not a dictionary)
@@ -96,8 +96,8 @@ Baseline before M1 (`2adcdeb`): `make check` exit 0, 407 pytest and 54 Vitest. N
 
 ## Message for C2 PR #7
 
-> Dev B M1 (DEV-B-BUNDLE-002): the question read port C requested in `c2-question-read-port-request.md` now exists on draft PR <B PR link>. Port `ApplicationDefinitionReader` (`strongstart_contracts.application_publication`) and factory `strongstart_api.features.automation.public.get_application_definition_reader`. Envelope `b2-published-definition/1`. Exact versions via `get_version(org, question_set_id)`; current via `get_current(org, definition_id)`. Semantics are unchanged (conflicts/unknowns stay unresolved). Handoff: `docs/handoffs/dev-b/bundle-002-question-reader-r1.md`. Sample: `tests/fixtures/automation/published-definition-v1.sample.json`. The development-only local repository is disabled in production. Please acknowledge the port name/version when C2b starts consuming it; B+C G1 stays pending until C's editor reads it.
+> Dev B M1 (DEV-B-BUNDLE-002): the question read port C requested in `c2-question-read-port-request.md` now exists on draft PR https://github.com/thegeekyqazi/Start_Strong_Agent/pull/12. Port `ApplicationDefinitionReader` (`strongstart_contracts.application_publication`) and factory `strongstart_api.features.automation.public.get_application_definition_reader`. Envelope `b2-published-definition/1`. Exact versions via `get_version(org, question_set_id)`; current via `get_current(org, definition_id)`. Semantics are unchanged (conflicts/unknowns stay unresolved). Handoff: `docs/handoffs/dev-b/bundle-002-question-reader-r1.md`. Sample: `tests/fixtures/automation/published-definition-v1.sample.json`. The development-only local repository is disabled in production. Please acknowledge the port name/version when C2b starts consuming it; B+C G1 stays pending until C's editor reads it.
 
 ## Acknowledgments
 
-None yet.
+Posted on C2 PR #7: https://github.com/thegeekyqazi/Start_Strong_Agent/pull/7#issuecomment-6718774577 (2026-11-08). No acknowledgment from C yet.
