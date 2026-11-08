@@ -31,3 +31,21 @@ def test_schema_marks_contract_status_and_owner() -> None:
     ]:
         assert defs[name]["x-contract-status"] in {"draft", "frozen"}
         assert defs[name]["x-owner"]
+
+
+def test_automation_intake_contracts_are_exported_and_owned_by_b2() -> None:
+    defs = build_schema()["$defs"]
+    assert isinstance(defs, dict)
+    for name in [
+        "ApplicationIntakeResult",
+        "FormInspectionResult",
+        "AutomationHandoffExport",
+        "AutomationAvailability",
+        "ImportApplicationRequest",
+    ]:
+        assert defs[name]["x-owner"] == "B2"
+        assert defs[name]["x-contract-status"] == "draft"
+    # The handoff cannot express approval or prefill permission.
+    props = defs["AutomationHandoffExport"]["properties"]
+    assert props["approval_status"]["const"] == "not_approved"
+    assert props["prefill_permitted"]["const"] is False

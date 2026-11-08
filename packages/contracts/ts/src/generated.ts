@@ -74,6 +74,400 @@ export interface ApplicationDefinition {
   schema_version?: '1'
 }
 /**
+ * Typed import result. Nonpersistent; an imported definition is not an approval.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApplicationIntakeResult".
+ */
+export interface ApplicationIntakeResult {
+  application_definition?: ApplicationDefinition | null
+  application_definition_id?: string | null
+  approval_status?: 'not_approved'
+  authority_status?: 'imported_provisional_unreviewed'
+  coverage: IntakeCoverage
+  cycle_id?: string | null
+  /**
+   * Read-only text context for unsupported inputs (bounded).
+   */
+  evidence_excerpt?: ExactText | null
+  evidence_excerpt_truncated?: boolean
+  findings?: Finding[]
+  import_id: string
+  input: InputRepresentation
+  intake_format?: 'b2-application-intake/1'
+  is_fixture: boolean
+  mode_label: string
+  opportunity_id?: string | null
+  original_evidence?: {
+    [k: string]: unknown
+  }
+  original_guide_present?: boolean
+  persisted?: false
+  provenance: Provenance
+  question_set?: QuestionSet | null
+  questions?: IntakeQuestion[]
+  schema_version?: '1'
+  stream_id?: string | null
+  title?: ExactText | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "IntakeCoverage".
+ */
+export interface IntakeCoverage {
+  controls_seen: number
+  notes?: string[]
+  questions_extracted: number
+  status: 'supported_complete' | 'supported_partial' | 'unsupported_needs_manual_definition'
+  unsupported_elements: number
+}
+/**
+ * Exact imported text plus a separately derived display form.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ExactText".
+ */
+export interface ExactText {
+  /**
+   * Derived: whitespace-collapsed for display only.
+   */
+  display_text: string
+  locator: SourceLocator
+  /**
+   * Exact text as imported (entities decoded for HTML).
+   */
+  text: string
+}
+/**
+ * Precise location inside the exact imported representation. Never a made-up page.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SourceLocator".
+ */
+export interface SourceLocator {
+  column?: number | null
+  kind: 'json_pointer' | 'html_element' | 'dom_element' | 'whole_input'
+  line?: number | null
+  /**
+   * JSON pointer, element path or DOM description.
+   */
+  value: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "Finding".
+ */
+export interface Finding {
+  code:
+    | 'limit_conflict'
+    | 'native_maxlength_conflict'
+    | 'unknown_limit_unit'
+    | 'unknown_counting_convention'
+    | 'required_status_unknown'
+    | 'condition_unresolved'
+    | 'condition_declared_fixture_metadata'
+    | 'attachment_constraints_unknown'
+    | 'scope_unknown'
+    | 'missing_label'
+    | 'missing_identifier'
+    | 'unsupported_widget'
+    | 'unrecognized_field_preserved'
+    | 'untrusted_authority_claim_ignored'
+    | 'source_claim_unresolved'
+    | 'script_content_inert'
+    | 'external_reference_not_loaded'
+    | 'hidden_content'
+    | 'submission_control_present'
+    | 'no_supported_form_content'
+    | 'pdf_parsing_not_implemented'
+    | 'markdown_not_parsed'
+    | 'stream_specific_limit'
+    | 'element_limit_reached'
+    | 'mapping_missing'
+    | 'mapping_ambiguous'
+    | 'mapping_type_mismatch'
+    | 'mapping_changed'
+    | 'fingerprint_changed'
+    | 'unknown_form_version'
+    | 'unmapped_field'
+    | 'unexpected_required_field'
+    | 'unresolved_requirement'
+    | 'duplicate_option_value'
+    | 'blocked_request'
+    | 'blocked_navigation'
+    | 'blocked_popup'
+    | 'blocked_download'
+    | 'field_limit_reached'
+  field_id?: string | null
+  locator?: SourceLocator | null
+  message: string
+  question_id?: string | null
+  severity: 'blocker' | 'warning' | 'info'
+}
+/**
+ * The exact bytes this result was derived from. Identity/hash are server-created.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "InputRepresentation".
+ */
+export interface InputRepresentation {
+  byte_size: number
+  capture?: CaptureLineage | null
+  integrity: 'computed_on_receipt' | 'hash_verified_against_capture_record'
+  media_type: string
+  normalization_version: string
+  origin: 'fixture' | 'uploaded_unverified' | 'capture'
+  parser_id: string
+  parser_version: string
+  persisted?: false
+  representation_id: string
+  representation_type:
+    | 'structured_json'
+    | 'html_form'
+    | 'provider_html'
+    | 'provider_raw_html'
+    | 'original_http_bytes'
+    | 'provider_markdown'
+    | 'pdf'
+    | 'unknown'
+  /**
+   * SHA-256 of the exact bytes parsed (UTF-8 for text).
+   */
+  sha256: string
+  storage: 'nonpersistent_response' | 'capture_port_reference'
+}
+/**
+ * Lineage of a captured document consumed through the B1-B2 capture port.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureLineage".
+ */
+export interface CaptureLineage {
+  artifact_id: string
+  authority_review_status: string
+  capture_id: string
+  capture_is_fixture: boolean
+  captured_at?: string | null
+  cycle_id?: string | null
+  extraction_warnings?: string[]
+  final_url?: string | null
+  final_url_status: 'known' | 'unknown'
+  opportunity_id?: string | null
+  organization_scope?: 'server_verified'
+  original_url?: string | null
+  provider?: string | null
+  representation_type: string
+  requested_url?: string | null
+  source_version_id: string
+  stream_id?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "QuestionSet".
+ */
+export interface QuestionSet {
+  opportunity_id: string
+  provenance: Provenance
+  question_set_id: string
+  /**
+   * @minItems 1
+   */
+  questions: [Question, ...Question[]]
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "Question".
+ */
+export interface Question {
+  answer_type: 'text' | 'number' | 'amount' | 'choice' | 'attachment' | 'other'
+  attachments?: string[]
+  conditions?: string[]
+  conflicts?: LimitConflict[]
+  limit?: QuestionLimit | null
+  order: number
+  original_text: string
+  question_id: string
+  question_version: number
+  /**
+   * Null when the source does not say.
+   */
+  required: boolean | null
+  section?: string | null
+  /**
+   * @minItems 1
+   */
+  source_refs: [SourceReference, ...SourceReference[]]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "LimitConflict".
+ */
+export interface LimitConflict {
+  /**
+   * @minItems 2
+   */
+  candidate_limits: [QuestionLimit, QuestionLimit, ...QuestionLimit[]]
+  conflict_id: string
+  description: string
+  resolution?: 'unresolved' | 'staff_resolved'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "QuestionLimit".
+ */
+export interface QuestionLimit {
+  counting_convention?: string | null
+  maximum?: number | null
+  /**
+   * @minItems 1
+   */
+  source_refs: [SourceReference, ...SourceReference[]]
+  /**
+   * Unknown units stay 'unknown'; never guessed.
+   */
+  unit: 'words' | 'characters' | 'amount' | 'unknown'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SourceReference".
+ */
+export interface SourceReference {
+  captured_at?: string | null
+  /**
+   * Hash of original bytes when actually computed; else null.
+   */
+  content_hash?: string | null
+  /**
+   * Page/section/offset/selector.
+   */
+  locator?: string | null
+  provenance: Provenance
+  publication_date: DateKnowledge
+  reporting_period?: string | null
+  source_id: string
+  source_version_id: string
+  verification_status?: 'unverified' | 'verified' | 'conflicting'
+}
+/**
+ * A date that may be unknown. Unknown is explicit; it is never a fabricated value.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DateKnowledge".
+ */
+export interface DateKnowledge {
+  status: 'known' | 'unknown' | 'not_applicable'
+  value?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "IntakeQuestion".
+ */
+export interface IntakeQuestion {
+  action_state: 'held_unresolved_requirement' | 'no_blocker_detected_not_approved'
+  answer_kind: 'text' | 'number' | 'select' | 'choice' | 'group' | 'file' | 'unsupported'
+  attachment?: AttachmentSpec | null
+  choice_mode?: ('single' | 'multiple') | null
+  choices?: ChoiceOption[]
+  conditions?: ConditionRecord[]
+  hold_reasons?: string[]
+  instructions?: ExactText[]
+  limit_conflicts?: LimitConflictRecord[]
+  limits?: IntakeLimit[]
+  /**
+   * Original order in the imported representation.
+   */
+  order: number
+  original_number?: string | null
+  question_id: string
+  question_version?: number
+  required_status: 'required' | 'optional' | 'conditional' | 'unknown'
+  scope: 'organization' | 'program' | 'unknown'
+  section?: ExactText | null
+  source_ref: SourceReference
+  text: ExactText
+  /**
+   * Original-evidence blob: preserved, never interpreted as policy or code.
+   */
+  unrecognized_fields?: {
+    [k: string]: unknown
+  }
+}
+/**
+ * Only constraints the source states. ``None`` means unknown, never 'unlimited'.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AttachmentSpec".
+ */
+export interface AttachmentSpec {
+  accepted_types?: string[] | null
+  basis: 'declared_fixture_metadata' | 'structured_definition' | 'native_dom_attribute'
+  evidence?: ExactText[]
+  max_count?: number | null
+  max_size_bytes?: number | null
+  multiple?: boolean | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ChoiceOption".
+ */
+export interface ChoiceOption {
+  label?: ExactText | null
+  value: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ConditionRecord".
+ */
+export interface ConditionRecord {
+  basis: 'declared_fixture_metadata' | 'structured_definition' | 'source_text'
+  depends_on_question_id?: string | null
+  expected_value?: string | null
+  locator: SourceLocator
+  /**
+   * Exact source predicate.
+   */
+  predicate_text?: string | null
+  status: 'declared_unverified' | 'unresolved'
+}
+/**
+ * Competing constraints. Never resolved by choosing the convenient one.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "LimitConflictRecord".
+ */
+export interface LimitConflictRecord {
+  conflict_id: string
+  description: string
+  kind: 'competing_instruction_limits' | 'instruction_vs_native_maxlength'
+  /**
+   * @minItems 2
+   */
+  limit_ids: [string, string, ...string[]]
+  resolution?: 'unresolved'
+}
+/**
+ * One candidate constraint. Semantic limits and native browser properties stay distinct.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "IntakeLimit".
+ */
+export interface IntakeLimit {
+  applies_to_stream?: string | null
+  authority_status: 'imported_provisional' | 'browser_property'
+  convention_status: 'unknown_pending_confirmation' | 'declared_in_source' | 'defined_by_html_spec'
+  /**
+   * 'unknown' unless the source declares it; native maxlength is HTML-defined.
+   */
+  counting_convention?: string
+  evidence: ExactText
+  kind: 'instruction_text' | 'structured_definition' | 'native_dom_maxlength' | 'native_dom_range'
+  limit_id: string
+  maximum?: string | null
+  minimum?: string | null
+  unit: 'words' | 'characters' | 'amount' | 'utf16_code_units' | 'unknown'
+}
+/**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "ApprovalSnapshot".
  */
@@ -92,12 +486,16 @@ export interface ApprovalSnapshot {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "CandidateDuplicate".
+ * via the `definition` "AutomationAvailability".
  */
-export interface CandidateDuplicate {
-  original_url: string
-  provider_rank: number
-  reason: 'same_normalized_url'
+export interface AutomationAvailability {
+  browser_detail: string
+  browser_status: 'installed_not_launched' | 'unavailable' | 'disabled'
+  capabilities: Capability[]
+  fixture_mode: boolean
+  fixtures?: FixtureEntry[]
+  import_modes: ImportModeInfo[]
+  schema_version?: '1'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -108,6 +506,256 @@ export interface Capability {
   feature: string
   owner: string
   status: 'available' | 'fixture_only' | 'not_implemented' | 'unavailable'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FixtureEntry".
+ */
+export interface FixtureEntry {
+  description: string
+  fixture_id: string
+  kind: 'structured_definition' | 'html_form' | 'portal' | 'capture'
+  label: string
+  variant: 'representative' | 'malformed'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ImportModeInfo".
+ */
+export interface ImportModeInfo {
+  detail: string
+  max_bytes: number
+  mode: 'fixture' | 'structured_json' | 'html' | 'capture'
+  status: 'available' | 'fixture_only' | 'unavailable'
+}
+/**
+ * Versioned handoff for C and later prefill work. Not an approved application.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AutomationHandoffExport".
+ */
+export interface AutomationHandoffExport {
+  application_definition?: ApplicationDefinition | null
+  approval_status?: 'not_approved'
+  consumer_notes?: string[]
+  export_format?: 'b2-automation-handoff/1'
+  export_id: string
+  exported_at: string
+  form_map?: FormMap | null
+  inspection?: FormInspectionResult | null
+  intake: ApplicationIntakeResult
+  is_fixture: boolean
+  label: string
+  persisted?: false
+  prefill_permitted?: false
+  question_set?: QuestionSet | null
+  schema_version?: '1'
+  unresolved?: UnresolvedItem[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FormMap".
+ */
+export interface FormMap {
+  /**
+   * @minItems 1
+   */
+  fields: [FieldMapping, ...FieldMapping[]]
+  fingerprint?: string | null
+  form_id: string
+  form_version: number
+  origin: string
+  provenance: Provenance
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FieldMapping".
+ */
+export interface FieldMapping {
+  field_id: string
+  field_type: 'text' | 'textarea' | 'number' | 'select' | 'file' | 'checkbox' | 'radio'
+  max_length?: number | null
+  question_id: string
+  selector: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FormInspectionResult".
+ */
+export interface FormInspectionResult {
+  activity: BrowserActivity
+  browser_name: string
+  browser_version: string
+  budget: InspectionBudget
+  client_expected_fingerprint?: string | null
+  expected_fingerprint: string
+  expected_form_version: number
+  fields: ObservedField[]
+  fields_truncated?: boolean
+  findings?: Finding[]
+  fingerprint: string
+  fingerprint_algorithm?: 'b2-form-fp/1'
+  fingerprint_status: 'matches_expected' | 'changed'
+  fixture_id: string
+  form_id: string
+  /**
+   * Emitted only when every mapping resolved uniquely.
+   */
+  form_map?: FormMap | null
+  inspection_format?: 'b2-form-inspection/1'
+  inspection_id: string
+  is_fixture?: true
+  map_status: 'valid' | 'invalid'
+  mappings: FieldMappingCheck[]
+  mode_label: string
+  origin: string
+  persisted?: false
+  prefill_permitted?: false
+  question_set_id: string
+  ready_condition: string
+  schema_version?: '1'
+}
+/**
+ * Observed browser activity. The inspector itself never fills, clicks or uploads.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "BrowserActivity".
+ */
+export interface BrowserActivity {
+  blocked_log?: NetworkLogEntry[]
+  blocked_log_truncated?: boolean
+  downloads_blocked: number
+  /**
+   * Non-GET requests that reached the fixture server (expected 0).
+   */
+  fixture_server_mutation_hits: number
+  /**
+   * Always empty in this task: read-only inspection.
+   */
+  inspector_actions?: string[]
+  mutation_requests_blocked: number
+  navigations_blocked: number
+  popups_blocked: number
+  requests_allowed: number
+  requests_blocked: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "NetworkLogEntry".
+ */
+export interface NetworkLogEntry {
+  decision: 'allowed' | 'blocked'
+  method: string
+  reason: string
+  resource_type: string
+  /**
+   * Sanitized scheme://host:port/path; no query or fragment.
+   */
+  target: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "InspectionBudget".
+ */
+export interface InspectionBudget {
+  max_fields: number
+  max_text_chars: number
+  timeout_ms: number
+}
+/**
+ * A browser-observed control (read from the DOM by trusted application code).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ObservedField".
+ */
+export interface ObservedField {
+  accept?: string[] | null
+  /**
+   * data-fixture-* attributes: fixture declarations only.
+   */
+  declared_fixture_metadata?: {
+    [k: string]: string
+  }
+  described_by_text?: string[]
+  disabled: boolean
+  dom_id?: string | null
+  field_key: string
+  input_type?: string | null
+  label_text?: string | null
+  legend_text?: string | null
+  max?: string | null
+  max_length?: number | null
+  min?: string | null
+  multiple?: boolean
+  name?: string | null
+  observed_index: number
+  /**
+   * radio/checkbox value attribute
+   */
+  option_value?: string | null
+  options?: ObservedOption[]
+  readonly: boolean
+  required: boolean
+  role?: string | null
+  step?: string | null
+  supported: boolean
+  tag: string
+  visible: boolean
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ObservedOption".
+ */
+export interface ObservedOption {
+  disabled?: boolean
+  label: string
+  value: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FieldMappingCheck".
+ */
+export interface FieldMappingCheck {
+  expected_field_id: string
+  expected_kind: 'single' | 'group'
+  expected_selector: string
+  expected_type: 'text' | 'textarea' | 'number' | 'select' | 'file' | 'checkbox' | 'radio'
+  message: string
+  observed_count: number
+  observed_indexes?: number[]
+  question_id: string
+  /**
+   * True when the question has unresolved limits.
+   */
+  requirement_hold: boolean
+  status: 'matched' | 'missing' | 'ambiguous' | 'type_mismatch' | 'unsupported'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "UnresolvedItem".
+ */
+export interface UnresolvedItem {
+  detail: string
+  kind:
+    | 'limit_conflict'
+    | 'native_maxlength_conflict'
+    | 'unknown_limit_unit'
+    | 'unknown_counting_convention'
+    | 'required_status_unknown'
+    | 'condition_unresolved'
+    | 'attachment_constraints_unknown'
+    | 'scope_unknown'
+  question_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CandidateDuplicate".
+ */
+export interface CandidateDuplicate {
+  original_url: string
+  provider_rank: number
+  reason: 'same_normalized_url'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -167,6 +815,15 @@ export interface CaptureContent {
   capture_id: string
   integrity_verified?: true
   text: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureIntakeSource".
+ */
+export interface CaptureIntakeSource {
+  artifact_id: string
+  capture_id: string
+  mode: 'capture'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -231,37 +888,6 @@ export interface CapturedDocument {
   stream_id?: string | null
   supported_import_representations: ('provider_markdown' | 'provider_html' | 'provider_raw_html')[]
   warnings: string[]
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "SourceReference".
- */
-export interface SourceReference {
-  captured_at?: string | null
-  /**
-   * Hash of original bytes when actually computed; else null.
-   */
-  content_hash?: string | null
-  /**
-   * Page/section/offset/selector.
-   */
-  locator?: string | null
-  provenance: Provenance
-  publication_date: DateKnowledge
-  reporting_period?: string | null
-  source_id: string
-  source_version_id: string
-  verification_status?: 'unverified' | 'verified' | 'conflicting'
-}
-/**
- * A date that may be unknown. Unknown is explicit; it is never a fabricated value.
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "DateKnowledge".
- */
-export interface DateKnowledge {
-  status: 'known' | 'unknown' | 'not_applicable'
-  value?: string | null
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -352,15 +978,47 @@ export interface Fact {
   value: string | null
 }
 /**
+ * Body of POST /api/automation/export-definition. Server re-derives everything.
+ *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "FieldMapping".
+ * via the `definition` "ExportDefinitionRequest".
  */
-export interface FieldMapping {
-  field_id: string
-  field_type: 'text' | 'textarea' | 'number' | 'select' | 'file' | 'checkbox' | 'radio'
-  max_length?: number | null
-  question_id: string
-  selector: string
+export interface ExportDefinitionRequest {
+  expected_fingerprint?: string | null
+  inspect_fixture_id?: string | null
+  source: FixtureIntakeSource | StructuredJsonIntakeSource | HtmlIntakeSource | CaptureIntakeSource
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FixtureIntakeSource".
+ */
+export interface FixtureIntakeSource {
+  fixture_id: string
+  mode: 'fixture'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "StructuredJsonIntakeSource".
+ */
+export interface StructuredJsonIntakeSource {
+  /**
+   * Exact JSON text; the server hashes its UTF-8 bytes.
+   */
+  content: string
+  filename?: string | null
+  mode: 'structured_json'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "HtmlIntakeSource".
+ */
+export interface HtmlIntakeSource {
+  /**
+   * Saved HTML; parsed without executing or fetching.
+   */
+  content: string
+  filename?: string | null
+  mode: 'html'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -405,22 +1063,6 @@ export interface FixtureExpectations {
   }
   typed_failure_job_ids?: string[]
   unknown_condition_ids?: string[]
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "FormMap".
- */
-export interface FormMap {
-  /**
-   * @minItems 1
-   */
-  fields: [FieldMapping, ...FieldMapping[]]
-  fingerprint?: string | null
-  form_id: string
-  form_version: number
-  origin: string
-  provenance: Provenance
-  schema_version?: '1'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -474,73 +1116,6 @@ export interface FixturePack {
   pack_id: string
   pack_version_id: string
   provenance: Provenance
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "QuestionSet".
- */
-export interface QuestionSet {
-  opportunity_id: string
-  provenance: Provenance
-  question_set_id: string
-  /**
-   * @minItems 1
-   */
-  questions: [Question, ...Question[]]
-  schema_version?: '1'
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "Question".
- */
-export interface Question {
-  answer_type: 'text' | 'number' | 'amount' | 'choice' | 'attachment' | 'other'
-  attachments?: string[]
-  conditions?: string[]
-  conflicts?: LimitConflict[]
-  limit?: QuestionLimit | null
-  order: number
-  original_text: string
-  question_id: string
-  question_version: number
-  /**
-   * Null when the source does not say.
-   */
-  required: boolean | null
-  section?: string | null
-  /**
-   * @minItems 1
-   */
-  source_refs: [SourceReference, ...SourceReference[]]
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "LimitConflict".
- */
-export interface LimitConflict {
-  /**
-   * @minItems 2
-   */
-  candidate_limits: [QuestionLimit, QuestionLimit, ...QuestionLimit[]]
-  conflict_id: string
-  description: string
-  resolution?: 'unresolved' | 'staff_resolved'
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "QuestionLimit".
- */
-export interface QuestionLimit {
-  counting_convention?: string | null
-  maximum?: number | null
-  /**
-   * @minItems 1
-   */
-  source_refs: [SourceReference, ...SourceReference[]]
-  /**
-   * Unknown units stay 'unknown'; never guessed.
-   */
-  unit: 'words' | 'characters' | 'amount' | 'unknown'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -601,6 +1176,26 @@ export interface ProviderAvailability {
   operation: 'search' | 'capture' | 'capture_store'
   provider: string
   status: 'available' | 'fixture_only' | 'unavailable'
+}
+/**
+ * Body of POST /api/automation/intake. No org/approval fields exist to send.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ImportApplicationRequest".
+ */
+export interface ImportApplicationRequest {
+  source: FixtureIntakeSource | StructuredJsonIntakeSource | HtmlIntakeSource | CaptureIntakeSource
+}
+/**
+ * Body of POST /api/automation/inspect-fixture. A fixture ID, never a URL.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "InspectFixtureRequest".
+ */
+export interface InspectFixtureRequest {
+  expected_fingerprint?: string | null
+  expected_form_version?: number | null
+  fixture_id: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema

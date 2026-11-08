@@ -135,6 +135,212 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "ApplicationIntakeResult": {
+      "additionalProperties": false,
+      "description": "Typed import result. Nonpersistent; an imported definition is not an approval.",
+      "properties": {
+        "application_definition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApplicationDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "application_definition_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Application Definition Id"
+        },
+        "approval_status": {
+          "const": "not_approved",
+          "default": "not_approved",
+          "title": "Approval Status",
+          "type": "string"
+        },
+        "authority_status": {
+          "const": "imported_provisional_unreviewed",
+          "default": "imported_provisional_unreviewed",
+          "title": "Authority Status",
+          "type": "string"
+        },
+        "coverage": {
+          "$ref": "#/$defs/IntakeCoverage"
+        },
+        "cycle_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Id"
+        },
+        "evidence_excerpt": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExactText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Read-only text context for unsupported inputs (bounded)."
+        },
+        "evidence_excerpt_truncated": {
+          "default": false,
+          "title": "Evidence Excerpt Truncated",
+          "type": "boolean"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "import_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Import Id",
+          "type": "string"
+        },
+        "input": {
+          "$ref": "#/$defs/InputRepresentation"
+        },
+        "intake_format": {
+          "const": "b2-application-intake/1",
+          "default": "b2-application-intake/1",
+          "title": "Intake Format",
+          "type": "string"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "mode_label": {
+          "title": "Mode Label",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opportunity Id"
+        },
+        "original_evidence": {
+          "additionalProperties": true,
+          "title": "Original Evidence",
+          "type": "object"
+        },
+        "original_guide_present": {
+          "default": false,
+          "title": "Original Guide Present",
+          "type": "boolean"
+        },
+        "persisted": {
+          "const": false,
+          "default": false,
+          "title": "Persisted",
+          "type": "boolean"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "question_set": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QuestionSet"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "questions": {
+          "items": {
+            "$ref": "#/$defs/IntakeQuestion"
+          },
+          "title": "Questions",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "stream_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Id"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExactText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "import_id",
+        "is_fixture",
+        "mode_label",
+        "input",
+        "provenance",
+        "coverage"
+      ],
+      "title": "ApplicationIntakeResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "ApprovalSnapshot": {
       "additionalProperties": false,
       "properties": {
@@ -207,6 +413,351 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "C"
+    },
+    "AttachmentSpec": {
+      "additionalProperties": false,
+      "description": "Only constraints the source states. ``None`` means unknown, never 'unlimited'.",
+      "properties": {
+        "accepted_types": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accepted Types"
+        },
+        "basis": {
+          "enum": [
+            "declared_fixture_metadata",
+            "structured_definition",
+            "native_dom_attribute"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/ExactText"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "max_count": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Count"
+        },
+        "max_size_bytes": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Size Bytes"
+        },
+        "multiple": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Multiple"
+        }
+      },
+      "required": [
+        "basis"
+      ],
+      "title": "AttachmentSpec",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "AutomationAvailability": {
+      "additionalProperties": false,
+      "properties": {
+        "browser_detail": {
+          "title": "Browser Detail",
+          "type": "string"
+        },
+        "browser_status": {
+          "enum": [
+            "installed_not_launched",
+            "unavailable",
+            "disabled"
+          ],
+          "title": "Browser Status",
+          "type": "string"
+        },
+        "capabilities": {
+          "items": {
+            "$ref": "#/$defs/Capability"
+          },
+          "title": "Capabilities",
+          "type": "array"
+        },
+        "fixture_mode": {
+          "title": "Fixture Mode",
+          "type": "boolean"
+        },
+        "fixtures": {
+          "items": {
+            "$ref": "#/$defs/FixtureEntry"
+          },
+          "title": "Fixtures",
+          "type": "array"
+        },
+        "import_modes": {
+          "items": {
+            "$ref": "#/$defs/ImportModeInfo"
+          },
+          "title": "Import Modes",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "capabilities",
+        "import_modes",
+        "browser_status",
+        "browser_detail",
+        "fixture_mode"
+      ],
+      "title": "AutomationAvailability",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "AutomationHandoffExport": {
+      "additionalProperties": false,
+      "description": "Versioned handoff for C and later prefill work. Not an approved application.",
+      "properties": {
+        "application_definition": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ApplicationDefinition"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "approval_status": {
+          "const": "not_approved",
+          "default": "not_approved",
+          "title": "Approval Status",
+          "type": "string"
+        },
+        "consumer_notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Consumer Notes",
+          "type": "array"
+        },
+        "export_format": {
+          "const": "b2-automation-handoff/1",
+          "default": "b2-automation-handoff/1",
+          "title": "Export Format",
+          "type": "string"
+        },
+        "export_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Export Id",
+          "type": "string"
+        },
+        "exported_at": {
+          "format": "date-time",
+          "title": "Exported At",
+          "type": "string"
+        },
+        "form_map": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FormMap"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "inspection": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FormInspectionResult"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "intake": {
+          "$ref": "#/$defs/ApplicationIntakeResult"
+        },
+        "is_fixture": {
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "persisted": {
+          "const": false,
+          "default": false,
+          "title": "Persisted",
+          "type": "boolean"
+        },
+        "prefill_permitted": {
+          "const": false,
+          "default": false,
+          "title": "Prefill Permitted",
+          "type": "boolean"
+        },
+        "question_set": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/QuestionSet"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "unresolved": {
+          "items": {
+            "$ref": "#/$defs/UnresolvedItem"
+          },
+          "title": "Unresolved",
+          "type": "array"
+        }
+      },
+      "required": [
+        "export_id",
+        "exported_at",
+        "label",
+        "is_fixture",
+        "intake"
+      ],
+      "title": "AutomationHandoffExport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "BrowserActivity": {
+      "additionalProperties": false,
+      "description": "Observed browser activity. The inspector itself never fills, clicks or uploads.",
+      "properties": {
+        "blocked_log": {
+          "items": {
+            "$ref": "#/$defs/NetworkLogEntry"
+          },
+          "title": "Blocked Log",
+          "type": "array"
+        },
+        "blocked_log_truncated": {
+          "default": false,
+          "title": "Blocked Log Truncated",
+          "type": "boolean"
+        },
+        "downloads_blocked": {
+          "minimum": 0,
+          "title": "Downloads Blocked",
+          "type": "integer"
+        },
+        "fixture_server_mutation_hits": {
+          "description": "Non-GET requests that reached the fixture server (expected 0).",
+          "minimum": 0,
+          "title": "Fixture Server Mutation Hits",
+          "type": "integer"
+        },
+        "inspector_actions": {
+          "description": "Always empty in this task: read-only inspection.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Inspector Actions",
+          "type": "array"
+        },
+        "mutation_requests_blocked": {
+          "minimum": 0,
+          "title": "Mutation Requests Blocked",
+          "type": "integer"
+        },
+        "navigations_blocked": {
+          "minimum": 0,
+          "title": "Navigations Blocked",
+          "type": "integer"
+        },
+        "popups_blocked": {
+          "minimum": 0,
+          "title": "Popups Blocked",
+          "type": "integer"
+        },
+        "requests_allowed": {
+          "minimum": 0,
+          "title": "Requests Allowed",
+          "type": "integer"
+        },
+        "requests_blocked": {
+          "minimum": 0,
+          "title": "Requests Blocked",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "requests_allowed",
+        "requests_blocked",
+        "mutation_requests_blocked",
+        "fixture_server_mutation_hits",
+        "popups_blocked",
+        "downloads_blocked",
+        "navigations_blocked"
+      ],
+      "title": "BrowserActivity",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
     },
     "CandidateDuplicate": {
       "additionalProperties": false,
@@ -431,6 +982,218 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
+    },
+    "CaptureIntakeSource": {
+      "additionalProperties": false,
+      "properties": {
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "mode": {
+          "const": "capture",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "capture_id",
+        "artifact_id"
+      ],
+      "title": "CaptureIntakeSource",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "CaptureLineage": {
+      "additionalProperties": false,
+      "description": "Lineage of a captured document consumed through the B1-B2 capture port.",
+      "properties": {
+        "artifact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Artifact Id",
+          "type": "string"
+        },
+        "authority_review_status": {
+          "title": "Authority Review Status",
+          "type": "string"
+        },
+        "capture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Capture Id",
+          "type": "string"
+        },
+        "capture_is_fixture": {
+          "title": "Capture Is Fixture",
+          "type": "boolean"
+        },
+        "captured_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Captured At"
+        },
+        "cycle_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cycle Id"
+        },
+        "extraction_warnings": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Extraction Warnings",
+          "type": "array"
+        },
+        "final_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Final Url"
+        },
+        "final_url_status": {
+          "enum": [
+            "known",
+            "unknown"
+          ],
+          "title": "Final Url Status",
+          "type": "string"
+        },
+        "opportunity_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Opportunity Id"
+        },
+        "organization_scope": {
+          "const": "server_verified",
+          "default": "server_verified",
+          "title": "Organization Scope",
+          "type": "string"
+        },
+        "original_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Url"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "representation_type": {
+          "title": "Representation Type",
+          "type": "string"
+        },
+        "requested_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested Url"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        },
+        "stream_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stream Id"
+        }
+      },
+      "required": [
+        "capture_id",
+        "source_version_id",
+        "artifact_id",
+        "representation_type",
+        "final_url_status",
+        "authority_review_status",
+        "capture_is_fixture"
+      ],
+      "title": "CaptureLineage",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
     },
     "CaptureRequest": {
       "additionalProperties": false,
@@ -929,6 +1692,107 @@
       "x-contract-status": "draft",
       "x-owner": "A"
     },
+    "ChoiceOption": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExactText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value"
+      ],
+      "title": "ChoiceOption",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ConditionRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "basis": {
+          "enum": [
+            "declared_fixture_metadata",
+            "structured_definition",
+            "source_text"
+          ],
+          "title": "Basis",
+          "type": "string"
+        },
+        "depends_on_question_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Depends On Question Id"
+        },
+        "expected_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Value"
+        },
+        "locator": {
+          "$ref": "#/$defs/SourceLocator"
+        },
+        "predicate_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Exact source predicate.",
+          "title": "Predicate Text"
+        },
+        "status": {
+          "enum": [
+            "declared_unverified",
+            "unresolved"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "basis",
+        "status",
+        "locator"
+      ],
+      "title": "ConditionRecord",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "DateKnowledge": {
       "additionalProperties": false,
       "description": "A date that may be unknown. Unknown is explicit; it is never a fabricated value.",
@@ -1142,6 +2006,101 @@
       "x-contract-status": "draft",
       "x-owner": "A"
     },
+    "ExactText": {
+      "additionalProperties": false,
+      "description": "Exact imported text plus a separately derived display form.",
+      "properties": {
+        "display_text": {
+          "description": "Derived: whitespace-collapsed for display only.",
+          "title": "Display Text",
+          "type": "string"
+        },
+        "locator": {
+          "$ref": "#/$defs/SourceLocator"
+        },
+        "text": {
+          "description": "Exact text as imported (entities decoded for HTML).",
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text",
+        "display_text",
+        "locator"
+      ],
+      "title": "ExactText",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ExportDefinitionRequest": {
+      "additionalProperties": false,
+      "description": "Body of POST /api/automation/export-definition. Server re-derives everything.",
+      "properties": {
+        "expected_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Fingerprint"
+        },
+        "inspect_fixture_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inspect Fixture Id"
+        },
+        "source": {
+          "discriminator": {
+            "mapping": {
+              "capture": "#/$defs/CaptureIntakeSource",
+              "fixture": "#/$defs/FixtureIntakeSource",
+              "html": "#/$defs/HtmlIntakeSource",
+              "structured_json": "#/$defs/StructuredJsonIntakeSource"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/FixtureIntakeSource"
+            },
+            {
+              "$ref": "#/$defs/StructuredJsonIntakeSource"
+            },
+            {
+              "$ref": "#/$defs/HtmlIntakeSource"
+            },
+            {
+              "$ref": "#/$defs/CaptureIntakeSource"
+            }
+          ],
+          "title": "Source"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "ExportDefinitionRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "Fact": {
       "additionalProperties": false,
       "properties": {
@@ -1322,6 +2281,207 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "FieldMappingCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_field_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Expected Field Id",
+          "type": "string"
+        },
+        "expected_kind": {
+          "enum": [
+            "single",
+            "group"
+          ],
+          "title": "Expected Kind",
+          "type": "string"
+        },
+        "expected_selector": {
+          "title": "Expected Selector",
+          "type": "string"
+        },
+        "expected_type": {
+          "enum": [
+            "text",
+            "textarea",
+            "number",
+            "select",
+            "file",
+            "checkbox",
+            "radio"
+          ],
+          "title": "Expected Type",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "observed_count": {
+          "minimum": 0,
+          "title": "Observed Count",
+          "type": "integer"
+        },
+        "observed_indexes": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Observed Indexes",
+          "type": "array"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "requirement_hold": {
+          "description": "True when the question has unresolved limits.",
+          "title": "Requirement Hold",
+          "type": "boolean"
+        },
+        "status": {
+          "enum": [
+            "matched",
+            "missing",
+            "ambiguous",
+            "type_mismatch",
+            "unsupported"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "expected_field_id",
+        "expected_selector",
+        "expected_kind",
+        "expected_type",
+        "status",
+        "observed_count",
+        "requirement_hold",
+        "message"
+      ],
+      "title": "FieldMappingCheck",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "Finding": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "limit_conflict",
+            "native_maxlength_conflict",
+            "unknown_limit_unit",
+            "unknown_counting_convention",
+            "required_status_unknown",
+            "condition_unresolved",
+            "condition_declared_fixture_metadata",
+            "attachment_constraints_unknown",
+            "scope_unknown",
+            "missing_label",
+            "missing_identifier",
+            "unsupported_widget",
+            "unrecognized_field_preserved",
+            "untrusted_authority_claim_ignored",
+            "source_claim_unresolved",
+            "script_content_inert",
+            "external_reference_not_loaded",
+            "hidden_content",
+            "submission_control_present",
+            "no_supported_form_content",
+            "pdf_parsing_not_implemented",
+            "markdown_not_parsed",
+            "stream_specific_limit",
+            "element_limit_reached",
+            "mapping_missing",
+            "mapping_ambiguous",
+            "mapping_type_mismatch",
+            "mapping_changed",
+            "fingerprint_changed",
+            "unknown_form_version",
+            "unmapped_field",
+            "unexpected_required_field",
+            "unresolved_requirement",
+            "duplicate_option_value",
+            "blocked_request",
+            "blocked_navigation",
+            "blocked_popup",
+            "blocked_download",
+            "field_limit_reached"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "field_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Field Id"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceLocator"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "question_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Question Id"
+        },
+        "severity": {
+          "enum": [
+            "blocker",
+            "warning",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ],
+      "title": "Finding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "FixtureBundle": {
       "additionalProperties": false,
       "properties": {
@@ -1457,6 +2617,55 @@
       "x-contract-status": "draft",
       "x-owner": "shared"
     },
+    "FixtureEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "fixture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Fixture Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "structured_definition",
+            "html_form",
+            "portal",
+            "capture"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "variant": {
+          "enum": [
+            "representative",
+            "malformed"
+          ],
+          "title": "Variant",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fixture_id",
+        "kind",
+        "variant",
+        "label",
+        "description"
+      ],
+      "title": "FixtureEntry",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "FixtureExpectations": {
       "additionalProperties": false,
       "description": "Expected outcomes later feature tests assert against (not results of any engine).",
@@ -1516,6 +2725,31 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "shared"
+    },
+    "FixtureIntakeSource": {
+      "additionalProperties": false,
+      "properties": {
+        "fixture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Fixture Id",
+          "type": "string"
+        },
+        "mode": {
+          "const": "fixture",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "fixture_id"
+      ],
+      "title": "FixtureIntakeSource",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
     },
     "FixtureOrganization": {
       "additionalProperties": false,
@@ -1583,6 +2817,207 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "A"
+    },
+    "FormInspectionResult": {
+      "additionalProperties": false,
+      "properties": {
+        "activity": {
+          "$ref": "#/$defs/BrowserActivity"
+        },
+        "browser_name": {
+          "title": "Browser Name",
+          "type": "string"
+        },
+        "browser_version": {
+          "title": "Browser Version",
+          "type": "string"
+        },
+        "budget": {
+          "$ref": "#/$defs/InspectionBudget"
+        },
+        "client_expected_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Client Expected Fingerprint"
+        },
+        "expected_fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Expected Fingerprint",
+          "type": "string"
+        },
+        "expected_form_version": {
+          "minimum": 1,
+          "title": "Expected Form Version",
+          "type": "integer"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/ObservedField"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "fields_truncated": {
+          "default": false,
+          "title": "Fields Truncated",
+          "type": "boolean"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/Finding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "fingerprint": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Fingerprint",
+          "type": "string"
+        },
+        "fingerprint_algorithm": {
+          "const": "b2-form-fp/1",
+          "default": "b2-form-fp/1",
+          "title": "Fingerprint Algorithm",
+          "type": "string"
+        },
+        "fingerprint_status": {
+          "enum": [
+            "matches_expected",
+            "changed"
+          ],
+          "title": "Fingerprint Status",
+          "type": "string"
+        },
+        "fixture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Fixture Id",
+          "type": "string"
+        },
+        "form_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Form Id",
+          "type": "string"
+        },
+        "form_map": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/FormMap"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Emitted only when every mapping resolved uniquely."
+        },
+        "inspection_format": {
+          "const": "b2-form-inspection/1",
+          "default": "b2-form-inspection/1",
+          "title": "Inspection Format",
+          "type": "string"
+        },
+        "inspection_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Inspection Id",
+          "type": "string"
+        },
+        "is_fixture": {
+          "const": true,
+          "default": true,
+          "title": "Is Fixture",
+          "type": "boolean"
+        },
+        "map_status": {
+          "enum": [
+            "valid",
+            "invalid"
+          ],
+          "title": "Map Status",
+          "type": "string"
+        },
+        "mappings": {
+          "items": {
+            "$ref": "#/$defs/FieldMappingCheck"
+          },
+          "title": "Mappings",
+          "type": "array"
+        },
+        "mode_label": {
+          "title": "Mode Label",
+          "type": "string"
+        },
+        "origin": {
+          "title": "Origin",
+          "type": "string"
+        },
+        "persisted": {
+          "const": false,
+          "default": false,
+          "title": "Persisted",
+          "type": "boolean"
+        },
+        "prefill_permitted": {
+          "const": false,
+          "default": false,
+          "title": "Prefill Permitted",
+          "type": "boolean"
+        },
+        "question_set_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Set Id",
+          "type": "string"
+        },
+        "ready_condition": {
+          "title": "Ready Condition",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "inspection_id",
+        "fixture_id",
+        "form_id",
+        "origin",
+        "mode_label",
+        "question_set_id",
+        "ready_condition",
+        "fingerprint",
+        "expected_form_version",
+        "expected_fingerprint",
+        "fingerprint_status",
+        "map_status",
+        "fields",
+        "mappings",
+        "activity",
+        "browser_name",
+        "browser_version",
+        "budget"
+      ],
+      "title": "FormInspectionResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
     },
     "FormMap": {
       "additionalProperties": false,
@@ -1708,6 +3143,653 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
+    },
+    "HtmlIntakeSource": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "description": "Saved HTML; parsed without executing or fetching.",
+          "title": "Content",
+          "type": "string"
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filename"
+        },
+        "mode": {
+          "const": "html",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "content"
+      ],
+      "title": "HtmlIntakeSource",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ImportApplicationRequest": {
+      "additionalProperties": false,
+      "description": "Body of POST /api/automation/intake. No org/approval fields exist to send.",
+      "properties": {
+        "source": {
+          "discriminator": {
+            "mapping": {
+              "capture": "#/$defs/CaptureIntakeSource",
+              "fixture": "#/$defs/FixtureIntakeSource",
+              "html": "#/$defs/HtmlIntakeSource",
+              "structured_json": "#/$defs/StructuredJsonIntakeSource"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/FixtureIntakeSource"
+            },
+            {
+              "$ref": "#/$defs/StructuredJsonIntakeSource"
+            },
+            {
+              "$ref": "#/$defs/HtmlIntakeSource"
+            },
+            {
+              "$ref": "#/$defs/CaptureIntakeSource"
+            }
+          ],
+          "title": "Source"
+        }
+      },
+      "required": [
+        "source"
+      ],
+      "title": "ImportApplicationRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ImportModeInfo": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "max_bytes": {
+          "minimum": 0,
+          "title": "Max Bytes",
+          "type": "integer"
+        },
+        "mode": {
+          "enum": [
+            "fixture",
+            "structured_json",
+            "html",
+            "capture"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "available",
+            "fixture_only",
+            "unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "status",
+        "max_bytes",
+        "detail"
+      ],
+      "title": "ImportModeInfo",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "InputRepresentation": {
+      "additionalProperties": false,
+      "description": "The exact bytes this result was derived from. Identity/hash are server-created.",
+      "properties": {
+        "byte_size": {
+          "minimum": 0,
+          "title": "Byte Size",
+          "type": "integer"
+        },
+        "capture": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaptureLineage"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "integrity": {
+          "enum": [
+            "computed_on_receipt",
+            "hash_verified_against_capture_record"
+          ],
+          "title": "Integrity",
+          "type": "string"
+        },
+        "media_type": {
+          "title": "Media Type",
+          "type": "string"
+        },
+        "normalization_version": {
+          "title": "Normalization Version",
+          "type": "string"
+        },
+        "origin": {
+          "enum": [
+            "fixture",
+            "uploaded_unverified",
+            "capture"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "parser_id": {
+          "title": "Parser Id",
+          "type": "string"
+        },
+        "parser_version": {
+          "title": "Parser Version",
+          "type": "string"
+        },
+        "persisted": {
+          "const": false,
+          "default": false,
+          "title": "Persisted",
+          "type": "boolean"
+        },
+        "representation_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Representation Id",
+          "type": "string"
+        },
+        "representation_type": {
+          "enum": [
+            "structured_json",
+            "html_form",
+            "provider_html",
+            "provider_raw_html",
+            "original_http_bytes",
+            "provider_markdown",
+            "pdf",
+            "unknown"
+          ],
+          "title": "Representation Type",
+          "type": "string"
+        },
+        "sha256": {
+          "description": "SHA-256 of the exact bytes parsed (UTF-8 for text).",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "storage": {
+          "enum": [
+            "nonpersistent_response",
+            "capture_port_reference"
+          ],
+          "title": "Storage",
+          "type": "string"
+        }
+      },
+      "required": [
+        "representation_id",
+        "origin",
+        "representation_type",
+        "media_type",
+        "byte_size",
+        "sha256",
+        "integrity",
+        "parser_id",
+        "parser_version",
+        "normalization_version",
+        "storage"
+      ],
+      "title": "InputRepresentation",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "InspectFixtureRequest": {
+      "additionalProperties": false,
+      "description": "Body of POST /api/automation/inspect-fixture. A fixture ID, never a URL.",
+      "properties": {
+        "expected_fingerprint": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Fingerprint"
+        },
+        "expected_form_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expected Form Version"
+        },
+        "fixture_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Fixture Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "fixture_id"
+      ],
+      "title": "InspectFixtureRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "InspectionBudget": {
+      "additionalProperties": false,
+      "properties": {
+        "max_fields": {
+          "minimum": 1,
+          "title": "Max Fields",
+          "type": "integer"
+        },
+        "max_text_chars": {
+          "minimum": 1,
+          "title": "Max Text Chars",
+          "type": "integer"
+        },
+        "timeout_ms": {
+          "minimum": 1,
+          "title": "Timeout Ms",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "timeout_ms",
+        "max_fields",
+        "max_text_chars"
+      ],
+      "title": "InspectionBudget",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "IntakeCoverage": {
+      "additionalProperties": false,
+      "properties": {
+        "controls_seen": {
+          "minimum": 0,
+          "title": "Controls Seen",
+          "type": "integer"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "questions_extracted": {
+          "minimum": 0,
+          "title": "Questions Extracted",
+          "type": "integer"
+        },
+        "status": {
+          "enum": [
+            "supported_complete",
+            "supported_partial",
+            "unsupported_needs_manual_definition"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "unsupported_elements": {
+          "minimum": 0,
+          "title": "Unsupported Elements",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "status",
+        "questions_extracted",
+        "controls_seen",
+        "unsupported_elements"
+      ],
+      "title": "IntakeCoverage",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "IntakeLimit": {
+      "additionalProperties": false,
+      "description": "One candidate constraint. Semantic limits and native browser properties stay distinct.",
+      "properties": {
+        "applies_to_stream": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Applies To Stream"
+        },
+        "authority_status": {
+          "enum": [
+            "imported_provisional",
+            "browser_property"
+          ],
+          "title": "Authority Status",
+          "type": "string"
+        },
+        "convention_status": {
+          "enum": [
+            "unknown_pending_confirmation",
+            "declared_in_source",
+            "defined_by_html_spec"
+          ],
+          "title": "Convention Status",
+          "type": "string"
+        },
+        "counting_convention": {
+          "default": "unknown",
+          "description": "'unknown' unless the source declares it; native maxlength is HTML-defined.",
+          "title": "Counting Convention",
+          "type": "string"
+        },
+        "evidence": {
+          "$ref": "#/$defs/ExactText"
+        },
+        "kind": {
+          "enum": [
+            "instruction_text",
+            "structured_definition",
+            "native_dom_maxlength",
+            "native_dom_range"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "limit_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Limit Id",
+          "type": "string"
+        },
+        "maximum": {
+          "anyOf": [
+            {
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Maximum"
+        },
+        "minimum": {
+          "anyOf": [
+            {
+              "pattern": "^-?(0|[1-9][0-9]*)(\\.[0-9]+)?$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Minimum"
+        },
+        "unit": {
+          "enum": [
+            "words",
+            "characters",
+            "amount",
+            "utf16_code_units",
+            "unknown"
+          ],
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "limit_id",
+        "kind",
+        "unit",
+        "convention_status",
+        "authority_status",
+        "evidence"
+      ],
+      "title": "IntakeLimit",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "IntakeQuestion": {
+      "additionalProperties": false,
+      "properties": {
+        "action_state": {
+          "enum": [
+            "held_unresolved_requirement",
+            "no_blocker_detected_not_approved"
+          ],
+          "title": "Action State",
+          "type": "string"
+        },
+        "answer_kind": {
+          "enum": [
+            "text",
+            "number",
+            "select",
+            "choice",
+            "group",
+            "file",
+            "unsupported"
+          ],
+          "title": "Answer Kind",
+          "type": "string"
+        },
+        "attachment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AttachmentSpec"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "choice_mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "single",
+                "multiple"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Choice Mode"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/ChoiceOption"
+          },
+          "title": "Choices",
+          "type": "array"
+        },
+        "conditions": {
+          "items": {
+            "$ref": "#/$defs/ConditionRecord"
+          },
+          "title": "Conditions",
+          "type": "array"
+        },
+        "hold_reasons": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Hold Reasons",
+          "type": "array"
+        },
+        "instructions": {
+          "items": {
+            "$ref": "#/$defs/ExactText"
+          },
+          "title": "Instructions",
+          "type": "array"
+        },
+        "limit_conflicts": {
+          "items": {
+            "$ref": "#/$defs/LimitConflictRecord"
+          },
+          "title": "Limit Conflicts",
+          "type": "array"
+        },
+        "limits": {
+          "items": {
+            "$ref": "#/$defs/IntakeLimit"
+          },
+          "title": "Limits",
+          "type": "array"
+        },
+        "order": {
+          "description": "Original order in the imported representation.",
+          "minimum": 0,
+          "title": "Order",
+          "type": "integer"
+        },
+        "original_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Original Number"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "default": 1,
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "required_status": {
+          "enum": [
+            "required",
+            "optional",
+            "conditional",
+            "unknown"
+          ],
+          "title": "Required Status",
+          "type": "string"
+        },
+        "scope": {
+          "enum": [
+            "organization",
+            "program",
+            "unknown"
+          ],
+          "title": "Scope",
+          "type": "string"
+        },
+        "section": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ExactText"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_ref": {
+          "$ref": "#/$defs/SourceReference"
+        },
+        "text": {
+          "$ref": "#/$defs/ExactText"
+        },
+        "unrecognized_fields": {
+          "additionalProperties": true,
+          "description": "Original-evidence blob: preserved, never interpreted as policy or code.",
+          "title": "Unrecognized Fields",
+          "type": "object"
+        }
+      },
+      "required": [
+        "question_id",
+        "order",
+        "text",
+        "scope",
+        "answer_kind",
+        "required_status",
+        "source_ref",
+        "action_state"
+      ],
+      "title": "IntakeQuestion",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
     },
     "JobBudget": {
       "additionalProperties": false,
@@ -1949,6 +4031,58 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "LimitConflictRecord": {
+      "additionalProperties": false,
+      "description": "Competing constraints. Never resolved by choosing the convenient one.",
+      "properties": {
+        "conflict_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Conflict Id",
+          "type": "string"
+        },
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "competing_instruction_limits",
+            "instruction_vs_native_maxlength"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "limit_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Limit Ids",
+          "type": "array"
+        },
+        "resolution": {
+          "const": "unresolved",
+          "default": "unresolved",
+          "title": "Resolution",
+          "type": "string"
+        }
+      },
+      "required": [
+        "conflict_id",
+        "kind",
+        "limit_ids",
+        "description"
+      ],
+      "title": "LimitConflictRecord",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "LivenessReport": {
       "additionalProperties": false,
       "properties": {
@@ -1970,6 +4104,301 @@
       "type": "object",
       "x-contract-status": "frozen",
       "x-owner": "shared"
+    },
+    "NetworkLogEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "enum": [
+            "allowed",
+            "blocked"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "resource_type": {
+          "title": "Resource Type",
+          "type": "string"
+        },
+        "target": {
+          "description": "Sanitized scheme://host:port/path; no query or fragment.",
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "method",
+        "target",
+        "resource_type",
+        "decision",
+        "reason"
+      ],
+      "title": "NetworkLogEntry",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ObservedField": {
+      "additionalProperties": false,
+      "description": "A browser-observed control (read from the DOM by trusted application code).",
+      "properties": {
+        "accept": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Accept"
+        },
+        "declared_fixture_metadata": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "description": "data-fixture-* attributes: fixture declarations only.",
+          "title": "Declared Fixture Metadata",
+          "type": "object"
+        },
+        "described_by_text": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Described By Text",
+          "type": "array"
+        },
+        "disabled": {
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "dom_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Dom Id"
+        },
+        "field_key": {
+          "title": "Field Key",
+          "type": "string"
+        },
+        "input_type": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Input Type"
+        },
+        "label_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label Text"
+        },
+        "legend_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Legend Text"
+        },
+        "max": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max"
+        },
+        "max_length": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Max Length"
+        },
+        "min": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Min"
+        },
+        "multiple": {
+          "default": false,
+          "title": "Multiple",
+          "type": "boolean"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "observed_index": {
+          "minimum": 0,
+          "title": "Observed Index",
+          "type": "integer"
+        },
+        "option_value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "radio/checkbox value attribute",
+          "title": "Option Value"
+        },
+        "options": {
+          "items": {
+            "$ref": "#/$defs/ObservedOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "readonly": {
+          "title": "Readonly",
+          "type": "boolean"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        },
+        "step": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Step"
+        },
+        "supported": {
+          "title": "Supported",
+          "type": "boolean"
+        },
+        "tag": {
+          "title": "Tag",
+          "type": "string"
+        },
+        "visible": {
+          "title": "Visible",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "observed_index",
+        "field_key",
+        "tag",
+        "required",
+        "disabled",
+        "readonly",
+        "visible",
+        "supported"
+      ],
+      "title": "ObservedField",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "ObservedOption": {
+      "additionalProperties": false,
+      "properties": {
+        "disabled": {
+          "default": false,
+          "title": "Disabled",
+          "type": "boolean"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "label"
+      ],
+      "title": "ObservedOption",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
     },
     "OmittedResult": {
       "additionalProperties": false,
@@ -3211,6 +5640,61 @@
       "x-contract-status": "frozen",
       "x-owner": "shared"
     },
+    "SourceLocator": {
+      "additionalProperties": false,
+      "description": "Precise location inside the exact imported representation. Never a made-up page.",
+      "properties": {
+        "column": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Column"
+        },
+        "kind": {
+          "enum": [
+            "json_pointer",
+            "html_element",
+            "dom_element",
+            "whole_input"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "line": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Line"
+        },
+        "value": {
+          "description": "JSON pointer, element path or DOM description.",
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "value"
+      ],
+      "title": "SourceLocator",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
     "SourceReference": {
       "additionalProperties": false,
       "properties": {
@@ -3307,6 +5791,81 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "A"
+    },
+    "StructuredJsonIntakeSource": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "description": "Exact JSON text; the server hashes its UTF-8 bytes.",
+          "title": "Content",
+          "type": "string"
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "maxLength": 255,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filename"
+        },
+        "mode": {
+          "const": "structured_json",
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "content"
+      ],
+      "title": "StructuredJsonIntakeSource",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
+    },
+    "UnresolvedItem": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "title": "Detail",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "limit_conflict",
+            "native_maxlength_conflict",
+            "unknown_limit_unit",
+            "unknown_counting_convention",
+            "required_status_unknown",
+            "condition_unresolved",
+            "attachment_constraints_unknown",
+            "scope_unknown"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "kind",
+        "detail"
+      ],
+      "title": "UnresolvedItem",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "B2"
     },
     "ValidationResult": {
       "additionalProperties": false,
