@@ -26,7 +26,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from strongstart_contracts import ReadinessCheck, ReadinessReport
 
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0004_pdf_extraction_coverage"
+REQUIRED_MIGRATION_REVISION = "0005_validation_receipts"
 
 metadata = MetaData()
 
@@ -59,6 +59,8 @@ knowledge_sources = Table(
     Column("id", String(128), primary_key=True),
     Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
     Column("title", Text, nullable=False),
+    Column("origin_url", Text),
+    Column("canonical_url", Text),
     Column("provenance_class", String(32), nullable=False),
     Column("is_simulated", Boolean, nullable=False),
     Column("provenance_note", Text),
@@ -158,6 +160,43 @@ pack_facts = Table(
     ),
     Column("fact_id", String(128), ForeignKey("knowledge_facts.id"), primary_key=True),
     Column("allowed", Boolean, nullable=False, server_default="true"),
+)
+
+validation_evaluations = Table(
+    "validation_evaluations",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("actor_id", String(128), nullable=False),
+    Column("subject_kind", String(32), nullable=False),
+    Column("subject_id", String(128), nullable=False),
+    Column("input_sha256", String(64), nullable=False),
+    Column("evaluator_build", String(64), nullable=False),
+    Column("frozen_time", DateTime(timezone=True), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+validation_results = Table(
+    "validation_results",
+    metadata,
+    Column("evaluation_id", String(128), ForeignKey("validation_evaluations.id"), primary_key=True),
+    Column("ordinal", Integer, primary_key=True),
+    Column("rule_id", String(16), nullable=False),
+    Column("rule_version", String(64), nullable=False),
+    Column("outcome", String(24), nullable=False),
+    Column("reason_code", String(64), nullable=False),
+    Column("payload_json", Text, nullable=False),
+)
+
+validation_dependencies = Table(
+    "validation_dependencies",
+    metadata,
+    Column("evaluation_id", String(128), ForeignKey("validation_evaluations.id"), primary_key=True),
+    Column("ordinal", Integer, primary_key=True),
+    Column("kind", String(32), nullable=False),
+    Column("ref_id", String(128), nullable=False),
+    Column("version", Text, nullable=False),
+    Column("content_hash", String(64)),
 )
 
 

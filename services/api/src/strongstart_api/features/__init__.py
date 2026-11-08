@@ -13,13 +13,14 @@ from fastapi import APIRouter
 from strongstart_contracts import Capability
 
 from ..config import Settings
-from . import applications, automation, funding, knowledge
+from . import applications, automation, funding, knowledge, validation
 
 FEATURE_ROUTERS: list[APIRouter] = [
     knowledge.router,
     funding.router,
     automation.router,
     applications.router,
+    validation.router,
 ]
 
 FEATURE_CAPABILITIES: list[Capability] = [
@@ -27,6 +28,7 @@ FEATURE_CAPABILITIES: list[Capability] = [
     *funding.CAPABILITIES,
     *automation.CAPABILITIES,
     *applications.CAPABILITIES,
+    *validation.CAPABILITIES,
 ]
 
 
@@ -35,7 +37,7 @@ def feature_capabilities(settings: Settings) -> list[Capability]:
     to report configuration-dependent status; otherwise its static CAPABILITIES apply.
     """
     out: list[Capability] = []
-    for module in (knowledge, funding, automation, applications):
+    for module in (knowledge, funding, automation, applications, validation):
         provider = getattr(module, "capabilities_for", None)
         out.extend(provider(settings) if provider is not None else module.CAPABILITIES)
     return out

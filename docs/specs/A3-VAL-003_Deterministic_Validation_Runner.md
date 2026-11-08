@@ -435,3 +435,9 @@ The following require a recorded cross-module proposal before implementation:
 - Dev B verifies Dev A fixtures and should review shared security/capability behavior without taking ownership of A3 implementation.
 
 None of these dependencies authorizes bypassing PR review or silently changing another lane's public contract.
+
+## 20. A3a/A3b implementation record
+
+Implementation branch `dev-a/a3ab-val-003-source-validation` combines A3a and A3b in one source-validation increment while retaining the internal SRC-01 checkpoint. It adds strict source-validation contracts, the closed SRC registry, pure evaluators, migration `0005_validation_receipts`, authorized resolution, immutable receipt replay, canonical-URL/hash duplicate detection and API routes under `/api/validation`.
+
+Catalog status is `implemented` for SRC-01 through SRC-10. It is not changed to `verified`: Dev B remains the independent verification owner and must review the fixtures/results. A3c remains separate and owns NUM-01 through NUM-12, C2 parity/property testing and the final A4 handoff.

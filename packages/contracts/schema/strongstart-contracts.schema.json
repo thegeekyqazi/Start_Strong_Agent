@@ -6230,6 +6230,59 @@
       "x-contract-status": "draft",
       "x-owner": "B1"
     },
+    "RuleCapability": {
+      "additionalProperties": false,
+      "properties": {
+        "priority": {
+          "enum": [
+            "P0",
+            "P1"
+          ],
+          "title": "Priority",
+          "type": "string"
+        },
+        "rule_id": {
+          "enum": [
+            "SRC-01",
+            "SRC-02",
+            "SRC-03",
+            "SRC-04",
+            "SRC-05",
+            "SRC-06",
+            "SRC-07",
+            "SRC-08",
+            "SRC-09",
+            "SRC-10"
+          ],
+          "title": "Rule Id",
+          "type": "string"
+        },
+        "rule_version": {
+          "title": "Rule Version",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "planned",
+            "implemented",
+            "verified",
+            "unavailable"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rule_id",
+        "rule_version",
+        "priority",
+        "state"
+      ],
+      "title": "RuleCapability",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A3"
+    },
     "SearchCandidate": {
       "additionalProperties": false,
       "properties": {
@@ -6886,6 +6939,148 @@
       "x-contract-status": "draft",
       "x-owner": "A"
     },
+    "SourceValidationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/ValidationDependency"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "evaluation_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evaluation Id",
+          "type": "string"
+        },
+        "evaluator_build": {
+          "title": "Evaluator Build",
+          "type": "string"
+        },
+        "frozen_time": {
+          "format": "date-time",
+          "title": "Frozen Time",
+          "type": "string"
+        },
+        "input_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Input Sha256",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "results": {
+          "items": {
+            "$ref": "#/$defs/ValidationResult"
+          },
+          "title": "Results",
+          "type": "array"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "evaluation_id",
+        "organization_id",
+        "source_version_id",
+        "input_sha256",
+        "evaluator_build",
+        "frozen_time",
+        "results",
+        "dependencies"
+      ],
+      "title": "SourceValidationReport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A3"
+    },
+    "SourceValidationRequest": {
+      "additionalProperties": false,
+      "description": "Strict source-check request; identity and organization are server-derived.",
+      "properties": {
+        "claimed_quote": {
+          "anyOf": [
+            {
+              "maxLength": 20000,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Claimed Quote"
+        },
+        "locator": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Locator"
+        },
+        "rule_ids": {
+          "items": {
+            "enum": [
+              "SRC-01",
+              "SRC-02",
+              "SRC-03",
+              "SRC-04",
+              "SRC-05",
+              "SRC-06",
+              "SRC-07",
+              "SRC-08",
+              "SRC-09",
+              "SRC-10"
+            ],
+            "type": "string"
+          },
+          "maxItems": 10,
+          "title": "Rule Ids",
+          "type": "array"
+        },
+        "source_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Source Version Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source_version_id"
+      ],
+      "title": "SourceValidationRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A3"
+    },
     "StructuredJsonIntakeSource": {
       "additionalProperties": false,
       "properties": {
@@ -7158,9 +7353,72 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "ValidationDependency": {
+      "additionalProperties": false,
+      "description": "Minimal exact dependency identity; never embeds private evidence content.",
+      "properties": {
+        "content_hash": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content Hash"
+        },
+        "kind": {
+          "enum": [
+            "subject",
+            "source_version",
+            "artifact_hash",
+            "passage_locator",
+            "normalization_policy",
+            "permission_snapshot"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "ref_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Ref Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "ref_id",
+        "version"
+      ],
+      "title": "ValidationDependency",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A3"
+    },
     "ValidationResult": {
       "additionalProperties": false,
       "properties": {
+        "evaluator_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evaluator Id"
+        },
         "evidence": {
           "items": {
             "$ref": "#/$defs/SourceReference"
@@ -7177,6 +7435,18 @@
           "title": "Inputs",
           "type": "object"
         },
+        "next_action": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Next Action"
+        },
         "observed": {
           "default": null,
           "title": "Observed"
@@ -7190,6 +7460,19 @@
           ],
           "title": "Outcome",
           "type": "string"
+        },
+        "reason_code": {
+          "anyOf": [
+            {
+              "pattern": "^[a-z][a-z0-9_]{0,63}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason Code"
         },
         "reasons": {
           "items": {

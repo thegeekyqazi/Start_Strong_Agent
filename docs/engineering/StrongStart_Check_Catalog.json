@@ -13,7 +13,7 @@
       "on_failure": "Reject dangling references.",
       "implementation": "Foreign-key/lookup of source version within authorized evidence set.",
       "minimum_fixture": "Unknown version ID fails; known authorized ID passes.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -28,7 +28,7 @@
       "on_failure": "Hold dependent claims on integrity mismatch.",
       "implementation": "SHA-256 of stored original bytes against immutable artifact record.",
       "minimum_fixture": "Alter one byte after capture; integrity check fails.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -43,7 +43,7 @@
       "on_failure": "Flag invalid source location.",
       "implementation": "Resolve locator against page/section/table inventory of that version.",
       "minimum_fixture": "Page 31 in a 30-page document fails.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -58,7 +58,7 @@
       "on_failure": "Flag mismatch; matching alone does not prove relevance.",
       "implementation": "Compare quote to recorded passage using versioned whitespace policy.",
       "minimum_fixture": "Changed digit fails; allowed whitespace difference passes.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -73,7 +73,7 @@
       "on_failure": "Record capture failure instead of inventing content.",
       "implementation": "Check capture status and nonempty expected extraction fields.",
       "minimum_fixture": "HTTP success with empty document returns needs review.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -88,7 +88,7 @@
       "on_failure": "Deduplicate storage/candidates while retaining provenance.",
       "implementation": "Canonical-URL keys plus artifact hashes; preserve distinct capture metadata.",
       "minimum_fixture": "Same bytes at two URLs share artifact, retain both origins.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -103,7 +103,7 @@
       "on_failure": "Revalidate affected requirements and claims.",
       "implementation": "Compare captured content hashes and semantic record versions.",
       "minimum_fixture": "Changed guideline invalidates dependent requirement snapshot.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -118,7 +118,7 @@
       "on_failure": "Mark incomplete capture.",
       "implementation": "Validate required capture metadata and resolvable original-artifact key.",
       "minimum_fixture": "Missing original file reference fails ingestion readiness.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -133,7 +133,7 @@
       "on_failure": "Label partial document coverage.",
       "implementation": "Compare processed pages to actual page inventory; flag omissions.",
       "minimum_fixture": "Two pages extracted from thirty stays partial.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -148,7 +148,7 @@
       "on_failure": "Prevent silent loss of processing provenance.",
       "implementation": "Require parser version, timestamps and explicit warning list, even empty.",
       "minimum_fixture": "Missing parser version fails provenance completeness.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
