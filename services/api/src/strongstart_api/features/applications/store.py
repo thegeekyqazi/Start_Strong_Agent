@@ -13,12 +13,13 @@ from __future__ import annotations
 import copy
 import secrets
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Iterator
+from contextlib import AbstractContextManager, contextmanager
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Literal, Protocol
 
-from strongstart_contracts import CapabilityUnavailable, ChangeSet
+from strongstart_contracts import CapabilityUnavailable, ChangeSet, Provenance
 from strongstart_contracts.answers import (
     AuditEvent,
     CheckReport,
@@ -64,6 +65,7 @@ class StoredVersion:
     created_by: str
     created_at: datetime
     a4_binding: ApprovedKnowledgeBinding | None = None
+    provenance: Provenance | None = None
 
 
 @dataclass(frozen=True)
@@ -107,8 +109,35 @@ class ApprovalRead:
     epoch: str
 
 
+@dataclass(frozen=True)
+class StoreState:
+    epoch: str | None
+    revision: int
+
+
+class StoreFailure(CapabilityUnavailable):
+    def __init__(self, reason: str = "database_unavailable") -> None:
+        self.reason = reason
+        super().__init__(
+            "AnswerStore", reason + "; read stored state before retrying; no memory fallback"
+        )
+
+
+class ExportTooLarge(CapabilityUnavailable):
+    def __init__(self) -> None:
+        super().__init__("AnswerExport", "export exceeds the configured combined byte budget")
+
+
 class AnswerStore(Protocol):
     is_fixture: bool
+    backend: str
+    durable: bool
+
+    def state(self, organization_id: str) -> StoreState: ...
+
+    def unit_of_work(
+        self, organization_id: str, expected: StoreState | None = None
+    ) -> AbstractContextManager[None]: ...
 
     def capture_approval(self, organization_id: str, approval_id: str) -> ApprovalRead: ...
 
@@ -163,12 +192,37 @@ class InMemoryAnswerStore:
     """FIXTURE store: process-local, lost on restart, labelled everywhere it surfaces."""
 
     is_fixture = True
+    backend = "memory"
+    durable = False
 
     def __init__(self) -> None:
-        self._lock = threading.Lock()
+        self._lock = threading.RLock()
         self._orgs: dict[str, _OrgData] = {}
         self.epoch = "c-store-" + secrets.token_hex(16)
         self._revisions: dict[str, int] = {}
+
+    def state(self, organization_id: str) -> StoreState:
+        with self._lock:
+            return StoreState(self.epoch, self._revisions.get(organization_id, 0))
+
+    @contextmanager
+    def unit_of_work(
+        self, organization_id: str, expected: StoreState | None = None
+    ) -> Iterator[None]:
+        with self._lock:
+            if expected is not None and self.state(organization_id) != expected:
+                raise StaleExpectation("store_revision_changed")
+            original = copy.deepcopy(self._orgs.get(organization_id))
+            revision = self._revisions.get(organization_id, 0)
+            try:
+                yield
+            except BaseException:
+                if original is None:
+                    self._orgs.pop(organization_id, None)
+                else:
+                    self._orgs[organization_id] = original
+                self._revisions[organization_id] = revision
+                raise
 
     def _changed(self, organization_id: str) -> None:
         self._revisions[organization_id] = self._revisions.get(organization_id, 0) + 1
@@ -291,7 +345,12 @@ class InMemoryAnswerStore:
     def apply_change_set(self, organization_id: str, change_set: ChangeSet) -> list[str]:
         with self._lock:
             org = self._org(organization_id)
-            if all(c.change_set_id != change_set.change_set_id for c in org.change_sets):
+            previous = next(
+                (c for c in org.change_sets if c.change_set_id == change_set.change_set_id), None
+            )
+            if previous is not None and previous != change_set:
+                raise StaleExpectation("change_set_payload_conflict")
+            if previous is None:
                 org.change_sets.append(change_set.model_copy(deep=True))
                 self._changed(organization_id)
             return [c.change_set_id for c in org.change_sets]
@@ -314,6 +373,18 @@ class UnconfiguredAnswerStore:
     migration exists). Every operation fails closed with ``CapabilityUnavailable``."""
 
     is_fixture = False
+    backend = "unconfigured"
+    durable = False
+
+    def state(self, organization_id: str) -> StoreState:
+        raise self._unavailable()
+
+    @contextmanager
+    def unit_of_work(
+        self, organization_id: str, expected: StoreState | None = None
+    ) -> Iterator[None]:
+        raise self._unavailable()
+        yield
 
     def capture_approval(self, organization_id: str, approval_id: str) -> ApprovalRead:
         raise self._unavailable()
@@ -321,12 +392,11 @@ class UnconfiguredAnswerStore:
     def approval_read_current(self, organization_id: str, captured: ApprovalRead) -> bool:
         raise self._unavailable()
 
-    @staticmethod
-    def _unavailable() -> CapabilityUnavailable:
-        return CapabilityUnavailable(
-            "AnswerStore",
-            "TigerData durable answer store is not configured; process-local fixture mode only",
-        )
+    def __init__(self, reason: str = "answer_store_unconfigured") -> None:
+        self.reason = reason
+
+    def _unavailable(self) -> CapabilityUnavailable:
+        return StoreFailure(self.reason)
 
     def append_version(
         self,

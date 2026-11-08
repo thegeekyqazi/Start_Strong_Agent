@@ -218,7 +218,10 @@ def test_sec10_configured_secret_and_key_shapes_are_redacted() -> None:
         },
     )
     text = c.get(f"{A}/audit-events").text
-    assert CANARY not in text and "[redacted]" in text
+    assert CANARY not in text and "pasted" not in text
+    events = c.get(f"{A}/audit-events").json()
+    assert all("note" not in event["details"] for event in events)
+    assert events[-1]["details"]["note_present"] == "True"
 
 
 def test_audit_events_require_identity_and_are_org_scoped() -> None:

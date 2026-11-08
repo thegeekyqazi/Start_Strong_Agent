@@ -29,7 +29,7 @@ from .models.fake import FakeAdapter
 from .models.gemini import GeminiAdapter
 from .rules.policy import WritingPolicy, fixture_policy
 from .service import EvidenceBundleNotFound, QuestionNotFound, QuestionVersionConflict
-from .store import AnswerStore, InMemoryAnswerStore, UnconfiguredAnswerStore
+from .store import AnswerStore
 from .workspace import (
     DefinitionWorkspaceSource,
     FixtureWorkspaceSource,
@@ -82,15 +82,8 @@ def get_policy(settings: Annotated[Settings, Depends(get_settings)]) -> WritingP
 def get_answer_store(
     request: Request, settings: Annotated[Settings, Depends(get_settings)]
 ) -> AnswerStore:
-    """C3 persistence. Until Dev A sequences the C3 answers/approvals migration, only a
-    labelled in-memory FIXTURE store exists (fixture mode, one per app instance, lost on
-    restart)."""
-    if not settings.fixture_mode:
-        return UnconfiguredAnswerStore()
-    store: AnswerStore | None = getattr(request.app.state, "c3_answer_store", None)
-    if store is None:
-        store = InMemoryAnswerStore()
-        request.app.state.c3_answer_store = store
+    """The app owns its explicitly selected backend/pool; never seed or fallback here."""
+    store: AnswerStore = request.app.state.c3_answer_store
     return store
 
 

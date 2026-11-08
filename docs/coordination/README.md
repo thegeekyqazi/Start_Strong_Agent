@@ -105,3 +105,11 @@ Polling or a webhook can then surface notifications to an actual running control
 - R04: GitHub, protected branches: https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
 
 Runtime-loading and protection claims above are sourced. The branch convention, templates, checkpoint protocol and proposed optional mailbox are this team's recommended workflow, not vendor promises of automatic agent-to-agent communication.
+
+## Current durability handoff
+
+[DATA-001 revision1.0](../handoffs/data/data-001-durable-applications-r1.md) supersedes INT-001's
+process-local C limitation. Local durable C verification is recorded separately from the
+hosted TigerData evidence (performed 2026-11-08 on owner-selected isolated services; TLS
+root pin awaits owner acceptance). No peer/lane acknowledgment is
+needed to implement dependencies. Sawaab retains UI/UX ownership; see the narrow UI contract.

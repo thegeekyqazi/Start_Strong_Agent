@@ -25,6 +25,7 @@ UNIMPLEMENTED_OPS = [
 
 
 def client(**overrides: Any) -> TestClient:
+    overrides.setdefault("answer_store_backend", "memory")
     return TestClient(create_app(Settings(_env_file=None, **overrides)))
 
 
@@ -45,8 +46,11 @@ def test_readiness_is_not_ready_without_database(url: str | None) -> None:
 
 
 def test_readiness_rejects_non_postgres_url() -> None:
-    r = client(database_url="sqlite:///:memory:").get("/health/ready")
-    assert r.status_code == 503
+    with pytest.raises(ValidationError, match="PostgreSQL"):
+        client(database_url="sqlite:///:memory:")
+    from strongstart_api.db import check_readiness
+
+    assert check_readiness("sqlite:///:memory:").status == "not_ready"
 
 
 def test_capabilities_are_explicit_and_features_unimplemented() -> None:

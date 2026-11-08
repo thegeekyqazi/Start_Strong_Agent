@@ -16,4 +16,4 @@ def bundle_json() -> dict[str, Any]:
     return data
 
 
-pytest_plugins = ["tests.integration.a4_support"]
+pytest_plugins = ["tests.integration.a4_support", "tests.data.db_support"]

@@ -12,7 +12,11 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
-        env_prefix="STRONGSTART_", env_file=".env", env_file_encoding="utf-8", extra="ignore"
+        env_prefix="STRONGSTART_",
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        hide_input_in_errors=True,
     )
 
     environment: Literal["local", "test", "production"] = "local"
@@ -20,9 +24,20 @@ class Settings(BaseSettings):
     # "fixture": LOCAL-ONLY fixed demo identity; rejected for production.
     auth_mode: Literal["none", "fixture"] = "none"
     database_url: str | None = Field(
-        default=None, description="SQLAlchemy URL, e.g. postgresql+psycopg://user:pw@host:port/db"
+        default=None, repr=False, exclude=True, description="Server-only PostgreSQL connection URL"
     )
     db_connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
+    answer_store_backend: Literal["postgres", "memory", "unconfigured"] = "unconfigured"
+    database_profile: Literal["local", "tigerdata"] = "local"
+    db_sslrootcert: str | None = None
+    db_pool_size: int = Field(default=3, ge=1, le=50)
+    db_max_overflow: int = Field(default=0, ge=0, le=20)
+    db_pool_timeout_seconds: float = Field(default=3, ge=0.01, le=30)
+    db_lock_timeout_ms: int = Field(default=3000, ge=1, le=30000)
+    db_statement_timeout_ms: int = Field(default=15000, ge=1, le=120000)
+    db_connection_budget: int | None = Field(default=None, ge=1)
+    api_processes: int = Field(default=1, ge=1, le=100)
+    max_export_bytes: int = Field(default=8_388_608, ge=1024, le=67_108_864)
     cors_origins: list[str] = Field(
         default_factory=lambda: ["http://127.0.0.1:5173", "http://localhost:5173"]
     )
@@ -84,6 +99,16 @@ class Settings(BaseSettings):
             self.funding_capture_mode,
         ):
             raise ValueError("funding fixture providers are forbidden in production")
+        if self.environment == "production" and self.answer_store_backend == "memory":
+            raise ValueError("memory answer storage is forbidden in production")
+        if self.database_url:
+            from .database_profile import postgres_url
+
+            postgres_url(self.database_url, self.database_profile, self.db_sslrootcert)
+        if self.database_profile == "tigerdata":
+            required = (self.db_pool_size + self.db_max_overflow) * self.api_processes
+            if self.db_connection_budget is None or required > self.db_connection_budget:
+                raise ValueError("configure the service connection budget for all API processes")
         return self
 
     @property

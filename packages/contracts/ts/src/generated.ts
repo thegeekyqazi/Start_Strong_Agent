@@ -197,6 +197,7 @@ export interface AnswerHistory {
   proposals: ReviewerProposal[]
   question_id: string
   schema_version?: '1'
+  store?: AnswerStoreMetadata | null
   store_is_fixture: boolean
   versions: AnswerVersion[]
 }
@@ -269,6 +270,14 @@ export interface ModelRunInfo {
   adapter: 'fake' | 'gemini'
   is_fixture: boolean
   model: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AnswerStoreMetadata".
+ */
+export interface AnswerStoreMetadata {
+  backend: 'postgres' | 'memory' | 'unconfigured'
+  durable: boolean
 }
 /**
  * One frozen answer version. ``state`` is computed live by the server.

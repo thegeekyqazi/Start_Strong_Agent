@@ -119,6 +119,7 @@ async def propose(
     body: ReviewerProposalRequest,
     timeout_seconds: float,
 ) -> ReviewerProposal:
+    expected_state = ctx.store.state(ctx.organization_id)
     version = ctx.store.get_version(ctx.organization_id, body.answer_version_id)
     ws = load_workspace(ctx.workspace_source, ctx.organization_id, version.question_set_id)
     facts = {f.fact_id: f for f in ws.evidence_bundle.facts}
@@ -161,34 +162,31 @@ async def propose(
         raw, len(version.rendered.text), frozenset(b.fact_id for b in bound)
     )
     simulated = caps.is_fixture or any(facts[b.fact_id].provenance.is_simulated for b in bound)
-    proposal = ctx.store.add_proposal(
-        ctx.organization_id,
-        ReviewerProposal(
-            proposal_id="rp-" + uuid.uuid4().hex[:24],
-            answer_version_id=version.answer_version_id,
-            role=body.role,
-            findings=findings,
-            reviewer=ModelRunInfo(
-                adapter=caps.adapter, model=caps.model, is_fixture=caps.is_fixture
-            ),
-            provenance=Provenance(
-                provenance_class=ProvenanceClass.SIMULATED if simulated else ProvenanceClass.PUBLIC,
-                is_simulated=simulated,
-                note="Reviewer proposal only; not an approval or a verified finding.",
-            ),
-            created_at=datetime.now(UTC),
+    proposal = ReviewerProposal(
+        proposal_id="rp-" + uuid.uuid4().hex[:24],
+        answer_version_id=version.answer_version_id,
+        role=body.role,
+        findings=findings,
+        reviewer=ModelRunInfo(adapter=caps.adapter, model=caps.model, is_fixture=caps.is_fixture),
+        provenance=Provenance(
+            provenance_class=ProvenanceClass.SIMULATED if simulated else ProvenanceClass.PUBLIC,
+            is_simulated=simulated,
+            note="Reviewer proposal only; not an approval or a verified finding.",
         ),
+        created_at=datetime.now(UTC),
     )
-    audit.record(
-        ctx.store,
-        ctx.settings,
-        organization_id=ctx.organization_id,
-        actor_id=identity.actor_id,
-        action="reviewer_proposal_added",
-        object_type="answer_version",
-        object_id=version.answer_version_id,
-        object_version=str(version.answer_version),
-        decision=f"proposal:{body.role}",
-        details={"proposal_id": proposal.proposal_id, "findings": str(len(findings))},
-    )
+    with ctx.store.unit_of_work(ctx.organization_id, expected_state):
+        ctx.store.add_proposal(ctx.organization_id, proposal)
+        audit.record(
+            ctx.store,
+            ctx.settings,
+            organization_id=ctx.organization_id,
+            actor_id=identity.actor_id,
+            action="reviewer_proposal_added",
+            object_type="answer_version",
+            object_id=version.answer_version_id,
+            object_version=str(version.answer_version),
+            decision=f"proposal:{body.role}",
+            details={"proposal_id": proposal.proposal_id, "findings": str(len(findings))},
+        )
     return proposal

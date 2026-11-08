@@ -49,6 +49,7 @@ def managed_client(
     settings = Settings(
         _env_file=None,
         auth_mode="fixture",
+        answer_store_backend="postgres",
         database_url=managed.url,
         dev_b_store_dir=tmp_path / "b-store",
     )

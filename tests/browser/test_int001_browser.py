@@ -160,7 +160,12 @@ def test_real_chromium_stops_after_event_controlled_c_edit(
 
     runner = importlib.import_module("strongstart_api.features.automation.prefill_runner")
     app = create_app(
-        Settings(_env_file=None, auth_mode="fixture", dev_b_store_dir=tmp_path / "store")
+        Settings(
+            _env_file=None,
+            answer_store_backend="memory",
+            auth_mode="fixture",
+            dev_b_store_dir=tmp_path / "store",
+        )
     )
     c = TestClient(app)
     pub = publish(c)

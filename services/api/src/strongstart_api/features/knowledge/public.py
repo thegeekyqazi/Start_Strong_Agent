@@ -22,7 +22,7 @@ from strongstart_contracts.knowledge_binding import (
 )
 
 from ...config import Settings, get_settings
-from ...db import get_engine
+from ...db import configured_engine
 from .packs import PackConflictError, PackManifestError, PackNotFoundError, PackService
 from .repository import PostgresKnowledgeRepository
 
@@ -207,5 +207,5 @@ def get_prefill_currentness(
 ) -> KnowledgeCurrentness | None:
     if not settings.database_url:
         return None
-    engine = get_engine(settings.database_url, settings.db_connect_timeout_seconds)
+    engine = configured_engine(settings)
     return KnowledgeCurrentness(PackService(engine), PostgresKnowledgeRepository(engine))

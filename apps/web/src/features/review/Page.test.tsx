@@ -128,6 +128,15 @@ function fake(h: AnswerHistory, overrides: Partial<ReviewClient> = {}) {
 }
 
 describe('Review page', () => {
+  it('separates durable storage from synthetic evidence and fixture review', async () => {
+    const h = hist({ store_is_fixture: false, store: { backend: 'postgres', durable: true } })
+    render(<ReviewPage appClient={appClient} client={fake(h).client} />)
+    expect(await screen.findByText(/Durable PostgreSQL store/)).toHaveTextContent(
+      /Synthetic data and fixture reviewer labels still apply/,
+    )
+    expect(screen.queryByText(/lost on restart/)).not.toBeInTheDocument()
+  })
+
   it('shows versions with states, the diff and fixture labelling', async () => {
     const h = hist({
       versions: [

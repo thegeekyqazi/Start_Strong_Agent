@@ -329,7 +329,7 @@ def test_strict_typing_on_c3_requests() -> None:
 def _settings() -> Any:
     from strongstart_api.config import Settings
 
-    return Settings(_env_file=None, auth_mode="fixture")
+    return Settings(_env_file=None, answer_store_backend="memory", auth_mode="fixture")
 
 
 def _resolver(store: InMemoryAnswerStore) -> StoreApprovedAnswerResolver:

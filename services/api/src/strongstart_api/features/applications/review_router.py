@@ -29,17 +29,16 @@ from strongstart_contracts.answers import (
 from ...config import Settings, get_settings
 from ...errors import ApiError
 from ...identity import Identity
-from . import audit as audit_log
 from .approval import (
     ApprovalForbidden,
     Context,
     GateBlocked,
     SnapshotConflict,
     add_note,
+    apply_changes,
     decide,
     history,
     save_version,
-    stale_reason,
 )
 from .deps import (
     LOOKUP_ERRORS,
@@ -55,7 +54,7 @@ from .models.base import ModelAdapter, ModelError
 from .resolver import StoreApprovedAnswerResolver
 from .reviewers import propose
 from .rules.policy import WritingPolicy
-from .store import AnswerStore, NotFoundInStore, StaleExpectation
+from .store import AnswerStore, ExportTooLarge, NotFoundInStore, StaleExpectation
 from .workspace import WorkspaceSource, fixture_change_set
 
 review_router = APIRouter()
@@ -194,6 +193,8 @@ def review_note(
         )
     except NotFoundInStore:
         raise _not_found() from None
+    except StaleExpectation as exc:
+        raise _conflict(exc.reason) from None
 
 
 @review_router.post("/answers/reviews", response_model=ReviewerProposal, status_code=201)
@@ -216,6 +217,8 @@ async def reviewer_proposal(
         )
     except NotFoundInStore:
         raise _not_found() from None
+    except StaleExpectation as exc:
+        raise _conflict(exc.reason) from None
     except LOOKUP_ERRORS as exc:
         raise lookup_error(exc) from None
     except ModelError as exc:
@@ -235,6 +238,15 @@ def create_export(
         return build_export(
             _ctx(store, source, policy, settings, identity.organization_id), identity, body
         )
+    except StaleExpectation as exc:
+        raise _conflict(exc.reason) from None
+    except ExportTooLarge:
+        raise ApiError(
+            422,
+            ErrorCode.VALIDATION_FAILED,
+            "export exceeds engineering byte budget",
+            {"reason": "export_size_limit"},
+        ) from None
     except LOOKUP_ERRORS as exc:
         raise lookup_error(exc) from None
 
@@ -245,6 +257,8 @@ def export_docx(export_id: str, identity: Identity, store: StoreDep) -> Response
         export = store.get_export(identity.organization_id, export_id)
     except NotFoundInStore:
         raise _not_found() from None
+    except StaleExpectation as exc:
+        raise _conflict(exc.reason) from None
     return Response(
         export.docx,
         media_type=DOCX_MEDIA_TYPE,
@@ -258,6 +272,8 @@ def export_audit(export_id: str, identity: Identity, store: StoreDep) -> Respons
         export = store.get_export(identity.organization_id, export_id)
     except NotFoundInStore:
         raise _not_found() from None
+    except StaleExpectation as exc:
+        raise _conflict(exc.reason) from None
     return Response(
         export.audit,
         media_type="application/json",
@@ -287,36 +303,9 @@ def apply_fixture_change_set(
     change_set = fixture_change_set(change_set_id)
     if change_set is None:
         raise _not_found()
-    applied = store.apply_change_set(identity.organization_id, change_set)
-    audit_log.record(
-        store,
-        settings,
-        organization_id=identity.organization_id,
-        actor_id=identity.actor_id,
-        action="change_set_applied",
-        object_type="change_set",
-        object_id=change_set_id,
-        object_version="fixture",
-        decision="applied",
-    )
-    # SEC-10: record every approval this change set made stale.
-    ctx = _ctx(store, source, policy, settings, identity.organization_id)
-    for version in store.all_versions(identity.organization_id):
-        decision = store.decision_for(identity.organization_id, version.answer_version_id)
-        if decision is None or decision.decision != "approve":
-            continue
-        reason = stale_reason(ctx, version)
-        if reason == f"change_set_applied:{change_set_id}":
-            audit_log.record(
-                store,
-                settings,
-                organization_id=identity.organization_id,
-                actor_id=identity.actor_id,
-                action="approval_staled",
-                object_type="approval",
-                object_id=decision.approval_id,
-                object_version=str(version.answer_version),
-                decision="stale",
-                details={"reason": reason},
-            )
-    return applied
+    try:
+        return apply_changes(
+            _ctx(store, source, policy, settings, identity.organization_id), identity, change_set
+        )
+    except StaleExpectation as exc:
+        raise _conflict(exc.reason) from None

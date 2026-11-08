@@ -9,6 +9,7 @@ from fastapi import Depends, Request
 from ...config import Settings, get_settings
 from .approval import Context
 from .deps import get_answer_store, get_policy, get_workspace_source
+from .postgres_store import PostgresAnswerStore
 from .resolver import StoreApprovedAnswerResolver
 from .rules.policy import WritingPolicy
 from .store import AnswerStore
@@ -22,10 +23,16 @@ def get_approved_prefill_reader(
     settings: Annotated[Settings, Depends(get_settings)],
     request: Request,
 ) -> StoreApprovedAnswerResolver:
+    selected = getattr(request.app.state, "c3_answer_store", None)
+
+    def store_current() -> bool:
+        current = getattr(request.app.state, "c3_answer_store", None)
+        if isinstance(store, PostgresAnswerStore) and isinstance(current, PostgresAnswerStore):
+            return current.engine.url == store.engine.url
+        return current is store
+
     return StoreApprovedAnswerResolver(
         lambda org: Context(store, source, policy, settings, org),
         store.is_fixture,
-        store_current=(lambda: request.app.state.c3_answer_store is store)
-        if getattr(request.app.state, "c3_answer_store", None) is store
-        else None,
+        store_current=store_current if selected is store else None,
     )

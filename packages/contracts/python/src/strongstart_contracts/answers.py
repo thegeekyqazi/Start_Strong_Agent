@@ -437,6 +437,13 @@ class ReviewerProposal(ContractModel):
     created_at: datetime
 
 
+class AnswerStoreMetadata(ContractModel):
+    model_config = contract_model_config("draft", "C")
+
+    backend: Literal["postgres", "memory", "unconfigured"]
+    durable: bool
+
+
 class AnswerHistory(ContractModel):
     model_config = contract_model_config("draft", "C")
 
@@ -449,6 +456,7 @@ class AnswerHistory(ContractModel):
     proposals: list[ReviewerProposal]
     prefill_ready: bool = Field(description="Latest version approved and not stale.")
     store_is_fixture: bool
+    store: AnswerStoreMetadata | None = None
 
 
 class ExportRequest(ContractModel):
@@ -510,6 +518,7 @@ class AuditEvent(ContractModel):
 
 
 ANSWERS_PUBLIC_MODELS: tuple[type[BaseModel], ...] = (
+    AnswerStoreMetadata,
     DraftRequest,
     DraftProposal,
     ApplicationWorkspace,

@@ -120,6 +120,9 @@ class StoreApprovedAnswerResolver:
 
     def _snapshot(self, read: ApprovalRead) -> ApprovalSnapshot:
         v, d = read.version, read.decision
+        simulated = d.reviewer_is_fixture_identity or (
+            v.provenance.is_simulated if v.provenance is not None else self.is_fixture
+        )
         return ApprovalSnapshot(
             approval_snapshot_id=d.approval_id,
             answer_snapshot_id=v.answer_version_id,
@@ -129,9 +132,9 @@ class StoreApprovedAnswerResolver:
             decided_at=d.decided_at,
             provenance=Provenance(
                 provenance_class=ProvenanceClass.SIMULATED
-                if self.is_fixture
+                if simulated
                 else ProvenanceClass.SUPPLIED,
-                is_simulated=self.is_fixture,
+                is_simulated=simulated,
                 note="C process-local FIXTURE approval; not authentication."
                 if self.is_fixture
                 else None,
@@ -177,7 +180,7 @@ class StoreApprovedAnswerResolver:
             currentness="current",
             currentness_checked_at=self._clock(),
             provenance=self._snapshot(read).provenance,
-            is_fixture=self.is_fixture,
+            is_fixture=self._snapshot(read).provenance.is_simulated,
             producer_id="c-approved-answer-store/1",
             producer_epoch=read.epoch,
         )

@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from ...config import Settings, get_settings
-from ...db import get_engine
+from ...db import configured_engine
 from ..knowledge.artifacts import LocalArtifactStore
 from .repository import SourceValidationRepository
 from .service import NumericValidationService, SourceValidationService
@@ -21,9 +21,7 @@ def get_validation_repository(
         if settings.environment == "production"
         else LocalArtifactStore(settings.knowledge_artifact_store_dir)
     )
-    return SourceValidationRepository(
-        get_engine(settings.database_url, settings.db_connect_timeout_seconds), artifacts
-    )
+    return SourceValidationRepository(configured_engine(settings), artifacts)
 
 
 def get_source_validation_service(

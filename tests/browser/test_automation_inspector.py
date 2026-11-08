@@ -33,7 +33,9 @@ READY = 'body[data-fixture-ready="true"]'
 
 @pytest.fixture(scope="module")
 def client() -> TestClient:
-    return TestClient(create_app(Settings(_env_file=None, auth_mode="fixture")))
+    return TestClient(
+        create_app(Settings(_env_file=None, answer_store_backend="memory", auth_mode="fixture"))
+    )
 
 
 def inspect(client: TestClient, fixture_id: str, **extra: Any) -> dict[str, Any]:
@@ -212,7 +214,9 @@ def test_auto11_inspector_performs_no_writes_and_submit_is_denied(client: TestCl
 
 
 def test_auto12_missing_browser_is_unavailable_not_faked() -> None:
-    client = TestClient(create_app(Settings(_env_file=None, auth_mode="fixture")))
+    client = TestClient(
+        create_app(Settings(_env_file=None, answer_store_backend="memory", auth_mode="fixture"))
+    )
     client.app.dependency_overrides[get_inspector_config] = lambda: InspectorConfig(  # type: ignore[attr-defined]
         executable_path="/nonexistent/chromium-for-b2-test"
     )
@@ -233,7 +237,9 @@ def test_auto12_timeout_is_bounded_and_browser_closes() -> None:
         )
     assert exc.value.reason == "timeout"
     assert len(seen) == 1 and seen[0].is_connected() is False
-    client = TestClient(create_app(Settings(_env_file=None, auth_mode="fixture")))
+    client = TestClient(
+        create_app(Settings(_env_file=None, answer_store_backend="memory", auth_mode="fixture"))
+    )
     client.app.dependency_overrides[get_inspector_config] = lambda: InspectorConfig(timeout_ms=1500)  # type: ignore[attr-defined]
     r = client.post(
         "/api/automation/inspect-fixture", json={"fixture_id": "rep-portal-v1-never-ready"}

@@ -19,6 +19,10 @@ FACT = "demo-fact-children-served"
 
 
 def make_client(adapter: ModelAdapter | None = None, **overrides: Any) -> TestClient:
+    overrides.setdefault(
+        "answer_store_backend",
+        "unconfigured" if overrides.get("environment") == "production" else "memory",
+    )
     settings = Settings(_env_file=None, **overrides)
     app = create_app(settings)
     if adapter is not None:

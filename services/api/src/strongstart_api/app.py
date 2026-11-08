@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 from typing import Annotated
 
 from fastapi import Depends, FastAPI
@@ -20,6 +22,8 @@ from .config import Settings, get_settings
 from .db import check_readiness
 from .errors import install_error_handling
 from .features import FEATURE_ROUTERS, feature_capabilities
+from .features.applications.backend import build_answer_store
+from .features.applications.postgres_store import PostgresAnswerStore
 from .identity import Identity
 
 SERVICE_NAME = "strongstart-api"
@@ -53,14 +57,22 @@ def platform_capabilities(settings: Settings) -> list[Capability]:
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
-    app = FastAPI(title="Strong Start Agent API", version="0.1.0")
+    selected = settings or get_settings()
+    store = build_answer_store(selected)
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        try:
+            yield
+        finally:
+            if isinstance(store, PostgresAnswerStore):
+                store.engine.dispose()
+
+    app = FastAPI(title="Strong Start Agent API", version="0.1.0", lifespan=lifespan)
+    app.state.c3_answer_store = store
     if settings is not None:
         app.dependency_overrides[get_settings] = lambda: settings
-    cors_settings = settings or get_settings()
-    if cors_settings.fixture_mode:
-        from .features.applications.store import InMemoryAnswerStore
-
-        app.state.c3_answer_store = InMemoryAnswerStore()
+    cors_settings = selected
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_settings.cors_origins,
@@ -75,7 +87,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/health/ready", response_model=ReadinessReport)
     def ready(s: Annotated[Settings, Depends(get_settings)]) -> JSONResponse:
-        report = check_readiness(s.database_url, s.db_connect_timeout_seconds)
+        report = check_readiness(s.database_url, s.db_connect_timeout_seconds, settings=s)
         return JSONResponse(
             status_code=200 if report.status == "ready" else 503,
             content=report.model_dump(mode="json"),

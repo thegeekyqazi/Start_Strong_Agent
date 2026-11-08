@@ -7,7 +7,7 @@ UV := uv run
 SCHEMA := packages/contracts/schema/strongstart-contracts.schema.json
 
 .PHONY: help bootstrap browser-install db-up db-down migrate seed-demo dev-api dev-web \
-        lint format typecheck test contracts contracts-check build smoke browser-smoke check
+        lint format typecheck test contracts contracts-check build smoke browser-smoke check tigerdata-smoke
 
 help: ## List targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "  %-16s %s\n", $$1, $$2}'
@@ -81,3 +81,6 @@ browser-smoke: ## Build web, then Chromium browser tests (fixture read-back + Fu
 	$(UV) pytest -m browser -s tests/browser
 
 check: lint typecheck test contracts-check build ## All no-DB checks
+
+tigerdata-smoke: ## Explicit hosted gate; supply TIGERDATA_ARGS='--manifest private.json --phase preflight'
+	$(UV) python -m scripts.tigerdata_smoke $(TIGERDATA_ARGS)

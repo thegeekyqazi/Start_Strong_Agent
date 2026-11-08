@@ -32,7 +32,12 @@ browser_module = importlib.import_module("strongstart_api.features.automation.pr
 
 @pytest.fixture
 def current(tmp_path, monkeypatch):
-    settings = Settings(_env_file=None, auth_mode="fixture", dev_b_store_dir=tmp_path / "store")
+    settings = Settings(
+        _env_file=None,
+        answer_store_backend="memory",
+        auth_mode="fixture",
+        dev_b_store_dir=tmp_path / "store",
+    )
     app = create_app(settings)
     c = TestClient(app)
     pub = publish(c)
@@ -182,7 +187,12 @@ def test_missing_identity_precedes_factories_and_other_org_is_hidden(tmp_path):
 
 def test_normal_c_empty_store_does_not_seed_unknown_approvals(tmp_path):
     app = create_app(
-        Settings(_env_file=None, auth_mode="fixture", dev_b_store_dir=tmp_path / "store")
+        Settings(
+            _env_file=None,
+            answer_store_backend="memory",
+            auth_mode="fixture",
+            dev_b_store_dir=tmp_path / "store",
+        )
     )
     c = TestClient(app)
     pub = publish(c)

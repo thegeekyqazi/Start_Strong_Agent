@@ -13,7 +13,6 @@ from alembic import command
 from alembic.config import Config
 from sqlalchemy import delete, insert, or_, select
 
-from strongstart_api.config import Settings
 from strongstart_api.db import (
     active_pack_contexts,
     dependency_target_refs,
@@ -233,9 +232,6 @@ def managed_environment(url: str) -> Iterator[Managed]:
 
 
 @pytest.fixture
-def managed() -> Iterator[Managed]:
-    url = Settings().database_url
-    if not url:
-        pytest.fail("real PostgreSQL required: set STRONGSTART_DATABASE_URL")
-    with managed_environment(url) as environment:
+def managed(data_db) -> Iterator[Managed]:
+    with managed_environment(data_db.url) as environment:
         yield environment

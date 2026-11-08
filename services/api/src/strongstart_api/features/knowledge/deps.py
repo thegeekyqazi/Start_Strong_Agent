@@ -5,7 +5,7 @@ from typing import Annotated
 from fastapi import Depends
 
 from ...config import Settings, get_settings
-from ...db import get_engine
+from ...db import configured_engine
 from .artifacts import LocalArtifactStore
 from .ingestion import TextIngestionService
 from .packs import PackService
@@ -23,9 +23,7 @@ def get_knowledge_repository(
         if settings.environment == "production"
         else LocalArtifactStore(settings.knowledge_artifact_store_dir)
     )
-    return PostgresKnowledgeRepository(
-        get_engine(settings.database_url, settings.db_connect_timeout_seconds), artifacts
-    )
+    return PostgresKnowledgeRepository(configured_engine(settings), artifacts)
 
 
 def get_pack_service(
@@ -33,7 +31,7 @@ def get_pack_service(
 ) -> PackService | None:
     if not settings.database_url:
         return None
-    return PackService(get_engine(settings.database_url, settings.db_connect_timeout_seconds))
+    return PackService(configured_engine(settings))
 
 
 def get_text_ingestion_service(
@@ -42,7 +40,7 @@ def get_text_ingestion_service(
     if not settings.database_url or settings.environment == "production":
         return None
     return TextIngestionService(
-        get_engine(settings.database_url, settings.db_connect_timeout_seconds),
+        configured_engine(settings),
         LocalArtifactStore(settings.knowledge_artifact_store_dir),
         settings.knowledge_max_text_bytes,
     )
@@ -54,7 +52,7 @@ def get_pdf_ingestion_service(
     if not settings.database_url or settings.environment == "production":
         return None
     return PdfIngestionService(
-        get_engine(settings.database_url, settings.db_connect_timeout_seconds),
+        configured_engine(settings),
         LocalArtifactStore(settings.knowledge_artifact_store_dir),
         BoundedPdfParser(
             settings.knowledge_max_pdf_bytes,
