@@ -175,3 +175,36 @@ def test_hosted_scenario_locally_uses_real_c_with_nonowner_role(data_db, tmp_pat
             and report["cross_client_stale_conflict"]
             and report["process_contention_observed"]
         )
+
+
+def test_hosted_restart_phase_locally_uses_real_processes_with_nonowner_role(data_db, tmp_path):
+    """Same restart_workflow the TigerData gate runs: actual uvicorn processes, nonowner C."""
+    from sqlalchemy import insert
+
+    from scripts.data001_workflow import restart_workflow
+    from strongstart_api.db import organizations
+    from tests.data.db_support import runtime_role
+
+    data_db.migrate()
+    org = "data001-" + "0" * 32
+    with data_db.engine.begin() as conn:
+        conn.execute(
+            insert(organizations).values(
+                id=org,
+                display_name="SYNTHETIC local restart verifier",
+                provenance_class="simulated",
+                is_simulated=True,
+            )
+        )
+    with runtime_role(data_db) as role:
+        settings = Settings(
+            _env_file=None,
+            auth_mode="fixture",
+            answer_store_backend="postgres",
+            database_url=role.url,
+            db_pool_size=1,
+        )
+        report = restart_workflow(settings, org, tmp_path)
+    assert report["old_plan_availability"] == "runtime_epoch_changed"
+    assert report["a4_replacement_held_after_restart"] == "approval_not_usable"
+    assert report["docx_sha256"] == report["export_docx_sha256_reported"]

@@ -7,10 +7,19 @@ This is a bounded test producer, not the future normal-runtime real-evidence int
 
 from __future__ import annotations
 
+import hashlib
 import multiprocessing as mp
+import socket
+import subprocess
+import sys
+import threading
 import time
-from typing import Any
+from collections.abc import Iterator
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Any, cast
 
+import httpx
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from sqlalchemy import event, text
@@ -27,6 +36,8 @@ from strongstart_api.features.automation.public import build_application_definit
 from strongstart_api.identity import FIXTURE_IDENTITY, require_identity
 from strongstart_contracts.answers import ApplicationWorkspace
 from tests.integration.support import decide, publish, save
+
+ROOT = Path(__file__).resolve().parents[1]
 
 
 class NamespacedSyntheticWorkspace(FixtureWorkspaceSource):
@@ -269,3 +280,189 @@ def verify_workflow(settings: Settings, org: str) -> dict[str, Any]:
             "reopened_process": True,
             "cross_client_stale_conflict": True,
         }
+
+
+SYNTHETIC_ORG_ENV = "DATA001_SYNTHETIC_ORG"
+
+
+def hosted_app_factory() -> FastAPI:
+    """Uvicorn factory for the hosted restart phase only: same namespaced adapters as above.
+
+    Settings come from the private process environment (runtime role, TigerData profile).
+    """
+    import os
+
+    org = os.environ[SYNTHETIC_ORG_ENV]
+    if not org.startswith("data001-"):
+        raise RuntimeError("hosted factory requires a namespaced synthetic organization")
+    return application(Settings(_env_file=None), org)[0]
+
+
+@contextmanager
+def api_process(env: dict[str, str], directory: Path) -> Iterator[httpx.Client]:
+    """An actual uvicorn API process; output is discarded so no DSN/exception can leak."""
+    with socket.socket() as sock:
+        sock.bind(("127.0.0.1", 0))
+        port = sock.getsockname()[1]
+    proc = subprocess.Popen(  # noqa: S603 - fixed owned API command, private env
+        [
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "--factory",
+            "scripts.data001_workflow:hosted_app_factory",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            str(port),
+        ],
+        cwd=ROOT,
+        env=env,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
+    )
+    try:
+        with httpx.Client(base_url=f"http://127.0.0.1:{port}", timeout=60) as client:
+            deadline = time.monotonic() + 60
+            while time.monotonic() < deadline:
+                if proc.poll() is not None:
+                    raise AssertionError("owned API process exited during startup")
+                try:
+                    if client.get("/health/ready").status_code == 200:
+                        break
+                except httpx.TransportError:
+                    pass
+                threading.Event().wait(0.1)  # readiness polling, never contention proof
+            else:
+                raise AssertionError("owned API readiness timeout")
+            yield client
+    finally:
+        proc.terminate()
+        proc.wait(timeout=15)
+
+
+def restart_workflow(settings: Settings, org: str, directory: Path) -> dict[str, Any]:
+    """Save/approve/export in one real API process, then reopen everything in new ones."""
+    import os
+
+    from strongstart_api.features.applications.postgres_store import PostgresAnswerStore
+    from tests.integration.support import prepare
+
+    env = {k: v for k, v in os.environ.items() if not k.startswith("STRONGSTART_")}
+    env.update(
+        STRONGSTART_ENVIRONMENT="test",
+        STRONGSTART_AUTH_MODE="fixture",
+        STRONGSTART_ANSWER_STORE_BACKEND="postgres",
+        STRONGSTART_DATABASE_PROFILE=settings.database_profile,
+        STRONGSTART_DATABASE_URL=str(settings.database_url),
+        STRONGSTART_DB_CONNECT_TIMEOUT_SECONDS=str(settings.db_connect_timeout_seconds),
+        STRONGSTART_DB_POOL_SIZE="1",
+        STRONGSTART_DB_MAX_OVERFLOW="0",
+        STRONGSTART_DEV_B_STORE_DIR=str(directory / "b"),
+        **{SYNTHETIC_ORG_ENV: org},
+    )
+    # Hosted-only settings are forwarded only when configured; never invented for local runs.
+    if settings.db_sslrootcert:
+        env["STRONGSTART_DB_SSLROOTCERT"] = str(settings.db_sslrootcert)
+    if settings.db_connection_budget is not None:
+        env["STRONGSTART_DB_CONNECTION_BUDGET"] = str(settings.db_connection_budget)
+    from strongstart_api.db import configured_engine
+
+    engine = configured_engine(settings)
+    store = PostgresAnswerStore(engine)
+    try:
+        with api_process(env, directory) as raw:
+            c = cast(TestClient, raw)
+            pub = publish(c, key="data001-hosted-restart")
+            version = save(
+                c, pub, "pf-summary", "  SYNTHETIC restart 🦎 {{fact:demo-fact-children-served}}.\n"
+            )
+            approval = decide(c, version)
+            for path, body in (
+                (
+                    "/api/applications/answers/notes",
+                    {"answer_version_id": version["answer_version_id"], "text": "Exact 🦎\r\n "},
+                ),
+                (
+                    "/api/applications/answers/reviews",
+                    {"answer_version_id": version["answer_version_id"], "role": "meaning_reviewer"},
+                ),
+            ):
+                assert c.post(path, json=body).status_code == 201
+            result = c.post(
+                "/api/applications/exports",
+                json={
+                    "mode": "reviewed",
+                    "question_ids": [version["question_id"]],
+                    "question_set_id": pub["question_set_id"],
+                },
+            ).json()
+            export_id = result["export_id"]
+            assert export_id and not result["blocked"]
+            history_path = (
+                f"/api/applications/answers/{version['question_id']}"
+                f"?question_set_id={pub['question_set_id']}"
+            )
+            history = c.get(history_path).json()
+            audit = c.get("/api/applications/audit-events").json()
+            binaries = [
+                c.get(f"/api/applications/exports/{export_id}/{kind}").content
+                for kind in ("docx", "audit")
+            ]
+            pending = prepare(c, pub, {"pf-summary": approval}).json()
+            assert pending["actions"][0]["intended_value"] == version["rendered"]["text"]
+            state = store.state(org)
+        # First uvicorn has exited; a brand-new process reopens the same hosted dataset.
+        with api_process(env, directory) as raw:
+            c = cast(TestClient, raw)
+            assert c.get(history_path).json() == history
+            assert c.get("/api/applications/audit-events").json() == audit
+            reread = [
+                c.get(f"/api/applications/exports/{export_id}/{kind}").content
+                for kind in ("docx", "audit")
+            ]
+            assert reread == binaries
+            assert store.state(org) == state
+            fresh = prepare(c, pub, {"pf-summary": approval}).json()
+            assert (
+                fresh["actions"][0]["producer_epoch"]
+                == pending["actions"][0]["producer_epoch"]
+                == state.epoch
+            )
+            assert fresh["runtime_epoch"] != pending["runtime_epoch"]
+            assert fresh["actions"][0]["intended_value"] == version["rendered"]["text"]
+            old = c.get(f"/api/automation/prefill-plans/{pending['plan_id']}").json()
+            assert old["availability"] == "runtime_epoch_changed"
+            applied = c.post("/api/applications/fixture/change-sets/demo-change-fact-v2/apply")
+            assert applied.status_code == 200
+        # A4 replacement survives another restart and keeps the old approval out of prefill.
+        with api_process(env, directory) as raw:
+            c = cast(TestClient, raw)
+            stale = prepare(c, pub, {"pf-summary": approval}).json()
+            assert stale["actions"] == [] and stale["held"][0]["reason"] == "approval_not_usable"
+            replay = c.post("/api/applications/fixture/change-sets/demo-change-fact-v2/apply")
+            assert replay.status_code == 200 and replay.json() == applied.json()
+            events = c.get("/api/applications/audit-events").json()
+            assert len([e for e in events if e["action"] == "change_set_applied"]) == 1
+            final_state = store.state(org)
+    finally:
+        engine.dispose()
+    return {
+        "organization_id": org,
+        "approval_id": approval,
+        "answer_version_id": version["answer_version_id"],
+        "export_id": export_id,
+        "template_sha256": version["content_sha256"],
+        "rendered_sha256": version["rendered"]["text_sha256"],
+        "snapshot_sha256": version["snapshot_sha256"],
+        "docx_sha256": hashlib.sha256(binaries[0]).hexdigest(),
+        "audit_sha256": hashlib.sha256(binaries[1]).hexdigest(),
+        "export_docx_sha256_reported": result.get("docx_sha256"),
+        "producer_epoch": state.epoch,
+        "epoch_stable_across_restart": True,
+        "old_plan_availability": "runtime_epoch_changed",
+        "new_plan_from_preserved_approval": True,
+        "a4_replacement_held_after_restart": "approval_not_usable",
+        "final_revision": final_state.revision,
+        "api_processes": 3,
+    }

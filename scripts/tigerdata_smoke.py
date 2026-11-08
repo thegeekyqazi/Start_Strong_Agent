@@ -219,9 +219,21 @@ def run(args: argparse.Namespace) -> None:
                         is_simulated=True,
                     )
                 )
-            from scripts.data001_workflow import verify_workflow
+            from scripts.data001_workflow import restart_workflow, verify_workflow
 
             with TemporaryDirectory(prefix="data001-b-fixture-") as directory:
+                if args.phase == "restart":
+                    # Actual uvicorn processes restart against the same hosted dataset.
+                    evidence = restart_workflow(settings, org, Path(directory))
+                    write_private(
+                        args.receipt.with_suffix(".verified.json"),
+                        {**report, **evidence, "status": "TigerData-restart-verified"},
+                    )
+                    print(
+                        "TigerData API restart verification passed; sanitized private "
+                        "evidence written. Explicit owned cleanup remains separate."
+                    )
+                    return
                 test_settings = settings.model_copy(
                     update={
                         "environment": "test",
@@ -252,7 +264,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path)
     parser.add_argument(
-        "--phase", choices=("preflight", "migrate", "verify", "cleanup"), default="preflight"
+        "--phase",
+        choices=("preflight", "migrate", "verify", "restart", "cleanup"),
+        default="preflight",
     )
     parser.add_argument("--receipt", type=Path)
     args = parser.parse_args()
