@@ -22,11 +22,16 @@ class Fact(ContractModel):
     model_config = contract_model_config("draft", "A")
 
     fact_id: StableId
+    fact_version: int = Field(default=1, ge=1)
     metric_id: StableId
     value: DecimalString | None = Field(description="Exact decimal string; null when unknown.")
     raw_value: str | None = None
     unit: str | None = Field(description="Null means the unit is unknown, not dimensionless.")
+    currency: str | None = None
+    scale: str | None = None
     scope: str
+    program: str | None = None
+    geography: str | None = None
     population: str | None = None
     reporting_period: str | None = Field(description="e.g. '2025-09/2026-06'; null = unknown.")
     status: Literal["extracted", "needs_review", "verified", "conflicting", "superseded"]

@@ -594,7 +594,10 @@ RULES: tuple[Callable[[CheckContext], list[AnswerFinding]], ...] = (
 
 
 def run_checks(ctx: CheckContext) -> list[AnswerFinding]:
-    return [f for rule in RULES for f in rule(ctx)]
+    # A3 runner adapter only: C retains APP/POL definitions and their exact ordering.
+    from ...validation.registry import run_rule_functions
+
+    return run_rule_functions(RULES, ctx)
 
 
 def sha256_text(text: str) -> str:

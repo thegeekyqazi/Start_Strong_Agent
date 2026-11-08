@@ -26,6 +26,13 @@ from .rules import (
 Rule = Callable[[SourceContext], ValidationResult]
 
 
+def run_rule_functions[ContextT, FindingT](
+    rules: tuple[Callable[[ContextT], list[FindingT]], ...], ctx: ContextT
+) -> list[FindingT]:
+    """Shared deterministic adapter; rule ownership and ordering remain with the caller."""
+    return [finding for rule in rules for finding in rule(ctx)]
+
+
 @dataclass(frozen=True)
 class RuleDefinition:
     rule_id: str

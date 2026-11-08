@@ -52,6 +52,7 @@ def render(
             bindings.append(
                 ClaimBinding(
                     fact_id=ref,
+                    fact_version=facts[ref].fact_version,
                     pack_version_id=bundle.pack_version_id,
                     span_start=length,
                     span_end=length + len(text),

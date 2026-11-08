@@ -216,11 +216,16 @@ class PostgresKnowledgeRepository:
             facts.append(
                 Fact(
                     fact_id=fact_id,
+                    fact_version=row["fact_version"],
                     metric_id=row["metric_id"],
                     value=row["value_exact"],
                     raw_value=row["raw_value"],
                     unit=row["unit"],
+                    currency=row["currency"],
+                    scale=row["scale"],
                     scope=row["scope"],
+                    program=row["program"],
+                    geography=row["geography"],
                     population=row["population"],
                     reporting_period=row["reporting_period"],
                     status=row["status"],

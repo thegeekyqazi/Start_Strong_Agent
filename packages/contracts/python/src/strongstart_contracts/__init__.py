@@ -47,6 +47,8 @@ from .platform import (
 )
 from .ports import CapabilityUnavailable
 from .validation import (
+    NumericValidationReport,
+    NumericValidationRequest,
     RuleCapability,
     SourceValidationReport,
     SourceValidationRequest,
@@ -84,6 +86,8 @@ __all__ = [
     "KnowledgeSourceVersion",
     "LimitConflict",
     "LivenessReport",
+    "NumericValidationReport",
+    "NumericValidationRequest",
     "Opportunity",
     "PdfSourceImportRequest",
     "PdfSourceImportResult",
