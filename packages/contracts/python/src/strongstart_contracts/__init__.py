@@ -20,7 +20,14 @@ from .common import (
     ProvenanceClass,
     SourceReference,
 )
-from .evidence import EvidenceBundle, Fact
+from .evidence import (
+    EvidenceBundle,
+    Fact,
+    KnowledgeAvailability,
+    KnowledgePassage,
+    KnowledgeSnapshot,
+    KnowledgeSourceVersion,
+)
 from .fixtures import FixtureBundle, load_fixture_bundle
 from .funding import Opportunity, RequirementCondition, RequirementSet
 from .jobs import ChangedVersion, ChangeSet, JobBudget, JobContext, JobResult
@@ -57,6 +64,10 @@ __all__ = [
     "JobBudget",
     "JobContext",
     "JobResult",
+    "KnowledgeAvailability",
+    "KnowledgePassage",
+    "KnowledgeSnapshot",
+    "KnowledgeSourceVersion",
     "LimitConflict",
     "LivenessReport",
     "Opportunity",
