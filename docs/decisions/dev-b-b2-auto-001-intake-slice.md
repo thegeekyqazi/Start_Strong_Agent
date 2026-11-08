@@ -42,3 +42,8 @@ Additional technical choices (developer discretion):
 ## Validation and rollback
 
 Validated by `make check`, `make smoke`, `make browser-smoke` and the per-case evidence in `docs/handoffs/dev-b/b2-auto-001-check-evidence.md`. Rollback: revert the branch commits. Shared files touched are `export.py` (one line), the regenerated schema/TS (regenerate) and `tests/unit/test_api.py`.
+
+## Update 2026-11-07 (after B1 merge, rebase onto `8df9df8`)
+
+- Item 7: both lanes' registrations were kept in `export.py`. B1 used an explicit list and B2 a module tuple; both are compatible. Schema/TS were regenerated, not hand-merged.
+- Item 8: B1 published `CapturedDocument` schema "1" and `CapturedDocumentReader`. B2 now adapts it (`record_from_captured_document`, `B1CaptureSource`) and uses B1's development-only store ahead of the B2 fixture producer. The B2 contract `CaptureLineage` gained additive fields: `final_url_status` now also allows `provider_reported`, plus `producer`, `producer_source_reference_hash` and `producer_supported_representations`. Status: implemented-tested against B1's sample and B1's API; awaiting B1 acknowledgement. See `docs/handoffs/dev-b/b2-auto-001-r2.md`.

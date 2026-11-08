@@ -26,3 +26,13 @@ Commands: `uv run pytest -q tests/automation` (39 passed) · `uv run pytest -m b
 Manual UI verification (real API + Vite dev on ephemeral ports, fixture mode, driven by Chromium): fixture import showed 9 questions, 2 "Held", conflict text and exact evidence; inspection of `rep-portal-v1-duplicate` showed `ambiguous`/`invalid`; export downloaded `b2-automation-handoff/1`, `not_approved`, `form_map: null`, 9 unresolved items; the markdown capture showed "No questions were extracted"; 0 page errors. Screenshots were taken locally and not committed.
 
 Not covered: AUT-02/AUT-03 (approved entry/read-back; INIT browser-smoke is not evidence for them), AUT-04 enforcement, full SEC-08 action authorization, production network isolation, live B1 producer, CI on GitHub runners.
+
+## Update after B1 merge (base `8df9df8`)
+
+| Case | Tests | Observed | Rules (subset) |
+| --- | --- | --- | --- |
+| AUTO-14 (real producer) | `tests/automation/test_b1_integration.py::test_g1_b1_sample_html_imports_with_ids_hashes_and_provenance`, `test_g1_fresh_b1_api_capture_flows_into_b2_importer`, `test_g1_tampered_b1_blob_fails_integrity` | B1 sample and fresh B1 API capture → B2 importer. IDs, hashes and provenance survive; 0 network; altered blob → 409 | SRC-01, SRC-02, SRC-08; G1 seam **joined (development store, fixture provider)** |
+| AUTO-04/15 (B1 bytes) | `test_g1_b1_raw_html_is_inert`, `test_g1_b1_markdown_is_context_only` | B1's script/tracker/hidden text stay inert data; markdown is context only | SEC-07 subset, SRC-05 |
+| AUTO-13 (B1 store) | `test_g1_other_org_b1_capture_is_indistinguishable_from_unknown`, `test_production_has_no_capture_source` | Other-org gives the same 404 as unknown; production → 503 | SEC-01, SEC-13 subset |
+
+Combined runs: `make check` exit 0 (pytest 261 passed / 15 deselected; vitest 24 passed) · `make smoke` exit 0 · `make browser-smoke` exit 0 (13 passed).
