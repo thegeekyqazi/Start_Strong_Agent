@@ -28,6 +28,23 @@ export type ErrorCode =
  */
 export interface StrongStartContracts {}
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ActivatePackRequest".
+ */
+export interface ActivatePackRequest {
+  expected_active_pack_version_id: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ActivePackState".
+ */
+export interface ActivePackState {
+  application_context: string
+  organization_id: string
+  pack_version_id: string
+  revision: number
+}
+/**
  * Plain-language wrapper around a shared ValidationResult (s8.3, s9.1, s18).
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1136,6 +1153,59 @@ export interface CheckRequest {
   text: string
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DependencyRegistrationRequest".
+ */
+export interface DependencyRegistrationRequest {
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   */
+  dependencies: [ValidationDependency, ...ValidationDependency[]]
+  expected_revision?: number
+  target_id: string
+  target_kind:
+    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
+}
+/**
+ * Minimal exact dependency identity; never embeds private evidence content.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ValidationDependency".
+ */
+export interface ValidationDependency {
+  content_hash?: string | null
+  kind:
+    | 'subject'
+    | 'source_version'
+    | 'artifact_hash'
+    | 'passage_locator'
+    | 'normalization_policy'
+    | 'permission_snapshot'
+    | 'fact_version'
+    | 'pack_version'
+    | 'rounding_policy'
+    | 'formula'
+    | 'project_input'
+    | 'policy'
+  ref_id: string
+  version: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DependencyTargetState".
+ */
+export interface DependencyTargetState {
+  dependencies: ValidationDependency[]
+  organization_id: string
+  revision: number
+  stale_change_set_id?: string | null
+  state: 'current' | 'stale'
+  target_id: string
+  target_kind:
+    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
+}
+/**
  * Validated model proposal for one question. Not an answer version or approval.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1437,6 +1507,16 @@ export interface InspectFixtureRequest {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "InvalidationSummary".
+ */
+export interface InvalidationSummary {
+  matched_dependencies: ValidationDependency[]
+  target_id: string
+  target_kind:
+    'validation' | 'answer' | 'check' | 'approval' | 'export' | 'browser_grant' | 'job' | 'skill'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "JobBudget".
  */
 export interface JobBudget {
@@ -1557,6 +1637,85 @@ export interface OmittedResult {
   original_url: string | null
   provider_rank: number
   reason: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PackActivationReport".
+ */
+export interface PackActivationReport {
+  active: ActivePackState
+  change_set: ChangeSet | null
+  idempotent: boolean
+  invalidated: InvalidationSummary[]
+  previous_pack_version_id: string | null
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PackFactBinding".
+ */
+export interface PackFactBinding {
+  fact_id: string
+  fact_version: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PackManifest".
+ */
+export interface PackManifest {
+  created_at: string
+  manifest_sha256: string
+  organization_id: string
+  request: PackManifestRequest
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PackManifestRequest".
+ */
+export interface PackManifestRequest {
+  /**
+   * @minItems 1
+   * @maxItems 32
+   */
+  access_labels: [string, ...string[]]
+  application_context: string
+  bundle_id: string
+  /**
+   * @maxItems 100
+   */
+  coverage_notes?: string[]
+  /**
+   * @minItems 1
+   * @maxItems 10000
+   */
+  facts: [PackFactBinding, ...PackFactBinding[]]
+  is_simulated: boolean
+  locale: 'en-CA'
+  manifest_schema_version?: '1'
+  mapping_version: 'pack-mapping-v1'
+  pack_id: string
+  pack_version_id: string
+  parser_version: string
+  /**
+   * @maxItems 1000
+   */
+  policies?: PackPolicyBinding[]
+  provenance_class: 'supplied' | 'public' | 'simulated' | 'engineering_derived'
+  /**
+   * @minItems 1
+   * @maxItems 10000
+   */
+  source_version_ids: [string, ...string[]]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PackPolicyBinding".
+ */
+export interface PackPolicyBinding {
+  content_sha256: string
+  policy_id: string
+  policy_version: number
 }
 /**
  * Base64 transport for a bounded PDF; bytes remain authoritative after decoding.
@@ -1803,29 +1962,6 @@ export interface SourceValidationReport {
   results: ValidationResult[]
   schema_version?: '1'
   source_version_id: string
-}
-/**
- * Minimal exact dependency identity; never embeds private evidence content.
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "ValidationDependency".
- */
-export interface ValidationDependency {
-  content_hash?: string | null
-  kind:
-    | 'subject'
-    | 'source_version'
-    | 'artifact_hash'
-    | 'passage_locator'
-    | 'normalization_policy'
-    | 'permission_snapshot'
-    | 'fact_version'
-    | 'pack_version'
-    | 'rounding_policy'
-    | 'formula'
-    | 'project_input'
-  ref_id: string
-  version: string
 }
 /**
  * Strict source-check request; identity and organization are server-derived.

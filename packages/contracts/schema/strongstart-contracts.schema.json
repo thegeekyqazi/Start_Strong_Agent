@@ -1,5 +1,72 @@
 {
   "$defs": {
+    "ActivatePackRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "expected_active_pack_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Expected Active Pack Version Id"
+        }
+      },
+      "required": [
+        "expected_active_pack_version_id"
+      ],
+      "title": "ActivatePackRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
+    "ActivePackState": {
+      "additionalProperties": false,
+      "properties": {
+        "application_context": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Application Context",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "pack_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Pack Version Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "organization_id",
+        "application_context",
+        "pack_version_id",
+        "revision"
+      ],
+      "title": "ActivePackState",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
     "AnswerFinding": {
       "additionalProperties": false,
       "description": "Plain-language wrapper around a shared ValidationResult (s8.3, s9.1, s18).",
@@ -2236,6 +2303,136 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "DependencyRegistrationRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/ValidationDependency"
+          },
+          "maxItems": 1000,
+          "minItems": 1,
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "expected_revision": {
+          "default": 0,
+          "minimum": 0,
+          "title": "Expected Revision",
+          "type": "integer"
+        },
+        "target_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "target_kind": {
+          "enum": [
+            "validation",
+            "answer",
+            "check",
+            "approval",
+            "export",
+            "browser_grant",
+            "job",
+            "skill"
+          ],
+          "title": "Target Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_kind",
+        "target_id",
+        "dependencies"
+      ],
+      "title": "DependencyRegistrationRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
+    "DependencyTargetState": {
+      "additionalProperties": false,
+      "properties": {
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/ValidationDependency"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "stale_change_set_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stale Change Set Id"
+        },
+        "state": {
+          "enum": [
+            "current",
+            "stale"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "target_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "target_kind": {
+          "enum": [
+            "validation",
+            "answer",
+            "check",
+            "approval",
+            "export",
+            "browser_grant",
+            "job",
+            "skill"
+          ],
+          "title": "Target Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "organization_id",
+        "target_kind",
+        "target_id",
+        "revision",
+        "state",
+        "dependencies"
+      ],
+      "title": "DependencyTargetState",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
     "DraftProposal": {
       "additionalProperties": false,
       "description": "Validated model proposal for one question. Not an answer version or approval.",
@@ -4399,6 +4596,48 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "InvalidationSummary": {
+      "additionalProperties": false,
+      "properties": {
+        "matched_dependencies": {
+          "items": {
+            "$ref": "#/$defs/ValidationDependency"
+          },
+          "title": "Matched Dependencies",
+          "type": "array"
+        },
+        "target_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "target_kind": {
+          "enum": [
+            "validation",
+            "answer",
+            "check",
+            "approval",
+            "export",
+            "browser_grant",
+            "job",
+            "skill"
+          ],
+          "title": "Target Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_kind",
+        "target_id",
+        "matched_dependencies"
+      ],
+      "title": "InvalidationSummary",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
     "JobBudget": {
       "additionalProperties": false,
       "properties": {
@@ -5442,6 +5681,299 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
+    },
+    "PackActivationReport": {
+      "additionalProperties": false,
+      "properties": {
+        "active": {
+          "$ref": "#/$defs/ActivePackState"
+        },
+        "change_set": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ChangeSet"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "idempotent": {
+          "title": "Idempotent",
+          "type": "boolean"
+        },
+        "invalidated": {
+          "items": {
+            "$ref": "#/$defs/InvalidationSummary"
+          },
+          "title": "Invalidated",
+          "type": "array"
+        },
+        "previous_pack_version_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Previous Pack Version Id"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "active",
+        "previous_pack_version_id",
+        "change_set",
+        "invalidated",
+        "idempotent"
+      ],
+      "title": "PackActivationReport",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
+    "PackFactBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "fact_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Fact Id",
+          "type": "string"
+        },
+        "fact_version": {
+          "minimum": 1,
+          "title": "Fact Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "fact_id",
+        "fact_version"
+      ],
+      "title": "PackFactBinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
+    "PackManifest": {
+      "additionalProperties": false,
+      "properties": {
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "manifest_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Manifest Sha256",
+          "type": "string"
+        },
+        "organization_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Organization Id",
+          "type": "string"
+        },
+        "request": {
+          "$ref": "#/$defs/PackManifestRequest"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "organization_id",
+        "manifest_sha256",
+        "created_at",
+        "request"
+      ],
+      "title": "PackManifest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
+    "PackManifestRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "access_labels": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 32,
+          "minItems": 1,
+          "title": "Access Labels",
+          "type": "array"
+        },
+        "application_context": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Application Context",
+          "type": "string"
+        },
+        "bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Bundle Id",
+          "type": "string"
+        },
+        "coverage_notes": {
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 100,
+          "title": "Coverage Notes",
+          "type": "array"
+        },
+        "facts": {
+          "items": {
+            "$ref": "#/$defs/PackFactBinding"
+          },
+          "maxItems": 10000,
+          "minItems": 1,
+          "title": "Facts",
+          "type": "array"
+        },
+        "is_simulated": {
+          "title": "Is Simulated",
+          "type": "boolean"
+        },
+        "locale": {
+          "const": "en-CA",
+          "title": "Locale",
+          "type": "string"
+        },
+        "manifest_schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Manifest Schema Version",
+          "type": "string"
+        },
+        "mapping_version": {
+          "const": "pack-mapping-v1",
+          "title": "Mapping Version",
+          "type": "string"
+        },
+        "pack_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Pack Id",
+          "type": "string"
+        },
+        "pack_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Pack Version Id",
+          "type": "string"
+        },
+        "parser_version": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Parser Version",
+          "type": "string"
+        },
+        "policies": {
+          "items": {
+            "$ref": "#/$defs/PackPolicyBinding"
+          },
+          "maxItems": 1000,
+          "title": "Policies",
+          "type": "array"
+        },
+        "provenance_class": {
+          "enum": [
+            "supplied",
+            "public",
+            "simulated",
+            "engineering_derived"
+          ],
+          "title": "Provenance Class",
+          "type": "string"
+        },
+        "source_version_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 10000,
+          "minItems": 1,
+          "title": "Source Version Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "pack_id",
+        "pack_version_id",
+        "bundle_id",
+        "application_context",
+        "mapping_version",
+        "parser_version",
+        "locale",
+        "access_labels",
+        "facts",
+        "source_version_ids",
+        "provenance_class",
+        "is_simulated"
+      ],
+      "title": "PackManifestRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
+    },
+    "PackPolicyBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "content_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Sha256",
+          "type": "string"
+        },
+        "policy_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Policy Id",
+          "type": "string"
+        },
+        "policy_version": {
+          "minimum": 1,
+          "title": "Policy Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "policy_id",
+        "policy_version",
+        "content_sha256"
+      ],
+      "title": "PackPolicyBinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "A4"
     },
     "PdfSourceImportRequest": {
       "additionalProperties": false,
@@ -7463,7 +7995,8 @@
             "pack_version",
             "rounding_policy",
             "formula",
-            "project_input"
+            "project_input",
+            "policy"
           ],
           "title": "Kind",
           "type": "string"

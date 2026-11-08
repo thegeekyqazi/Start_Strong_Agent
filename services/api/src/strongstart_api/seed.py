@@ -12,10 +12,11 @@ from sqlalchemy import Engine
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.sql import func
 
-from strongstart_contracts import load_fixture_bundle
+from strongstart_contracts import PackFactBinding, PackManifestRequest, load_fixture_bundle
 
 from .config import get_settings
 from .db import (
+    active_pack_contexts,
     bootstrap_metadata,
     evidence_pack_versions,
     evidence_packs,
@@ -27,6 +28,8 @@ from .db import (
     knowledge_sources,
     organizations,
     pack_facts,
+    pack_manifest_sources,
+    pack_manifests,
 )
 
 DEFAULT_BUNDLE = Path("tests/fixtures/demo/demo-bundle-v1.json")
@@ -149,6 +152,61 @@ def seed_demo(engine: Engine, bundle_path: Path) -> int:
         conn.execute(
             insert(pack_facts)
             .values(pack_version_id=evidence.pack_version_id, fact_id=fact.fact_id, allowed=True)
+            .on_conflict_do_nothing()
+        )
+        manifest_request = PackManifestRequest(
+            pack_id=evidence.pack_id,
+            pack_version_id=evidence.pack_version_id,
+            bundle_id=evidence.bundle_id,
+            application_context="demo-application",
+            mapping_version="pack-mapping-v1",
+            parser_version="demo-seed-v1",
+            locale="en-CA",
+            access_labels=["fixture"],
+            facts=[PackFactBinding(fact_id=fact.fact_id, fact_version=fact.fact_version)],
+            source_version_ids=[original_ref.source_version_id],
+            coverage_notes=evidence.coverage_notes,
+            provenance_class=fact.provenance.provenance_class,
+            is_simulated=True,
+        )
+        manifest_json = manifest_request.model_dump_json()
+        manifest_hash = hashlib.sha256(
+            json.dumps(
+                manifest_request.model_dump(mode="json"),
+                sort_keys=True,
+                separators=(",", ":"),
+                ensure_ascii=False,
+            ).encode("utf-8")
+        ).hexdigest()
+        conn.execute(
+            insert(pack_manifests)
+            .values(
+                pack_version_id=evidence.pack_version_id,
+                organization_id=evidence.organization_id,
+                application_context="demo-application",
+                manifest_sha256=manifest_hash,
+                manifest_json=manifest_json,
+                created_by="demo-seed",
+            )
+            .on_conflict_do_nothing(index_elements=[pack_manifests.c.pack_version_id])
+        )
+        conn.execute(
+            insert(pack_manifest_sources)
+            .values(
+                pack_version_id=evidence.pack_version_id,
+                source_version_id=original_ref.source_version_id,
+            )
+            .on_conflict_do_nothing()
+        )
+        conn.execute(
+            insert(active_pack_contexts)
+            .values(
+                organization_id=evidence.organization_id,
+                application_context="demo-application",
+                pack_version_id=evidence.pack_version_id,
+                revision=1,
+                updated_by="demo-seed",
+            )
             .on_conflict_do_nothing()
         )
         meta = insert(bootstrap_metadata).values(

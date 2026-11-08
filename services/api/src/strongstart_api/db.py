@@ -11,12 +11,14 @@ from sqlalchemy import (
     DateTime,
     Engine,
     ForeignKey,
+    ForeignKeyConstraint,
     Integer,
     LargeBinary,
     MetaData,
     String,
     Table,
     Text,
+    UniqueConstraint,
     create_engine,
     func,
     text,
@@ -26,7 +28,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from strongstart_contracts import ReadinessCheck, ReadinessReport
 
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0006_numeric_validation"
+REQUIRED_MIGRATION_REVISION = "0007_pack_replacement"
 
 metadata = MetaData()
 
@@ -219,6 +221,153 @@ validation_dependencies = Table(
     Column("ref_id", String(128), nullable=False),
     Column("version", Text, nullable=False),
     Column("content_hash", String(64)),
+)
+
+pack_manifests = Table(
+    "pack_manifests",
+    metadata,
+    Column(
+        "pack_version_id",
+        String(128),
+        ForeignKey("evidence_pack_versions.id"),
+        primary_key=True,
+    ),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("application_context", String(128), nullable=False),
+    Column("manifest_sha256", String(64), nullable=False),
+    Column("manifest_json", Text, nullable=False),
+    Column("created_by", String(128), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+    UniqueConstraint("organization_id", "manifest_sha256", name="uq_pack_manifest_org_hash"),
+)
+
+pack_manifest_sources = Table(
+    "pack_manifest_sources",
+    metadata,
+    Column(
+        "pack_version_id",
+        String(128),
+        ForeignKey("pack_manifests.pack_version_id"),
+        primary_key=True,
+    ),
+    Column(
+        "source_version_id",
+        String(128),
+        ForeignKey("knowledge_source_versions.id"),
+        primary_key=True,
+    ),
+)
+
+pack_policies = Table(
+    "pack_policies",
+    metadata,
+    Column("policy_id", String(128), primary_key=True),
+    Column("policy_version", Integer, primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("content_sha256", String(64), nullable=False),
+    Column("content", Text, nullable=False),
+    Column("status", String(24), nullable=False),
+)
+
+pack_manifest_policies = Table(
+    "pack_manifest_policies",
+    metadata,
+    Column(
+        "pack_version_id",
+        String(128),
+        ForeignKey("pack_manifests.pack_version_id"),
+        primary_key=True,
+    ),
+    Column("policy_id", String(128), primary_key=True),
+    Column("policy_version", Integer, primary_key=True),
+    ForeignKeyConstraint(
+        ["policy_id", "policy_version"],
+        ["pack_policies.policy_id", "pack_policies.policy_version"],
+    ),
+)
+
+active_pack_contexts = Table(
+    "active_pack_contexts",
+    metadata,
+    Column("organization_id", String(128), ForeignKey("organizations.id"), primary_key=True),
+    Column("application_context", String(128), primary_key=True),
+    Column(
+        "pack_version_id", String(128), ForeignKey("pack_manifests.pack_version_id"), nullable=False
+    ),
+    Column("revision", Integer, nullable=False),
+    Column("updated_by", String(128), nullable=False),
+    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+pack_change_sets = Table(
+    "pack_change_sets",
+    metadata,
+    Column("id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("application_context", String(128), nullable=False),
+    Column("previous_pack_version_id", String(128), ForeignKey("pack_manifests.pack_version_id")),
+    Column(
+        "new_pack_version_id",
+        String(128),
+        ForeignKey("pack_manifests.pack_version_id"),
+        nullable=False,
+    ),
+    Column("actor_id", String(128), nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+pack_changes = Table(
+    "pack_changes",
+    metadata,
+    Column("change_set_id", String(128), ForeignKey("pack_change_sets.id"), primary_key=True),
+    Column("ordinal", Integer, primary_key=True),
+    Column("kind", String(32), nullable=False),
+    Column("ref_id", String(128), nullable=False),
+    Column("previous_version", Text),
+    Column("new_version", Text, nullable=False),
+)
+
+dependency_targets = Table(
+    "dependency_targets",
+    metadata,
+    Column("organization_id", String(128), ForeignKey("organizations.id"), primary_key=True),
+    Column("target_kind", String(32), primary_key=True),
+    Column("target_id", String(128), primary_key=True),
+    Column("revision", Integer, nullable=False),
+    Column("state", String(16), nullable=False),
+    Column("stale_change_set_id", String(128)),
+    Column("updated_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
+)
+
+dependency_target_refs = Table(
+    "dependency_target_refs",
+    metadata,
+    Column("organization_id", String(128), primary_key=True),
+    Column("target_kind", String(32), primary_key=True),
+    Column("target_id", String(128), primary_key=True),
+    Column("ordinal", Integer, primary_key=True),
+    Column("kind", String(32), nullable=False),
+    Column("ref_id", String(128), nullable=False),
+    Column("version", Text, nullable=False),
+    Column("content_hash", String(64)),
+    ForeignKeyConstraint(
+        ["organization_id", "target_kind", "target_id"],
+        [
+            "dependency_targets.organization_id",
+            "dependency_targets.target_kind",
+            "dependency_targets.target_id",
+        ],
+    ),
+)
+
+invalidation_events = Table(
+    "invalidation_events",
+    metadata,
+    Column("change_set_id", String(128), ForeignKey("pack_change_sets.id"), primary_key=True),
+    Column("target_kind", String(32), primary_key=True),
+    Column("target_id", String(128), primary_key=True),
+    Column("matched_dependencies_json", Text, nullable=False),
+    Column("created_at", DateTime(timezone=True), nullable=False, server_default=func.now()),
 )
 
 

@@ -1,0 +1,54 @@
+{
+  "schema_version": "1",
+  "description": "Synthetic A4 replacement fixture; no partner evidence.",
+  "manifests": [
+    {
+      "pack_id": "a4-pack",
+      "pack_version_id": "a4-pack-v1",
+      "bundle_id": "a4-bundle-v1",
+      "application_context": "a4-test-application",
+      "mapping_version": "pack-mapping-v1",
+      "parser_version": "a4-test-v1",
+      "locale": "en-CA",
+      "access_labels": ["fixture"],
+      "facts": [
+        {"fact_id": "a4-fact-old", "fact_version": 1},
+        {"fact_id": "a4-fact-common", "fact_version": 1}
+      ],
+      "source_version_ids": ["demo-synthetic-metrics-v1"],
+      "policies": [
+        {
+          "policy_id": "a4-writing-policy",
+          "policy_version": 1,
+          "content_sha256": "b83902d589ab81f850bbe38427fed5c8f55cedb1ce624f130deda2d1635ab871"
+        }
+      ],
+      "provenance_class": "simulated",
+      "is_simulated": true
+    },
+    {
+      "pack_id": "a4-pack",
+      "pack_version_id": "a4-pack-v2",
+      "bundle_id": "a4-bundle-v2",
+      "application_context": "a4-test-application",
+      "mapping_version": "pack-mapping-v1",
+      "parser_version": "a4-test-v1",
+      "locale": "en-CA",
+      "access_labels": ["fixture"],
+      "facts": [
+        {"fact_id": "a4-fact-new", "fact_version": 2},
+        {"fact_id": "a4-fact-common", "fact_version": 1}
+      ],
+      "source_version_ids": ["demo-synthetic-metrics-v1"],
+      "policies": [
+        {
+          "policy_id": "a4-writing-policy",
+          "policy_version": 2,
+          "content_sha256": "765ea05d18f5fc9398b260932c53192b59e37adf2b8648d466d9f1cae75ae5b7"
+        }
+      ],
+      "provenance_class": "simulated",
+      "is_simulated": true
+    }
+  ]
+}
