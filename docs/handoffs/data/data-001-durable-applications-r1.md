@@ -1,8 +1,10 @@
 # DATA-001 durable application state — revision 1.0
 
-**Local implementation/verification complete; TigerData verification pending.** Owner
-confirmed no hosted target is available. This is a reviewable durable C increment, not
-full hosted DATA-001 completion, production readiness, deployment or completed DATA-002.
+**Local and hosted TigerData verification performed (2026-11-08); one pending owner gate:
+acceptance of the pinned provider TLS root** (see [hosted evidence](#hosted-tigerdata-evidence-2026-11-08)).
+Not production readiness, deployment or DATA-002. The owner selected two isolated
+services: `strongstart-data001-test` (synthetic source) and `strongstart-data001-restore`
+(separate disposable recovery destination).
 
 Branch `data/data-001-tigerdata-application-state`, canonical repository
 `thegeekyqazi/strong-start-agent`. Baseline main `bc5acd49f4293dccc564653330bbf26c8f8e1767`
@@ -31,7 +33,8 @@ revision 1.1. No blanket86-rule, general JOB-01/04 or G2/G4/G5 completion claim.
 - M3 `ac48f01`: actual normal runtime/public factory, explicit fixture selection, durable
   metadata/UI labels, operator epoch rotation, fresh API/restart/Chromium and managed A4.
 - M4 `d2d76a0`: hosted opt-in tooling, actual local backup/restore, complete acceptance/runbooks,
-  required final checks and draft PR publication. Hosted execution/restore remain pending.
+  required final checks and draft PR publication. Hosted execution/restore were pending at M4;
+  performed 2026-11-08 (see the hosted evidence section).
 
 All C state persists: every version/check/render/dependency/question-set/A4 field,
 immutable decisions, exact notes/proposals, full applied change sets, full export result
@@ -97,7 +100,7 @@ labelled. No TestApprovals provider substitutes for C in durable integration.
 | --- | --- |
 | DATA-01 | Local verified: tests/data/test_backend.py, test_connection_profile.py; every no-DB C fixture explicitly chooses memory; default unconfigured; production refuses memory |
 | DATA-02 | Local verified: backend missing URL/unreachable tests; Dschema populated0008 normal API rejects missing C schema; readiness exact-head; no fallback |
-| DATA-03 | Profile verified: verify-full/root/libpq and local endpoint checks in test_connection_profile.py; **actual hosted chain/TLS session pending** |
+| DATA-03 | Profile verified locally (test_connection_profile.py). **Hosted verified**: verify-full chain+hostname against the actual provider chain, TLSv1.3 negotiated. `system` roots fail because the services still present the private `ca.timescale.com` root; root pinned TOFU (cross-checked across two services) plus OS bundle. **Owner acceptance of pin pending** |
 | DATA-04 | Local verified: reserved credential/query roundtrip, hidden SQL parameters/repr/config dumps, sanitized outage; Dstore exact-decimal/audit test persists redacted URL/password canary; existing frontend/provider canary suite |
 | DATA-05 | Local verified: Dschema fresh full metadata parity and populated0008 preservation; one Alembic head |
 | DATA-06 | Local verified: Dschema disposable downgrade/re-upgrade and outdated readiness; no shared reset |
@@ -122,7 +125,7 @@ labelled. No TestApprovals provider substitutes for C in durable integration.
 | DATA-25 | Local verified: Dstore ordered complete audit, no submitted-text duplication, persisted DB canary redaction; C3 provider/redaction tests; Druntime exact audit after restart |
 | DATA-26 | Local verified: Dfailures real row lock, server statement timeout and pool exhaustion; bounded errors, rollback then new operation succeeds |
 | DATA-27 | Local verified: Dfailures terminates only owned connection, pre-ping recovers; explicitly injected commit failure yields unknown/no replay and discards pool connection. Actual ambiguous network-at-commit event is not claimed reproduced |
-| DATA-28 | Local verified: Dschema and Dstore nonowner/nonDDL role; Druntime hosted scenario locally runs actual C/public factory/nonowner process contention. **Hosted role gate pending** |
+| DATA-28 | Local verified: Dschema and Dstore nonowner/nonDDL role. **Hosted verified**: separate `data001_migrator`/`data001_app`; preflight nonowner/no CREATE/no elevated flags; six hosted runtime UPDATE/DELETE/DDL probes denied 42501 |
 | DATA-29 | Local verified: saved/reviewer/workspace-derived provenance, Dstore/resolver/API production boundary tests; Review unit + restarted Chromium show durability and simulation labels together |
 | DATA-30 | Local verified: Druntime actual owned uvicorn stop/start retains full history/notes/proposal/approval/audit/export/epoch/hash identity |
 | DATA-31 | Local verified: tests/browser/test_data001_restart.py uses actual restarted API and new B plan, real Chromium selected-field final read-back, exact stored rendering; old plan retains runtime-epoch refusal |
@@ -133,8 +136,8 @@ labelled. No TestApprovals provider substitutes for C in durable integration.
 | DATA-36 | Local verified: Dstore parametrizes real C memory/Postgres workflow; durable new-adapter/restart parity; intentional memory epoch/loss vs durable epoch plus separate provenance documented |
 | DATA-37 | Local verified: make contracts/check,231 existing schema definitions preserved + AnswerStoreMetadata, optional history field and narrow Review paragraph/tests |
 | DATA-38 | Tooling verified locally: tests/data/test_hosted_gate.py refuses absent/shared/unowned/mismatched targets; exclusive private receipt; no Compose/reset hosted code path; make tigerdata-smoke without target intentionally refuses before connection |
-| DATA-39 | **TigerData verification pending**: owner supplied no selected isolated target/roles/root/budget; opt-in runner implements TLS/migration/nonowner/scoped roundtrip/fresh process and observed contention checks. Local scenario is explicitly local PostgreSQL, not hosted evidence |
-| DATA-40 | Local verified: Drecovery actual pg_dump/pg_restore into separate empty disposable DB; same IDs/hashes/bytes/revision, deliberate restored-epoch rotation and untouched source. **Hosted restore pending** separate selected destination |
+| DATA-39 | **Hosted verified** at `677060e`: preflight, staged migration to 0009, `verify` (B publication, C save/approve/note/review/export, spawned reopen exact, second-client stale, 409, observed separate-process SQL contention) and new `restart` phase (3 real uvicorn processes, exact bytes/hashes, stable epoch, old plan `runtime_epoch_changed`, new plan, A4 hold). Local scenario tests remain separate local evidence |
+| DATA-40 | Local verified: Drecovery. **Hosted verified**: pg_dump 18.6 from test service, single-transaction pg_restore into separate empty restore service; all 34 tables, epochs/revisions, export hashes identical; restored epochs rotated with recovery audit, captured approval invalidated, source untouched. Managed TigerData PITR/fork not exercised (not authorized) |
 | DATA-41 | Local verified: Druntime normal route/public factory same logical dataset across separate app adapters/processes; existing C/B interfaces retained |
 | DATA-42 | Delivered: this mapping, setup, manual/UI contracts, current feature matrix/coordination and historical migration pointer; precise hosted/B/evidence/auth/deployment limits |
 
@@ -146,10 +149,13 @@ Final source checks all returned exit 0:
   definitions retained, 232 total with only AnswerStoreMetadata added.
 - `make check`: Ruff/format (328 Python files), strict mypy (233 source files), TypeScript,
   **808 Python tests**, **101 Vitest tests** (15 files), contract drift, web/Python builds.
+  Rerun at `677060e` (combined tree with UI-001): exit 0, 808 Python, **103 Vitest**.
 - `STRONGSTART_DATABASE_URL=<private-local> make smoke`: migration/seed, 114 import checks,
   **85 real PostgreSQL smoke tests**, real API liveness/readiness/capabilities 200.
+  Rerun at `677060e`: exit 0, **86** (adds the local real-process restart-phase test).
 - `STRONGSTART_DATABASE_URL=<private-local> make browser-smoke`: web build,
   **39 real Chromium tests**, including durable API restart/new B plan/read-back.
+  Rerun at `677060e`: exit 0, 39 passed. Chromium runs only against local PostgreSQL.
 - `STRONGSTART_DATABASE_URL=<private-local> uv run python scripts/verify_data001_commit_mutation.py`:
   mutant failed specifically stale_export_publication; exact source restored; protected
   rerun **1 passed**. Restored SHA-256:
@@ -162,7 +168,8 @@ Verification environment: local PostgreSQL 17.11, SQLAlchemy 2.1.8, Psycopg 3.3.
 Python 3.12.15, Node 22.22.2 and installed Playwright Chromium. Logs remain local under
 `/tmp/data001-final-*.log`; no passwords/DSNs, raw partner data or binary exports are
 committed. The deliberate mutant failure is success evidence for the mutation audit,
-not a failing final test suite. Hosted verification remains mandatory and pending.
+not a failing final test suite. (At M4 hosted verification was pending; superseded by the
+hosted evidence section below.)
 
 ## Deviations, limits and next consumers
 
@@ -198,3 +205,54 @@ pg_dump16/server17 mismatch; the recovery test now explicitly uses that job's ow
 container clients. Initial failed reconciliation runs are retained as findings, not passes.
 Final combined-tree verification follows the fixes; source/head/results below supersede
 the pre-reconciliation check counts where the UI suite adds two tests.
+
+
+## Hosted TigerData evidence 2026-11-08
+
+Continued from Codex's checkpoint `ba7eed4` (clean, pushed, CI green); no implementation
+restart. Credentials were read privately from the owner's two downloaded files; mapping
+confirmed from each file's own service name, not file order. Hosted settings live in a
+private 0600 env file outside the worktree; no worktree `.env` was created, so local
+suites cannot reach TigerData. Nothing secret is committed or printed.
+
+Results classes, kept distinct:
+
+- **Actual hosted TigerData** (`b3289ae3b5a8c20a`, PostgreSQL 18.6, TimescaleDB 2.31.0,
+  TLSv1.3): preflight; migration 0001→0009 by `data001_migrator`; bounded grants; runtime
+  denials; `verify` (twice: before and at `677060e`); `restart` (twice); pg_dump/pg_restore
+  into `strongstart-data001-restore`; restored-epoch rotation; owned cleanup of one org.
+- **Actual API processes**: the hosted `restart` phase runs three real uvicorn processes
+  against TigerData through HTTP. The `verify` reopen uses a spawned process with a fresh
+  app/pool (TestClient transport).
+- **Controlled test actuators**: namespaced synthetic identity/workspace adapters and the
+  fixture A4 change set; the SQL-lock contention is real (observed via pg_blocking_pids),
+  coordinated by the verifier holding the unit of work.
+- **Local PostgreSQL only**: all `make check/smoke/browser-smoke` suites, 39 Chromium cases,
+  the commit-mutation audit and the local recovery test.
+
+Final hosted sample (source `677060e`), IDs and hashes only:
+
+| Run | Org | Approval | Export | DOCX SHA-256 | C epoch |
+| --- | --- | --- | --- | --- | --- |
+| verify run-2 | `data001-57b3b618083f2d5d627582dc9ba92388` | `apr-60893b94f4d94173990d5dde` | `exp-b0154d22b8d443eaaf53095f` | `8b8cfa65c61cb019…` | `c-dataset-9c96d3159ce1b98fb85c62f8ea06fac3` |
+| restart-2 | `data001-7bf6011f0a7c5e5f08b078b40e0a86b4` | `apr-287ae67ca92a4973a96ec15a` | `exp-33dd6100c5874b8c9cb594d9` | `f348c9749ea5f8e7…` | `c-dataset-bcf631d8f08f5e40ee3b3eb0adb2c979` |
+
+Recovery sample (dumped after the first hosted runs, at `ba7eed4` + the restart workflow):
+orgs `data001-dd357d32…` (since cleaned from the source by its receipt) and
+`data001-e58f98dc…` (retained). Restored rows/digests of all 34 tables, epochs
+`c-dataset-e49ce3f1…`/`c-dataset-67543b83…`, revisions 4/3 and DOCX hashes
+`83e53282…`/`9a03f552…` matched the source exactly. Rotation on the destination produced
+new epochs at revisions 5/4; source state unchanged afterwards.
+
+Hosted findings that changed procedure (recorded in setup and decision 0006): private
+provider TLS root (`system` fails); Fedora 44 bundle path vs psycopg's bundled OpenSSL;
+the runtime grants must follow migration before the gate's runtime recheck; four, not
+three, C sequences; PostgreSQL 18 clients required; restore must exclude the provider's
+`public.create_playground` (the first attempt failed atomically, leaving the destination empty).
+
+Remaining gates/limits: owner acceptance of the TOFU-pinned `ca.timescale.com` root (or
+re-run preflight once the services present a public-CA chain); hosted Chromium not run;
+TigerData-managed backup/PITR/fork not exercised; synthetic data only. Retained hosted
+data: three synthetic orgs on the source and the restored copy on the restore service,
+removable with their receipts (`--phase cleanup`) and by the owner on the disposable
+destination.

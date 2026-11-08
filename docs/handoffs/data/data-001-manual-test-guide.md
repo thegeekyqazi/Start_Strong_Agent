@@ -3,7 +3,7 @@
 Spec revision 1.0, decision 0006. Use synthetic local data or an explicitly selected isolated
 TigerData development target. No production fixture flows, real portal credentials,
 submission/signing/upload, paid provider calls or shared resets. Automated evidence and
-hosted pending inputs are in the [final handoff](data-001-durable-applications-r1.md).
+hosted results are in the [final handoff](data-001-durable-applications-r1.md).
 
 1. Configure private server-only URL/profile, `ANSWER_STORE_BACKEND=postgres`, local
    fixture identity and retained B local-store directory. Migrate explicitly to 0009
@@ -49,8 +49,12 @@ hosted pending inputs are in the [final handoff](data-001-durable-applications-r
    state is unchanged. Prepare new B plans; do not replay historical browser writes.
 10. Hosted gate: owner supplies selected target/roles/CA/budget and distinct recovery
     destination privately. Run read-only preflight, separately permitted migration,
-    namespaced verification and receipt-owned cleanup. Record actual TLS/server/role
-    evidence and separately performed hosted restore. **Not run: no target supplied.**
+    namespaced verification, the `restart` phase and receipt-owned cleanup. Apply the
+    bounded runtime grants as the migration role after migrating. Record actual TLS/
+    server/role evidence and separately performed hosted restore. **Run 2026-11-08** on
+    `strongstart-data001-test` → `strongstart-data001-restore`; check the TLS chain first
+    (the services presented a private provider root; see setup). Re-run steps 4–5 in
+    Chromium against a hosted-backed API if hosted browser evidence is required.
 
 Final source checks: `make contracts`, `make check`, `make smoke`, `make browser-smoke`.
 DB/browser markers execute explicitly; a default pytest pass is insufficient. Hosted

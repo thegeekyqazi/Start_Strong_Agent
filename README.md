@@ -24,5 +24,5 @@ Quick start: `make bootstrap && make db-up && make smoke && make check`.
 Current integration: [INT-001 handoff](docs/handoffs/integration/int-001-approved-content-currentness-r1.md),
 [manual guide](docs/handoffs/integration/int-001-manual-test-guide.md), and
 [functional UI contract for Sawaab](docs/handoffs/integration/int-001-ui-contract.md).
-DATA-001 implements durable C state with local PostgreSQL/restart/Chromium evidence. See [the current handoff](docs/handoffs/data/data-001-durable-applications-r1.md) and [TigerData setup](docs/setup/tigerdata.md). Hosted verification remains a required pending gate; DATA-002 B/artifact durability and complete A-evidence/workspace/policy integration follow.
+DATA-001 implements durable C state with local PostgreSQL/restart/Chromium evidence. See [the current handoff](docs/handoffs/data/data-001-durable-applications-r1.md) and [TigerData setup](docs/setup/tigerdata.md). Hosted TigerData verification (migration, roles, verify, real API restart, backup/restore into a separate service) was performed 2026-11-08; owner acceptance of the pinned provider TLS root is the remaining gate; DATA-002 B/artifact durability and complete A-evidence/workspace/policy integration follow.
 The repository is now `thegeekyqazi/strong-start-agent`; historical GitHub links redirect.

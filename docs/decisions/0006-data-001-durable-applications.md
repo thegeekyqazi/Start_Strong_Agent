@@ -141,3 +141,32 @@ failed due to client/server version mismatch). Explicitly route local recovery t
 the current job's owned PostgreSQL service container; an explicit local container takes
 precedence over installed host clients. Local and CI container paths use actual pg_dump/
 pg_restore and no reset. Hosted runner still has no Docker path. Assertions remain intact.
+
+## Addendum 2026-11-08: hosted TigerData verification choices
+
+Status: `developer-decision` (engineering owner's agent); TLS pin awaits
+`accepted-maintainer`. Requirement: DATA-001 r1.0 TLS rule (verify-full with the provider's
+applicable CA/system root; do not assume a CA path), DATA-03/28/39/40; engineering v1.1
+§§8, 13–16.
+
+1. **Pinned provider root.** The selected services present a private self-signed
+   `ca.timescale.com` root (provider's initial certificate; not rotated to a public CA when
+   tested). `system` cannot verify it. Chosen: keep `verify-full` and pin that root via
+   `STRONGSTART_DB_SSLROOTCERT` in a private bundle that also contains the OS public CAs.
+   Alternatives rejected: `require`/`verify-ca` (weaker; no hostname check), waiting
+   indefinitely for rotation (blocks the gate; free services may never rotate).
+   Tradeoff: trust-on-first-use, mitigated by byte-identical roots from two independently
+   created services and no code change (profile already accepts an explicit root). Rollback:
+   remove the pin once the service presents a public-CA chain. Owner acceptance pending.
+2. **Bounded restart phase** added to the opt-in gate (`--phase restart`) to prove a real
+   API process restart on the hosted service; same ownership-receipt rules; locally tested.
+   No public contract change.
+3. **Restore procedure**: dump only `public` with PostgreSQL 18 clients from an ephemeral
+   container; exclude only the pre-existing public schema entries and provider-owned
+   (`postgres`) objects from the restore list. Rejected `--clean` (forbidden) and restoring
+   extensions (provider-managed).
+4. **Role provisioning** sends SCRAM verifiers rather than plaintext passwords; connection
+   budget equals the sum of server-enforced role connection limits.
+
+Validation: hosted evidence in `docs/setup/tigerdata.md#hosted-evidence-2026-11-08` and
+the DATA-001 handoff; local suites rerun at `677060e`. Consumers: none changed.

@@ -105,4 +105,4 @@ Use explicit `STRONGSTART_ANSWER_STORE_BACKEND=postgres` for the example DB setu
 [TigerData connection/roles/recovery](tigerdata.md), [current feature status](../coordination/feature-status.md)
 and [DATA-001 handoff](../handoffs/data/data-001-durable-applications-r1.md). C database
 state survives restart; B files and pending-plan epochs retain their development limits.
-Hosted TigerData verification remains pending the owner's isolated target.
+Hosted TigerData verification was performed 2026-11-08 on the owner's isolated services; see [TigerData setup](tigerdata.md#hosted-evidence-2026-11-08).

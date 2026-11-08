@@ -110,5 +110,6 @@ Runtime-loading and protection claims above are sourced. The branch convention, 
 
 [DATA-001 revision1.0](../handoffs/data/data-001-durable-applications-r1.md) supersedes INT-001's
 process-local C limitation. Local durable C verification is recorded separately from the
-pending TigerData gate. Owner confirmed no hosted target; no peer/lane acknowledgment is
+hosted TigerData evidence (performed 2026-11-08 on owner-selected isolated services; TLS
+root pin awaits owner acceptance). No peer/lane acknowledgment is
 needed to implement dependencies. Sawaab retains UI/UX ownership; see the narrow UI contract.
