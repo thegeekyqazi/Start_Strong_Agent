@@ -18,10 +18,10 @@ from .config import get_settings
 from .db import (
     active_pack_contexts,
     bootstrap_metadata,
+    configured_engine,
     evidence_pack_versions,
     evidence_packs,
     fact_source_refs,
-    get_engine,
     knowledge_facts,
     knowledge_passages,
     knowledge_source_versions,
@@ -233,7 +233,7 @@ def main(argv: list[str] | None = None) -> int:
     if not settings.database_url:
         print("STRONGSTART_DATABASE_URL is not set", file=sys.stderr)
         return 1
-    count = seed_demo(get_engine(settings.database_url), args.bundle)
+    count = seed_demo(configured_engine(settings), args.bundle)
     print(f"seeded {count} synthetic organization(s) from {args.bundle}")
     return 0
 

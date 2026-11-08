@@ -5,6 +5,7 @@ from __future__ import annotations
 from functools import lru_cache
 
 from sqlalchemy import (
+    BigInteger,
     Boolean,
     CheckConstraint,
     Column,
@@ -12,6 +13,8 @@ from sqlalchemy import (
     Engine,
     ForeignKey,
     ForeignKeyConstraint,
+    Identity,
+    Index,
     Integer,
     LargeBinary,
     MetaData,
@@ -19,7 +22,6 @@ from sqlalchemy import (
     Table,
     Text,
     UniqueConstraint,
-    create_engine,
     func,
     text,
 )
@@ -27,8 +29,10 @@ from sqlalchemy.exc import SQLAlchemyError
 
 from strongstart_contracts import ReadinessCheck, ReadinessReport
 
+from .config import Settings
+
 # Must equal the Alembic head in migrations/versions (asserted by tests/unit).
-REQUIRED_MIGRATION_REVISION = "0008_browser_bindings"
+REQUIRED_MIGRATION_REVISION = "0009_durable_applications"
 
 metadata = MetaData()
 
@@ -375,18 +379,235 @@ invalidation_events = Table(
 )
 
 
-@lru_cache(maxsize=4)
-def get_engine(database_url: str, connect_timeout: int = 3) -> Engine:
-    if not database_url.startswith("postgresql"):
-        raise ValueError("only PostgreSQL URLs are supported (no SQLite/in-memory substitute)")
-    return create_engine(
+# Reconcile indexes already installed by released 0005/0007 migrations.
+Index(
+    "ix_knowledge_sources_canonical_url",
+    knowledge_sources.c.organization_id,
+    knowledge_sources.c.canonical_url,
+)
+Index(
+    "ix_validation_evaluations_subject",
+    validation_evaluations.c.organization_id,
+    validation_evaluations.c.subject_kind,
+    validation_evaluations.c.subject_id,
+    validation_evaluations.c.created_at,
+)
+Index("ix_validation_results_rule", validation_results.c.rule_id, validation_results.c.outcome)
+Index(
+    "ix_validation_dependencies_ref",
+    validation_dependencies.c.kind,
+    validation_dependencies.c.ref_id,
+    validation_dependencies.c.version,
+)
+Index(
+    "ix_pack_manifests_context",
+    pack_manifests.c.organization_id,
+    pack_manifests.c.application_context,
+    pack_manifests.c.created_at,
+)
+Index(
+    "ix_pack_changes_dependency",
+    pack_changes.c.kind,
+    pack_changes.c.ref_id,
+    pack_changes.c.previous_version,
+)
+Index(
+    "ix_dependency_target_refs_reverse",
+    dependency_target_refs.c.organization_id,
+    dependency_target_refs.c.kind,
+    dependency_target_refs.c.ref_id,
+    dependency_target_refs.c.version,
+)
+
+# DATA-001 C-owned durable state. Evidence remains a logical, live-verified reference.
+c_store_state = Table(
+    "c_store_state",
+    metadata,
+    Column("organization_id", String(128), ForeignKey("organizations.id"), primary_key=True),
+    Column("epoch", String(128), nullable=False),
+    Column("revision", BigInteger, nullable=False, server_default="0"),
+    CheckConstraint("revision >= 0", name="ck_c_state_revision"),
+)
+c_answer_heads = Table(
+    "c_answer_heads",
+    metadata,
+    Column("organization_id", String(128), ForeignKey("organizations.id"), primary_key=True),
+    Column("question_id", String(128), primary_key=True),
+    Column("latest_version", Integer, nullable=False, server_default="0"),
+    CheckConstraint("latest_version >= 0", name="ck_c_head_version"),
+)
+c_answer_versions = Table(
+    "c_answer_versions",
+    metadata,
+    Column("answer_version_id", String(128), primary_key=True),
+    Column("organization_id", String(128), nullable=False),
+    Column("question_id", String(128), nullable=False),
+    Column("answer_version", Integer, nullable=False),
+    Column("content_sha256", String(64), nullable=False),
+    Column("rendered_sha256", String(64), nullable=False),
+    Column("snapshot_sha256", String(64), nullable=False),
+    Column("payload_version", Integer, nullable=False),
+    Column("payload", Text, nullable=False),
+    ForeignKeyConstraint(
+        ["organization_id", "question_id"],
+        ["c_answer_heads.organization_id", "c_answer_heads.question_id"],
+    ),
+    UniqueConstraint("organization_id", "answer_version_id", name="uq_c_version_org_id"),
+    UniqueConstraint(
+        "organization_id", "question_id", "answer_version", name="uq_c_lineage_version"
+    ),
+    CheckConstraint("answer_version >= 1 AND payload_version >= 1", name="ck_c_version_positive"),
+    CheckConstraint(
+        "char_length(content_sha256)=64 AND char_length(rendered_sha256)=64 "
+        "AND char_length(snapshot_sha256)=64",
+        name="ck_c_version_hashes",
+    ),
+)
+c_decisions = Table(
+    "c_decisions",
+    metadata,
+    Column("approval_id", String(128), primary_key=True),
+    Column("organization_id", String(128), nullable=False),
+    Column("answer_version_id", String(128), nullable=False),
+    Column("decision", String(16), nullable=False),
+    Column("payload_version", Integer, nullable=False),
+    Column("payload", Text, nullable=False),
+    ForeignKeyConstraint(
+        ["organization_id", "answer_version_id"],
+        ["c_answer_versions.organization_id", "c_answer_versions.answer_version_id"],
+    ),
+    UniqueConstraint("organization_id", "answer_version_id", name="uq_c_one_decision"),
+    CheckConstraint("decision IN ('approve','reject')", name="ck_c_decision"),
+)
+c_notes = Table(
+    "c_notes",
+    metadata,
+    Column("note_id", String(128), primary_key=True),
+    Column("organization_id", String(128), nullable=False),
+    Column("answer_version_id", String(128), nullable=False),
+    Column("ordinal", BigInteger, Identity(), nullable=False, unique=True),
+    Column("payload_version", Integer, nullable=False),
+    Column("payload", Text, nullable=False),
+    ForeignKeyConstraint(
+        ["organization_id", "answer_version_id"],
+        ["c_answer_versions.organization_id", "c_answer_versions.answer_version_id"],
+    ),
+)
+c_proposals = Table(
+    "c_proposals",
+    metadata,
+    Column("proposal_id", String(128), primary_key=True),
+    Column("organization_id", String(128), nullable=False),
+    Column("answer_version_id", String(128), nullable=False),
+    Column("ordinal", BigInteger, Identity(), nullable=False, unique=True),
+    Column("payload_version", Integer, nullable=False),
+    Column("payload", Text, nullable=False),
+    ForeignKeyConstraint(
+        ["organization_id", "answer_version_id"],
+        ["c_answer_versions.organization_id", "c_answer_versions.answer_version_id"],
+    ),
+)
+c_change_sets = Table(
+    "c_change_sets",
+    metadata,
+    Column("organization_id", String(128), ForeignKey("organizations.id"), primary_key=True),
+    Column("change_set_id", String(128), primary_key=True),
+    Column("ordinal", BigInteger, Identity(), nullable=False, unique=True),
+    Column("payload_version", Integer, nullable=False),
+    Column("payload", Text, nullable=False),
+    Column("payload_sha256", String(64), nullable=False),
+)
+c_exports = Table(
+    "c_exports",
+    metadata,
+    Column("export_id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("payload_version", Integer, nullable=False),
+    Column("payload", Text, nullable=False),
+    Column("docx", LargeBinary, nullable=False),
+    Column("audit", LargeBinary, nullable=False),
+    Column("docx_sha256", String(64), nullable=False),
+    Column("audit_sha256", String(64), nullable=False),
+)
+c_audit_events = Table(
+    "c_audit_events",
+    metadata,
+    Column("event_id", String(128), primary_key=True),
+    Column("organization_id", String(128), ForeignKey("organizations.id"), nullable=False),
+    Column("ordinal", BigInteger, Identity(), nullable=False, unique=True),
+    Column("payload_version", Integer, nullable=False),
+    Column("payload", Text, nullable=False),
+    Column("actor_id", String(128), nullable=False),
+    Column("action", String(128), nullable=False),
+    CheckConstraint(
+        "char_length(actor_id)>0 AND char_length(action)>0", name="ck_c_audit_complete"
+    ),
+)
+Index("ix_c_audit_org_order", c_audit_events.c.organization_id, c_audit_events.c.ordinal)
+Index("ix_c_notes_org_order", c_notes.c.organization_id, c_notes.c.ordinal)
+Index("ix_c_proposals_org_order", c_proposals.c.organization_id, c_proposals.c.ordinal)
+APPLICATION_TABLES = (
+    c_store_state,
+    c_answer_heads,
+    c_answer_versions,
+    c_decisions,
+    c_notes,
+    c_proposals,
+    c_change_sets,
+    c_exports,
+    c_audit_events,
+)
+
+
+@lru_cache(maxsize=16)
+def get_engine(
+    database_url: str,
+    connect_timeout: int = 3,
+    *,
+    profile: str = "local",
+    root_cert: str | None = None,
+    pool_size: int = 3,
+    max_overflow: int = 0,
+    pool_timeout: float = 3,
+    lock_timeout_ms: int = 3000,
+    statement_timeout_ms: int = 15000,
+) -> Engine:
+    from typing import Literal, cast
+
+    from .database_profile import build_engine
+
+    return build_engine(
         database_url,
-        pool_pre_ping=True,
-        connect_args={"connect_timeout": connect_timeout},
+        profile=cast(Literal["local", "tigerdata"], profile),
+        root_cert=root_cert,
+        connect_timeout=connect_timeout,
+        pool_size=pool_size,
+        max_overflow=max_overflow,
+        pool_timeout=pool_timeout,
+        lock_timeout_ms=lock_timeout_ms,
+        statement_timeout_ms=statement_timeout_ms,
     )
 
 
-def check_readiness(database_url: str | None, connect_timeout: int = 3) -> ReadinessReport:
+def configured_engine(settings: Settings) -> Engine:
+    if not settings.database_url:
+        raise ValueError("database connection is not configured")
+    return get_engine(
+        settings.database_url,
+        settings.db_connect_timeout_seconds,
+        profile=settings.database_profile,
+        root_cert=settings.db_sslrootcert,
+        pool_size=settings.db_pool_size,
+        max_overflow=settings.db_max_overflow,
+        pool_timeout=settings.db_pool_timeout_seconds,
+        lock_timeout_ms=settings.db_lock_timeout_ms,
+        statement_timeout_ms=settings.db_statement_timeout_ms,
+    )
+
+
+def check_readiness(
+    database_url: str | None, connect_timeout: int = 3, *, settings: Settings | None = None
+) -> ReadinessReport:
     if not database_url:
         return ReadinessReport(
             status="not_ready",
@@ -396,7 +617,11 @@ def check_readiness(database_url: str | None, connect_timeout: int = 3) -> Readi
         )
     checks: list[ReadinessCheck] = []
     try:
-        engine = get_engine(database_url, connect_timeout)
+        engine = (
+            configured_engine(settings)
+            if settings is not None
+            else get_engine(database_url, connect_timeout)
+        )
         with engine.connect() as conn:
             conn.execute(text("SELECT 1"))
             checks.append(ReadinessCheck(name="database", ok=True, detail="connected"))

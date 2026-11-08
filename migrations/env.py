@@ -5,10 +5,9 @@ from __future__ import annotations
 from logging.config import fileConfig
 
 from alembic import context
-from sqlalchemy import create_engine
 
 from strongstart_api.config import Settings
-from strongstart_api.db import metadata
+from strongstart_api.db import configured_engine, metadata
 
 config = context.config
 if config.config_file_name is not None:
@@ -31,7 +30,12 @@ def run_migrations_offline() -> None:
 
 
 def run_migrations_online() -> None:
-    engine = create_engine(_url())
+    settings = Settings()
+    if config.attributes.get("database_url"):
+        settings = settings.model_copy(
+            update={"database_url": str(config.attributes["database_url"])}
+        )
+    engine = configured_engine(settings)
     with engine.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():

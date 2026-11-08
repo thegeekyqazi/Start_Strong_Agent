@@ -48,3 +48,27 @@ Local downgrade/backup/restore tests use separate disposable targets, never the 
 DATA-002 owns durable B/artifact storage and claims. Normal A evidence/policy/A3 integration
 is subsequent work. Sawaab owns UI/UX; functional durability labels only. No redesign,
 new providers, unrestricted portals, submit/sign/upload, merge or deployment.
+
+## M1 connection/schema evidence
+
+New migration 0009_durable_applications declares nine C-prefixed tables, preserving released
+0001–0008. Typed payloads retain the complete current dataclasses/models; scoped relational
+keys/indexes enforce lineage, decisions and version-associated notes/proposals. Evidence
+references remain logical because fixture IDs need not exist in real A tables.
+Full metadata parity also reconciled seven indexes already installed by 0005/0007 but
+missing from runtime metadata; no old physical index or released migration was changed.
+
+Connection parsing uses SQLAlchemy URL operations and the Psycopg dialect, preserves escaped
+password/query values, forbids alternate endpoint overrides and hides statement parameters.
+Hosted profile requires verify-full plus an explicit trust root and configured connection
+budget across API processes. Installed clients: SQLAlchemy 2.1.8, Psycopg 3.3.8, libpq 18.6.
+System-root support is checked against installed libpq, but no hosted chain is claimed
+verified. Existing settings-aware knowledge/validation/seed/migration/readiness paths now
+share this profile. Local plaintext is restricted to explicit loopback/local endpoints.
+
+Validation: 11 profile cases and 154 existing unit cases (165 total) passed; 3 real-PostgreSQL
+schema tests passed, including full metadata parity, populated 0008 preservation, disposable
+rollback/re-upgrade and a non-owner/non-DDL runtime role. The shared DB was not downgraded
+or reset: schema tests create/drop only uniquely named disposable databases and test roles.
+Runtime role grants include parent-row locking, C state/head updates and append/read C
+records; no DDL or table ownership. Data/state CRUD parity is verified at M2.

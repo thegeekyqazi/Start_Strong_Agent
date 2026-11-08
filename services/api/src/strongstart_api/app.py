@@ -75,7 +75,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
 
     @app.get("/health/ready", response_model=ReadinessReport)
     def ready(s: Annotated[Settings, Depends(get_settings)]) -> JSONResponse:
-        report = check_readiness(s.database_url, s.db_connect_timeout_seconds)
+        report = check_readiness(s.database_url, s.db_connect_timeout_seconds, settings=s)
         return JSONResponse(
             status_code=200 if report.status == "ready" else 503,
             content=report.model_dump(mode="json"),
