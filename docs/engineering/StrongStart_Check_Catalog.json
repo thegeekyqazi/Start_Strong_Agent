@@ -741,7 +741,7 @@
       "on_failure": "Reject malformed items with a visible ingestion report.",
       "implementation": "Strict manifest schema and resolvable same-organization evidence links.",
       "minimum_fixture": "Duplicate IDs, missing source version or unsupported mapping rejected.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -757,7 +757,7 @@
       "on_failure": "Recheck affected drafts and approvals.",
       "implementation": "Diff structured facts/policies and walk reverse dependency graph.",
       "minimum_fixture": "Changed policy invalidates affected answer; unrelated answer remains valid.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [
@@ -773,7 +773,7 @@
       "on_failure": "Flag stale values, citations, and policy references.",
       "implementation": "Require active-pack provenance for new bindings; inspect removed/replaced values.",
       "minimum_fixture": "New answer cannot cite inactive replaced fact, even if numeric value happens to match.",
-      "status": "planned",
+      "status": "implemented",
       "primary_owner": "Dev A",
       "verification_owner": "Dev B",
       "integration_dependencies": [

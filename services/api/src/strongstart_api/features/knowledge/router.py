@@ -7,17 +7,24 @@ unavailable until its feature spec is implemented; nothing here fabricates succe
 
 from __future__ import annotations
 
-from typing import Annotated, NoReturn
+from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
 from strongstart_contracts import (
+    ActivatePackRequest,
+    ActivePackState,
     Capability,
+    DependencyRegistrationRequest,
+    DependencyTargetState,
     ErrorCode,
     EvidenceBundle,
     KnowledgeAvailability,
     KnowledgeRetrievalResult,
     KnowledgeSnapshot,
+    PackActivationReport,
+    PackManifest,
+    PackManifestRequest,
     PdfSourceImportRequest,
     PdfSourceImportResult,
     TextSourceImportRequest,
@@ -25,14 +32,16 @@ from strongstart_contracts import (
 )
 
 from ...config import Settings, get_settings
-from ...errors import ApiError, not_implemented
+from ...errors import ApiError
 from ...identity import Identity, require_identity
 from .deps import (
     get_knowledge_repository,
+    get_pack_service,
     get_pdf_ingestion_service,
     get_text_ingestion_service,
 )
 from .ingestion import TextIngestionError, TextIngestionService
+from .packs import PackConflictError, PackManifestError, PackNotFoundError, PackService
 from .pdf_ingestion import PdfIngestionService
 from .repository import (
     KnowledgeIntegrityError,
@@ -63,7 +72,8 @@ def capabilities_for(settings: Settings) -> list[Capability]:
             status="fixture_only" if settings.fixture_mode else "available",
             detail=(
                 "Source/fact reads, local text/PDF ingestion and lexical retrieval "
-                "are implemented; OCR and pack replacement remain planned."
+                "and transactional pack replacement/invalidation are implemented; "
+                "OCR remains planned."
             ),
         )
     ]
@@ -217,9 +227,23 @@ def evidence_bundle(
     identity: Identity,
     pack_version_id: str,
     repository: Annotated[PostgresKnowledgeRepository | None, Depends(get_knowledge_repository)],
+    pack_service: Annotated[PackService | None, Depends(get_pack_service)],
 ) -> EvidenceBundle:
     try:
+        if pack_service is not None:
+            try:
+                manifest = pack_service.get_manifest(identity.organization_id, pack_version_id)
+            except PackNotFoundError:
+                manifest = None
+            if manifest is not None:
+                pack_service.require_active(
+                    identity.organization_id,
+                    manifest.request.application_context,
+                    pack_version_id,
+                )
         return _require_repository(repository).get_bundle(identity.organization_id, pack_version_id)
+    except PackConflictError:
+        raise _pack_conflict() from None
     except KnowledgeNotFoundError:
         raise ApiError(
             404,
@@ -231,7 +255,164 @@ def evidence_bundle(
         raise _integrity_failure() from None
 
 
-@router.post("/packs/import", status_code=202, response_model=None)
-def placeholder_operation(identity: Identity) -> NoReturn:
-    """Protected placeholder: denies without identity, else reports not_implemented."""
-    raise not_implemented(FEATURE, "packs/import")
+def _require_pack_service(service: PackService | None) -> PackService:
+    if service is None:
+        raise ApiError(503, ErrorCode.CAPABILITY_UNAVAILABLE, "pack storage is not configured")
+    return service
+
+
+def _pack_hidden() -> ApiError:
+    return ApiError(
+        404,
+        ErrorCode.FORBIDDEN,
+        "pack object not found or not accessible",
+        {"reason": "pack_object_not_found"},
+    )
+
+
+def _pack_conflict() -> ApiError:
+    return ApiError(
+        409,
+        ErrorCode.STALE_SNAPSHOT,
+        "pack state changed; refresh the active snapshot",
+        {"reason": "pack_snapshot_conflict"},
+    )
+
+
+@router.post("/packs/import", response_model=PackManifest, status_code=201)
+@router.post("/packs/manifests", response_model=PackManifest, status_code=201)
+def create_pack_manifest(
+    request: PackManifestRequest,
+    identity: Identity,
+    service: Annotated[PackService | None, Depends(get_pack_service)],
+) -> PackManifest:
+    try:
+        return _require_pack_service(service).create_manifest(
+            identity.organization_id, identity.actor_id, request
+        )
+    except PackNotFoundError:
+        raise _pack_hidden() from None
+    except PackConflictError:
+        raise ApiError(
+            409,
+            ErrorCode.VERSION_CONFLICT,
+            "pack version or bundle identity already exists",
+            {"reason": "immutable_pack_identity_conflict"},
+        ) from None
+    except PackManifestError as exc:
+        raise ApiError(
+            422,
+            ErrorCode.VALIDATION_FAILED,
+            "pack manifest failed validation",
+            {"reason": exc.reason},
+        ) from None
+
+
+@router.get("/packs/manifests/{pack_version_id}", response_model=PackManifest)
+def get_pack_manifest(
+    pack_version_id: str,
+    identity: Identity,
+    service: Annotated[PackService | None, Depends(get_pack_service)],
+) -> PackManifest:
+    try:
+        return _require_pack_service(service).get_manifest(
+            identity.organization_id, pack_version_id
+        )
+    except PackNotFoundError:
+        raise _pack_hidden() from None
+
+
+@router.post(
+    "/packs/contexts/{application_context}/activate/{pack_version_id}",
+    response_model=PackActivationReport,
+)
+def activate_pack(
+    application_context: str,
+    pack_version_id: str,
+    request: ActivatePackRequest,
+    identity: Identity,
+    service: Annotated[PackService | None, Depends(get_pack_service)],
+) -> PackActivationReport:
+    try:
+        return _require_pack_service(service).activate(
+            identity.organization_id,
+            identity.actor_id,
+            application_context,
+            pack_version_id,
+            request.expected_active_pack_version_id,
+        )
+    except PackNotFoundError:
+        raise _pack_hidden() from None
+    except PackConflictError:
+        raise _pack_conflict() from None
+
+
+@router.get("/packs/contexts/{application_context}/active", response_model=ActivePackState)
+def active_pack(
+    application_context: str,
+    identity: Identity,
+    service: Annotated[PackService | None, Depends(get_pack_service)],
+) -> ActivePackState:
+    try:
+        return _require_pack_service(service).active_state(
+            identity.organization_id, application_context
+        )
+    except PackNotFoundError:
+        raise _pack_hidden() from None
+
+
+@router.get("/packs/contexts/{application_context}/evidence", response_model=EvidenceBundle)
+def active_evidence_bundle(
+    application_context: str,
+    identity: Identity,
+    service: Annotated[PackService | None, Depends(get_pack_service)],
+    repository: Annotated[PostgresKnowledgeRepository | None, Depends(get_knowledge_repository)],
+) -> EvidenceBundle:
+    try:
+        state = _require_pack_service(service).active_state(
+            identity.organization_id, application_context
+        )
+        return _require_repository(repository).get_bundle(
+            identity.organization_id, state.pack_version_id
+        )
+    except (PackNotFoundError, KnowledgeNotFoundError):
+        raise _pack_hidden() from None
+    except KnowledgeIntegrityError:
+        raise _integrity_failure() from None
+
+
+@router.post("/dependencies/targets", response_model=DependencyTargetState)
+def register_dependency_target(
+    request: DependencyRegistrationRequest,
+    identity: Identity,
+    service: Annotated[PackService | None, Depends(get_pack_service)],
+) -> DependencyTargetState:
+    try:
+        return _require_pack_service(service).register_target(identity.organization_id, request)
+    except PackConflictError:
+        raise _pack_conflict() from None
+    except PackManifestError as exc:
+        raise ApiError(
+            422,
+            ErrorCode.VALIDATION_FAILED,
+            "dependency registration failed validation",
+            {"reason": exc.reason},
+        ) from None
+
+
+@router.get(
+    "/dependencies/targets/{target_kind}/{target_id}",
+    response_model=DependencyTargetState,
+)
+def dependency_target(
+    target_kind: str,
+    target_id: str,
+    identity: Identity,
+    service: Annotated[PackService | None, Depends(get_pack_service)],
+) -> DependencyTargetState:
+    try:
+        return _require_pack_service(service).get_target(
+            identity.organization_id, target_kind, target_id
+        )
+    except PackNotFoundError:
+        raise _pack_hidden() from None

@@ -7,3 +7,7 @@ Each spec should identify goal/scope, repo context, contracts/dependencies/fixtu
 ## Dev A validation
 
 - `A3-VAL-003_Deterministic_Validation_Runner.md` rev 1.0: repository-native deterministic source/numeric validation, immutable receipts and A4 dependency output. Implementation status: A3a/A3b implemented on `dev-a/a3ab-val-003-source-validation`; A3c numeric/C2 integration remains separate.
+
+## Dev A pack replacement
+
+- `A4-PKG-004_Pack_Replacement_and_Invalidation.md` rev 1.0: strict immutable manifests, per-context active packs, structured A/B diffs, exact reverse-dependency invalidation and inactive-pack gates. Implementation status: implemented on `dev-a/a4-pack-replacement`; real C approval/export and B browser-grant consumers must register when their durable producers land.

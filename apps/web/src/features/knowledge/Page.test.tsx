@@ -1,4 +1,5 @@
 import { fireEvent, render, screen } from '@testing-library/react'
+import { vi } from 'vitest'
 import type { KnowledgeAvailability, KnowledgeSnapshot } from '@strongstart/contracts'
 import { KnowledgePage } from './Page'
 import type { KnowledgeClient } from './client'
@@ -85,6 +86,19 @@ function client(overrides: Partial<KnowledgeClient> = {}): KnowledgeClient {
         truncated: false,
       },
     }),
+    activePack: async () => ({
+      ok: true,
+      data: {
+        schema_version: '1',
+        organization_id: 'demo-org',
+        application_context: 'demo-application',
+        pack_version_id: 'pack-1-v1',
+        revision: 1,
+      },
+    }),
+    activatePack: async () => {
+      throw new Error('not expected')
+    },
     ...overrides,
   }
 }
@@ -97,6 +111,7 @@ describe('KnowledgePage', () => {
     expect(screen.getByText('a'.repeat(64))).toBeInTheDocument()
     expect(screen.getByText(/Exact value:/)).toHaveTextContent('120 children')
     expect(screen.getByText(/Reporting period:/)).toHaveTextContent('2025-09/2026-06')
+    expect(await screen.findByText(/Active version:/)).toHaveTextContent('pack-1-v1')
   })
 
   it('shows a distinct empty state', async () => {
@@ -111,6 +126,50 @@ describe('KnowledgePage', () => {
       />,
     )
     expect(await screen.findByText(/No knowledge sources/)).toBeInTheDocument()
+  })
+
+  it('activates a replacement with the expected active snapshot', async () => {
+    const activatePack = vi.fn(async () => ({
+      ok: true as const,
+      data: {
+        schema_version: '1' as const,
+        active: {
+          schema_version: '1' as const,
+          organization_id: 'demo-org',
+          application_context: 'demo-application',
+          pack_version_id: 'pack-1-v2',
+          revision: 2,
+        },
+        previous_pack_version_id: 'pack-1-v1',
+        change_set: null,
+        invalidated: [],
+        idempotent: false,
+      },
+    }))
+    render(
+      <KnowledgePage
+        client={client({
+          snapshot: async () => ({
+            ok: true,
+            data: {
+              ...snapshot,
+              evidence_bundles: [
+                ...snapshot.evidence_bundles,
+                {
+                  ...snapshot.evidence_bundles[0],
+                  bundle_id: 'bundle-2',
+                  pack_version_id: 'pack-1-v2',
+                },
+              ],
+            },
+          }),
+          activatePack,
+        })}
+      />,
+    )
+    fireEvent.click(await screen.findByRole('button', { name: 'Activate version' }))
+    expect(activatePack).toHaveBeenCalledWith('demo-application', 'pack-1-v2', 'pack-1-v1')
+    expect(await screen.findByRole('status')).toHaveTextContent('Activated pack-1-v2')
   })
 
   it('withholds content after an integrity failure', async () => {

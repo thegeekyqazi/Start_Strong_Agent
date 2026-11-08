@@ -1,9 +1,11 @@
 import type {
+  ActivePackState,
   ErrorEnvelope,
   EvidenceBundle,
   KnowledgeAvailability,
   KnowledgeRetrievalResult,
   KnowledgeSnapshot,
+  PackActivationReport,
   PdfSourceImportResult,
   TextSourceImportResult,
 } from '@strongstart/contracts'
@@ -41,6 +43,12 @@ export interface KnowledgeClient {
     contentBase64: string,
   ): Promise<KnowledgeApiResult<PdfSourceImportResult>>
   retrieve(query: string): Promise<KnowledgeApiResult<KnowledgeRetrievalResult>>
+  activePack(applicationContext: string): Promise<KnowledgeApiResult<ActivePackState>>
+  activatePack(
+    applicationContext: string,
+    packVersionId: string,
+    expectedActivePackVersionId: string | null,
+  ): Promise<KnowledgeApiResult<PackActivationReport>>
 }
 
 export const httpKnowledgeClient: KnowledgeClient = {
@@ -60,6 +68,19 @@ export const httpKnowledgeClient: KnowledgeClient = {
       body: JSON.stringify({ title, content_base64: contentBase64 }),
     }),
   retrieve: (query) => call(`/api/knowledge/retrieve?query=${encodeURIComponent(query)}`),
+  activePack: (context) =>
+    call(`/api/knowledge/packs/contexts/${encodeURIComponent(context)}/active`),
+  activatePack: (context, packVersionId, expectedActivePackVersionId) =>
+    call(
+      `/api/knowledge/packs/contexts/${encodeURIComponent(context)}/activate/${encodeURIComponent(packVersionId)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          expected_active_pack_version_id: expectedActivePackVersionId,
+        }),
+      },
+    ),
 }
 
 export function describeKnowledgeError(result: {

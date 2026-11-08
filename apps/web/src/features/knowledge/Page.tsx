@@ -1,5 +1,6 @@
 import { type FormEvent, useEffect, useState } from 'react'
 import type {
+  ActivePackState,
   KnowledgeAvailability,
   KnowledgeRetrievalResult,
   KnowledgeSnapshot,
@@ -15,6 +16,8 @@ export function KnowledgePage({ client = httpKnowledgeClient }: { client?: Knowl
   const [state, setState] = useState<State>({ kind: 'loading' })
   const [action, setAction] = useState<string | null>(null)
   const [results, setResults] = useState<KnowledgeRetrievalResult | null>(null)
+  const [activePack, setActivePack] = useState<ActivePackState | null>(null)
+  const applicationContext = 'demo-application'
   useEffect(() => {
     let active = true
     const load = async () => {
@@ -35,6 +38,8 @@ export function KnowledgePage({ client = httpKnowledgeClient }: { client?: Knowl
           ? { kind: 'done', availability: availability.data, snapshot: snapshot.data }
           : { kind: 'error', message: describeKnowledgeError(snapshot) },
       )
+      const activePackResult = await client.activePack(applicationContext)
+      if (active && activePackResult.ok) setActivePack(activePackResult.data)
     }
     void load()
     return () => {
@@ -84,6 +89,21 @@ export function KnowledgePage({ client = httpKnowledgeClient }: { client?: Knowl
       setAction(null)
     } else setAction(describeKnowledgeError(result))
   }
+  const activate = async (packVersionId: string) => {
+    const result = await client.activatePack(
+      applicationContext,
+      packVersionId,
+      activePack?.pack_version_id ?? null,
+    )
+    if (result.ok) {
+      setActivePack(result.data.active)
+      setAction(
+        result.data.idempotent
+          ? `Pack ${packVersionId} is already active.`
+          : `Activated ${packVersionId}; ${result.data.invalidated.length} dependent item(s) became stale.`,
+      )
+    } else setAction(describeKnowledgeError(result))
+  }
   return (
     <section aria-labelledby="knowledge-heading">
       <h2 id="knowledge-heading">Knowledge and evidence</h2>
@@ -97,6 +117,27 @@ export function KnowledgePage({ client = httpKnowledgeClient }: { client?: Knowl
       {availability.status === 'unavailable' && <p>{availability.detail}</p>}
       {snapshot && (
         <div className="knowledge-tools">
+          <section aria-labelledby="pack-heading">
+            <h3 id="pack-heading">Evidence pack</h3>
+            <p>
+              Application context: <code>{applicationContext}</code>. Active version:{' '}
+              <strong>{activePack?.pack_version_id ?? 'none'}</strong>.
+            </p>
+            {snapshot.evidence_bundles.map((bundle) => (
+              <p key={bundle.pack_version_id}>
+                {bundle.pack_version_id}{' '}
+                <button
+                  type="button"
+                  disabled={activePack?.pack_version_id === bundle.pack_version_id}
+                  onClick={() => void activate(bundle.pack_version_id)}
+                >
+                  {activePack?.pack_version_id === bundle.pack_version_id
+                    ? 'Active'
+                    : 'Activate version'}
+                </button>
+              </p>
+            ))}
+          </section>
           <section aria-labelledby="text-import-heading">
             <h3 id="text-import-heading">Import plain text</h3>
             <form onSubmit={(event) => void importText(event)}>

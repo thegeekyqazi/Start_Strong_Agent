@@ -8,6 +8,7 @@ from ...config import Settings, get_settings
 from ...db import get_engine
 from .artifacts import LocalArtifactStore
 from .ingestion import TextIngestionService
+from .packs import PackService
 from .pdf_ingestion import BoundedPdfParser, PdfIngestionService
 from .repository import PostgresKnowledgeRepository
 
@@ -25,6 +26,14 @@ def get_knowledge_repository(
     return PostgresKnowledgeRepository(
         get_engine(settings.database_url, settings.db_connect_timeout_seconds), artifacts
     )
+
+
+def get_pack_service(
+    settings: Annotated[Settings, Depends(get_settings)],
+) -> PackService | None:
+    if not settings.database_url:
+        return None
+    return PackService(get_engine(settings.database_url, settings.db_connect_timeout_seconds))
 
 
 def get_text_ingestion_service(
