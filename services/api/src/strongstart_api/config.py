@@ -6,7 +6,7 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
-from pydantic import Field, SecretStr, model_validator
+from pydantic import Field, SecretStr, field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -45,6 +45,19 @@ class Settings(BaseSettings):
         default=["interests", "geography", "program_context"]
     )
     funding_source_seed_path: Path | None = None
+
+    # Model adapters (owner C; C1-shell-and-adapter). "fake" is the deterministic fixture
+    # adapter (local default; unavailable in production, enforced where the adapter is
+    # selected so other lanes' production settings still load). "gemini" needs both a key and an
+    # explicitly configured model name; there is no fallback to another provider.
+    model_provider: Literal["fake", "gemini"] = "fake"
+    gemini_model: str | None = Field(default=None, pattern=r"^[A-Za-z0-9._-]{1,64}$")
+    model_timeout_seconds: float = Field(default=20, ge=0.01, le=60)
+
+    @field_validator("gemini_model", mode="before")
+    @classmethod
+    def _empty_model_is_unset(cls, value: object) -> object:
+        return None if value == "" else value
 
     @model_validator(mode="after")
     def _fixture_mode_is_local_only(self) -> Settings:
