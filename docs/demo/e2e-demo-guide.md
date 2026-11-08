@@ -1,8 +1,43 @@
 # Strong Start end-to-end demonstration (E2E-DEMO)
 
-Branch `integration/e2e-demo`, stacked on DATA-001 (`data/data-001-tigerdata-application-state`
-at `068f5aa`, PR #20, the agreed backend baseline). It adds orchestration only: no
-application, contract, migration, model-adapter, shell or styling changes.
+Restored from `integration/e2e-demo` (`fea5e8a`, PR #22, which merged into the DATA-001
+branch rather than `main`) onto current `main` (C4 merged, migration head
+`0010_practice_skills`). Two launch modes exist:
+
+- **Live launch** (`scripts/demo/start_live.sh`, section L below): live Gemini, Tavily and
+  Firecrawl; hosted TigerData TEST service. Fixture identity, synthetic evidence and
+  representative portals stay labelled.
+- **Fixture rehearsal** (`scripts/demo/start_stack.sh`, the original sections 0-8): fake
+  model and FIXTURE funding providers on local PostgreSQL. That database must be at `0010`.
+
+## L. Live launch (current)
+
+Private settings live outside Git: provider keys, `STRONGSTART_MODEL_PROVIDER=gemini`,
+`STRONGSTART_GEMINI_MODEL` and live funding modes in this worktree's ignored `.env`. The
+TigerData runtime profile is in `~/.local/share/strongstart-data001-private/hosted.env`
+(verify-full, pinned trust root, budget 20). The script refuses to start when any live
+setting is missing. It never substitutes fake output, and it drops the migration URL before
+starting the API.
+
+```sh
+scripts/demo/start_live.sh                     # API :18220, web :15290 (detached, PIDs + logs in .local-data/demo-live)
+uv run python -m scripts.demo.e2e_demo rehearse --api http://127.0.0.1:15290 \
+  --no-search --draft-only pf-summary --use-draft-text --stop-before-approval
+# inspect the exact draft text/findings in the manifest; review (reject/edit) as needed, then:
+uv run python -m scripts.demo.e2e_demo approve --api http://127.0.0.1:15290 \
+  --manifest .local-data/e2e-demo/manifests/<run>.json --execute-portal
+DEMO_ALLOWED_HOST=<exact>.trycloudflare.com scripts/demo/start_live.sh --web-only   # after the tunnel exists
+scripts/demo/stop_live.sh                      # tunnel, web, API (recorded PIDs only)
+```
+
+Bound paid calls: run search and capture once each from the Funding page, or once via the
+API. `--no-search` stops the driver from searching again. `--draft-only` limits drafting to
+one question. A C4 preview makes two model calls: a baseline draft and a practice draft.
+`approve` approves the remaining answers as the LOCAL fixture reviewer. That is a rehearsal
+action, so inspect each exact text first. Live run evidence is in
+`docs/handoffs/integration/demo-live-launch-r1.md`.
+
+## Original fixture rehearsal
 
 **Everything shown is LOCAL, SYNTHETIC and FIXTURE-labelled.** Identity is the local fixture
 identity, and its approvals are fixture actions, not authentication. Funding search and
@@ -16,7 +51,7 @@ real organizational evidence yet. Nothing is submitted, signed or uploaded.
 
 Prerequisites: locked dependencies installed in this worktree (`uv sync --locked`,
 `npm ci`), Playwright Chromium (`uv run playwright install chromium`), and the existing local
-PostgreSQL (`127.0.0.1:55432`) **already** at migration head `0009_durable_applications`.
+PostgreSQL (`127.0.0.1:55432`) **already** at migration head `0010_practice_skills`.
 The demo never migrates, seeds, resets or stops anything.
 
 ```sh
@@ -55,20 +90,18 @@ Verified on 2026-11-08 (below): every row was driven in real Chromium against th
 and real C/B/Chromium. The only difference is that the browser automation clicked the
 approve button that you click by hand.
 
-## C4 Skills insertion point (not implemented here)
+## C4 Skills insertion point
 
-C4-SKL-001 (another agent, branch `dev-c/c4-skl-001-practice-preview`) owns the **Skills**
-page (`#/skills`) and its draft-preview flow. Insert it between steps 5 and 6. It is a
-**separate** demonstration:
+C4-SKL-001 is merged into `main` (PR #23) and served by the same stack (**Skills**,
+`#/skills`; see `docs/handoffs/dev-c/c4-skl-001-demo-guide.md`). Insert it between steps 5
+and 6. It is a **separate** demonstration:
 
-- Use the C4 agent's own startup and its documented API and web ports. Do not run C4 from
-  this stack unless C4 is merged into the branch that serves it.
 - Its previews are `working_preview_only` with `approval_permitted=false`. They do not feed
   this journey's saved versions, approvals, export or plan. Present it as *how an approved
   practice would change a draft preview*, then return to step 6 with the answers saved in
   step 4.
-- C4 adds migration `0010`. Once that is applied to the shared database, this branch (head
-  `0009`) reports not-ready. See troubleshooting.
+- The required head is `0010_practice_skills`. Hosted runtime roles also need the bounded
+  C4 grants (`docs/handoffs/integration/demo-live-launch-r1.md`).
 
 ## Rehearsal command (verification, not the human demo)
 
@@ -88,7 +121,7 @@ prints the exact method, URL, request and response. Nothing is faked.
 
 | Situation | Action |
 | --- | --- |
-| `start_stack.sh` prints `E2E-DEMO BLOCKER: GET …/health/ready returned 503` | Do not migrate. The shared DB is not at this branch's head, for example `0010` from C4 or a stopped container. Ask the DB owner, or use a branch that includes the new migration. |
+| `start_stack.sh` prints `E2E-DEMO BLOCKER: GET …/health/ready returned 503` | Do not migrate. The DB is not at head `0010_practice_skills`, or the container is stopped. Ask the DB owner to migrate it with the migration role. |
 | Port in use | Use `E2E_DEMO_API_PORT` / `E2E_DEMO_WEB_PORT`. Never stop another agent's process. |
 | Picker shows several identical *FIXTURE: Prefill demonstration form* entries | Restart with `E2E_DEMO_FRESH=1` (new empty B state dir) and run `prepare` again. The definition ID in the Applications banner must match the printed one. |
 | Approval refused / stale (edited after approval) | Expected gate. Save the intended text again, re-review, approve the new exact version, and prepare a **new** plan. |

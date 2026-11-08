@@ -37,7 +37,7 @@ import httpx
 
 ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_DIR = ROOT / ".local-data" / "e2e-demo" / "manifests"
-LABEL = "E2E-DEMO (LOCAL, SYNTHETIC, FIXTURE)"
+LABEL = "E2E-DEMO (LOCAL fixture identity, SYNTHETIC evidence, representative portal)"
 
 # Explicitly selected, labelled saved sources (live search keys are not configured):
 #  * "prefill" (default, executable): registered saved definition rep-prefill-definition-v1,
@@ -127,7 +127,7 @@ def preflight(api: Api, src: dict[str, Any]) -> dict[str, Any]:
     return {"browser_status": avail["browser_status"], "environment": funding["environment"]}
 
 
-def prepare(api: Api, suffix: str, source_key: str) -> dict[str, Any]:
+def prepare(api: Api, suffix: str, source_key: str, run_search: bool = True) -> dict[str, Any]:
     src = SOURCES[source_key]
     m: dict[str, Any] = {
         "label": LABEL,
@@ -140,11 +140,18 @@ def prepare(api: Api, suffix: str, source_key: str) -> dict[str, Any]:
     m["preflight"] = preflight(api, src)
     print(f"{LABEL}\nAPI {api.base} ready; Chromium: {m['preflight']['browser_status']}")
 
-    step("1", "funding search (FIXTURE provider), then explicit labelled saved source")
+    step("1", "funding search (configured provider), then explicit labelled saved source")
     fa = api.get("/api/funding/availability")
     print(
-        "  providers:", {p["operation"]: f"{p['provider']}/{p['status']}" for p in fa["providers"]}
+        "  providers:",
+        {p["operation"]: f"{p['provider']}/{p['mode']}/{p['status']}" for p in fa["providers"]},
     )
+    if not run_search:
+        # Live demo: search/capture were run once, separately, to bound paid provider calls.
+        m["funding_search"] = {"skipped": "--no-search (search run separately)"}
+        print("  search skipped (--no-search). Explicitly selected labelled saved source:")
+        print(f"  {src['catalog_id']} (representative portal definition, not a funder site)")
+        return _prepare_definition(api, m, src, suffix)
     search = api.post("/api/funding/search", {"profile": SEARCH_PROFILE, "max_results": 5})
     m["funding_search"] = {
         "search_id": search["search_id"],
@@ -159,10 +166,15 @@ def prepare(api: Api, suffix: str, source_key: str) -> dict[str, Any]:
     for c in search["candidates"]:
         print(f"    - {c.get('title')}")
     print(
-        "  Live search is unavailable (no provider keys) and FIXTURE funding pages are not\n"
+        f"  Search results ({search['query']['mode']}) are context only; they are not\n"
         f"  registered portals. Explicitly selected labelled saved source: {src['catalog_id']}"
     )
+    return _prepare_definition(api, m, src, suffix)
 
+
+def _prepare_definition(
+    api: Api, m: dict[str, Any], src: dict[str, Any], suffix: str
+) -> dict[str, Any]:
     step("2", "import + save its application questions")
     preview = api.post("/api/automation/intake", {"source": src["source"]})
     sha = preview["input"]["sha256"]
@@ -221,7 +233,14 @@ def published(m: dict[str, Any], original: str) -> str:
     fail(f"{original} is not a question of the saved definition")
 
 
-def rehearse(api: Api, m: dict[str, Any], execute_portal: bool) -> None:
+def rehearse(
+    api: Api,
+    m: dict[str, Any],
+    execute_portal: bool,
+    draft_only: list[str] | None = None,
+    use_draft_text: bool = False,
+    stop_before_approval: bool = False,
+) -> None:
     src = SOURCES[m["source_key"]]
     qs = m["definition"]["question_set_id"]
     bundle_id = m["workspace"]["evidence_bundle_id"]
@@ -229,8 +248,11 @@ def rehearse(api: Api, m: dict[str, Any], execute_portal: bool) -> None:
     texts = {o: t % {"fact": fact} if "%(" in t else t for o, t in src["answers"].items()}
     m["answers"] = {o: {"question_id": published(m, o), "text": t} for o, t in texts.items()}
 
-    step("4", "draft with the supported evidence source (synthetic bundle, fake model)")
+    step("4", "draft with the supported evidence source (synthetic bundle, configured model)")
     for orig, a in m["answers"].items():
+        if draft_only is not None and orig not in draft_only:
+            print(f"  {orig}: not drafted (--draft-only); fixed labelled demo text is used")
+            continue
         d = api.post(
             f"/api/applications/questions/{a['question_id']}/draft",
             {"question_version": 1, "evidence_bundle_id": bundle_id, "question_set_id": qs},
@@ -243,10 +265,15 @@ def rehearse(api: Api, m: dict[str, Any], execute_portal: bool) -> None:
             "fact_ids": d["fact_ids"],
             "uncertainties": d["uncertainties"],
         }
+        kind = "FIXTURE model" if d["provider"]["is_fixture"] else "LIVE model"
         print(
-            f"  {orig}: {d['proposal_id']} ({a['draft']['model']}, fixture model) facts "
+            f"  {orig}: {d['proposal_id']} ({a['draft']['model']}, {kind}) facts "
             f"{d['fact_ids']}; {len(d['uncertainties'])} uncertainties"
         )
+        print(f"    draft text: {d['template_text']!r}")
+        if use_draft_text:
+            a["text"] = d["template_text"]
+            a["text_source"] = f"model draft {d['proposal_id']}"
 
     step("5", "sources, uncertainty and deterministic findings for the exact final text")
     for orig, a in m["answers"].items():
@@ -270,8 +297,23 @@ def rehearse(api: Api, m: dict[str, Any], execute_portal: bool) -> None:
         ]
         print(f"  {orig}: " + ", ".join(f"{f['rule_id']}={f['outcome']}" for f in a["findings"]))
 
+    if stop_before_approval:
+        print("\n  Stopped before save/approval (--stop-before-approval). Inspect the exact texts")
+        print("  in the manifest, then run: approve --manifest <path> [--execute-portal]")
+        return
+    approve_and_fill(api, m, execute_portal)
+
+
+def approve_and_fill(api: Api, m: dict[str, Any], execute_portal: bool) -> None:
+    src = SOURCES[m["source_key"]]
+    qs = m["definition"]["question_set_id"]
+    bundle_id = m["workspace"]["evidence_bundle_id"]
     step("6", "save the exact versions; review + approve (LOCAL fixture reviewer identity)")
     for orig, a in m["answers"].items():
+        if a.get("approval_id"):
+            # Reviewed separately (e.g. a model draft a reviewer rejected, edited and approved).
+            print(f"  {orig}: already reviewed -> approval {a['approval_id']} (kept)")
+            continue
         v = api.post(
             "/api/applications/answers/versions",
             {
@@ -430,7 +472,7 @@ def main() -> None:
     p = argparse.ArgumentParser(
         description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    p.add_argument("command", choices=["prepare", "rehearse", "status"])
+    p.add_argument("command", choices=["prepare", "rehearse", "approve", "status"])
     p.add_argument("--api", default="http://127.0.0.1:18120")
     p.add_argument("--web", default="http://127.0.0.1:15190")
     p.add_argument("--source", choices=sorted(SOURCES), default="prefill")
@@ -439,9 +481,34 @@ def main() -> None:
         action="store_true",
         help="rehearse: explicitly run browser entry on the representative portal",
     )
-    p.add_argument("--manifest", help="status: manifest written by prepare/rehearse")
+    p.add_argument("--manifest", help="status/approve: manifest written by prepare/rehearse")
+    p.add_argument("--no-search", action="store_true", help="skip the funding search call")
+    p.add_argument(
+        "--draft-only", action="append", help="rehearse: draft only these original question IDs"
+    )
+    p.add_argument(
+        "--use-draft-text",
+        action="store_true",
+        help="rehearse: save the model draft text (not the fixed demo text) for drafted questions",
+    )
+    p.add_argument(
+        "--stop-before-approval",
+        action="store_true",
+        help="rehearse: stop after drafts/checks so the exact text can be inspected",
+    )
     a = p.parse_args()
     api = Api(a.api)
+    if a.command == "approve":
+        if not a.manifest:
+            fail("approve needs --manifest")
+        mpath = Path(a.manifest)
+        m = json.loads(mpath.read_text())
+        try:
+            approve_and_fill(api, m, a.execute_portal)
+        finally:
+            mpath.write_text(json.dumps(m, indent=2, sort_keys=True, default=str) + "\n")
+        print(f"\nAPPROVE/FILL COMPLETE ({LABEL}). Manifest: {mpath}")
+        return
     if a.command == "status":
         if not a.manifest:
             fail("status needs --manifest")
@@ -468,11 +535,18 @@ def main() -> None:
         return
     suffix = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ") + "-" + secrets.token_hex(3)
     MANIFEST_DIR.mkdir(parents=True, exist_ok=True)
-    m = prepare(api, suffix, a.source)
+    m = prepare(api, suffix, a.source, run_search=not a.no_search)
     path = write_manifest(m)
     if a.command == "rehearse":
         try:
-            rehearse(api, m, a.execute_portal)
+            rehearse(
+                api,
+                m,
+                a.execute_portal,
+                draft_only=a.draft_only,
+                use_draft_text=a.use_draft_text,
+                stop_before_approval=a.stop_before_approval,
+            )
         finally:
             write_manifest(m)
         print(f"\nREHEARSAL COMPLETE ({LABEL}, source={a.source}).")
