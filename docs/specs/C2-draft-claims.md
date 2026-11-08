@@ -157,3 +157,14 @@ Each phase is gated: owner instruction "do not start integration" applies until 
 4. **Real questions:** switch to B2's real questions (phase C2b) once the fixture work is done. A's evidence waits for A1 to merge.
 
 **Owner priorities:** (a) close the C1 gap with the APP-03 unbound-number scanner first; (b) enforce strict request typing (a string version such as `"1"` is rejected with 422).
+
+## 12. Implementation notes (rev 1.2; found during the fixture implementation)
+
+| # | Rev 1.1 text | Implemented behaviour | Why |
+| --- | --- | --- | --- |
+| 1 | POL-03 covers placeholders and "old figure fills a missing current slot" | Placeholders (`XXX`, `TBD`, `TODO`, `TBC`) and malformed `{{ }}` tokens only | "Old vs current" needs time suitability (A's NUM and B's DAT rules plus a frozen clock). It is **not covered** in C2 and stays planned |
+| 2 | Unsupported markers listed under both APP-03 and POL-03 | Reported by APP-03 only | Avoids duplicate findings for one span |
+| 3 | 409 for a stale `evidence_bundle_id` | 404 `unknown_evidence_bundle` (C1 behaviour kept) | Without bundle versions, "stale" and "unknown" are indistinguishable; see the fact-version request to A |
+| 4 | Terminology scope matches the program name | Matches the program name **or** its protected acronym | "DLP tutors" must be in scope for the Demo Literacy Program rule |
+| 5 | Model results checked by the coordinator | SEC-12 keys added to the shared scan: `org_id` in model output is now `sec12_forbidden_field` (previously a generic schema error). The C1 test moved to the SEC-12 suite, still asserting rejection | A more specific rejection, not a weaker one |
+| 6 | Phase C2b consumes B2's export | **Blocked at runtime**: B2's `AutomationHandoffExport` is built on request (`persisted=false`) and there is no read port. s20.3 forbids importing B2 internals, and a client-supplied export cannot be trusted as funder questions. See the handoff for the proposal | Needs an owner/B2 decision |
