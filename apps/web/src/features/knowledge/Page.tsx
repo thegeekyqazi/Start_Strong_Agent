@@ -194,7 +194,7 @@ export function KnowledgePage({ client = httpKnowledgeClient }: { client?: Knowl
           <ul>
             {snapshot.source_versions.map((source) => (
               <li key={source.source_reference.source_version_id}>
-                <strong>{source.title}</strong> — {source.media_type}, {source.size_bytes} bytes
+                <strong>{source.title}</strong>, {source.media_type}, {source.size_bytes} bytes
                 <br />
                 Version: {source.source_reference.source_version_id}
                 <br />

@@ -245,8 +245,8 @@ export function ReviewPage({
       )}
       {(hist?.store?.backend === 'memory' || (!hist?.store && hist?.store_is_fixture)) && (
         <p className="badge badge-planned">
-          FIXTURE store – saved versions and approvals are demo data and are lost on restart.
-          Fixture approval – not authentication.
+          FIXTURE store: saved versions and approvals are demo data and are lost on restart. Fixture
+          approval is not authentication.
         </p>
       )}
       {picker}
@@ -298,7 +298,7 @@ export function ReviewPage({
         )}
       {anyStale && (
         <p role="alert" className="stale-banner">
-          Out of date – the approval of version{' '}
+          Out of date: the approval of version{' '}
           {versions.find((v) => v.answer_version_id === anyStale.answer_version_id)?.answer_version}{' '}
           no longer applies because {staleText(anyStale.stale_reason)}.
         </p>
@@ -359,7 +359,7 @@ export function ReviewPage({
 
               <section aria-labelledby="suggestions-heading">
                 <h4 id="suggestions-heading">Reviewer suggestions</h4>
-                <p className="hint">Suggestions only – they cannot approve anything.</p>
+                <p className="hint">Suggestions only; they cannot approve anything.</p>
                 <button type="button" onClick={() => ask('numerical_reviewer')}>
                   Ask the numbers reviewer
                 </button>{' '}

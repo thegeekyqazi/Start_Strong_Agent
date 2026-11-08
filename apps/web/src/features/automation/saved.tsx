@@ -231,8 +231,8 @@ export function SavedDefinitions({ preview }: { preview: Preview | null }) {
                   <code>{save.pub.integrity.raw_input_sha256}</code>
                 </li>
                 <li>
-                  {save.pub.question_set.questions.length} questions ·{' '}
-                  {save.pub.unresolved?.length ?? 0} unresolved items · approval:{' '}
+                  {save.pub.question_set.questions.length} questions,{' '}
+                  {save.pub.unresolved?.length ?? 0} unresolved items, approval:{' '}
                   {save.pub.approval_status}
                 </li>
                 <li>
@@ -327,8 +327,8 @@ export function SavedDefinitions({ preview }: { preview: Preview | null }) {
               {copied && <span role="status"> Copied.</span>}
             </li>
             <li>
-              Review: {(pub.review_status ?? 'saved_not_reviewed').replaceAll('_', ' ')} · approval:{' '}
-              {pub.approval_status} · prefill permitted: no
+              Review: {(pub.review_status ?? 'saved_not_reviewed').replaceAll('_', ' ')}, approval:{' '}
+              {pub.approval_status}, prefill permitted: no
             </li>
             <li>
               Input sha256 <code>{pub.integrity.raw_input_sha256}</code> (

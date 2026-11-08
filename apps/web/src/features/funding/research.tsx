@@ -88,8 +88,8 @@ function Profile({ p, client }: { p: SearchProfileVersion; client: FundingClient
           <ul>
             {items.map((r) => (
               <li key={r.run_id}>
-                <code>{r.run_id}</code> v{r.profile_version} · {r.outcome}
-                {r.error_reason ? ` (${r.error_reason})` : ''} · {r.completed_at} ·{' '}
+                <code>{r.run_id}</code> v{r.profile_version}, {r.outcome}
+                {r.error_reason ? ` (${r.error_reason})` : ''}, {r.completed_at},{' '}
                 {r.normalized_urls?.length ?? 0} results
               </li>
             ))}
@@ -226,9 +226,9 @@ export function ObservationView({ o }: { o: ChangeObservation }) {
   return (
     <div className="observation">
       <p>
-        <strong>{OVERALL_LABEL[o.overall] ?? o.overall}</strong> · {o.observed_at} · new capture{' '}
+        <strong>{OVERALL_LABEL[o.overall] ?? o.overall}</strong>, {o.observed_at}, new capture{' '}
         {o.new_capture_id ?? 'none'}
-        {o.failure_reason ? ` · ${o.failure_reason}` : ''}
+        {o.failure_reason ? `, ${o.failure_reason}` : ''}
       </p>
       <p>{o.explanation}</p>
       {o.comparisons && o.comparisons.length > 0 && (

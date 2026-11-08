@@ -402,12 +402,16 @@ function CaseView({
           ))}
         </ul>
       )}
+      <h5>Case details and evidence anchors</h5>
       <dl className="meta">
-        <dt>Funder / stream / cycle / stage</dt>
-        <dd>
-          {v.context.funder_label ?? 'unknown'} / {v.context.stream_label ?? 'unknown'} /{' '}
-          {v.context.cycle_label ?? 'unknown'} / {v.context.stage}
-        </dd>
+        <dt>Funder</dt>
+        <dd>{v.context.funder_label ?? 'unknown'}</dd>
+        <dt>Stream</dt>
+        <dd>{v.context.stream_label ?? 'unknown'}</dd>
+        <dt>Cycle</dt>
+        <dd>{v.context.cycle_label ?? 'unknown'}</dd>
+        <dt>Stage</dt>
+        <dd>{v.context.stage}</dd>
         <dt>Shared opportunity</dt>
         <dd>
           {env.opportunity
@@ -415,7 +419,6 @@ function CaseView({
             : `Not established: missing ${env.opportunity_missing?.join(', ')}`}
         </dd>
       </dl>
-      <h5>Evidence anchors</h5>
       <ul>
         {v.anchors.map((a) => (
           <li key={a.anchor_key}>
@@ -592,10 +595,20 @@ export function ReportView({ report }: { report: EvaluationReport }) {
         <strong>{report.scenario_summary}</strong>
       </p>
       <p className="badge badge-planned">{report.reliance_explanation}</p>
-      <p className="hint">
-        Clock {report.clock} ({report.clock_source}) · case v{report.case_version} · inputs digest{' '}
-        <code>{report.inputs_digest}</code> · evaluator {report.evaluator_version}
-      </p>
+      <dl className="meta evaluation-meta">
+        <dt>Clock</dt>
+        <dd>
+          {report.clock} ({report.clock_source})
+        </dd>
+        <dt>Case version</dt>
+        <dd>{report.case_version}</dd>
+        <dt>Inputs digest</dt>
+        <dd>
+          <code>{report.inputs_digest}</code>
+        </dd>
+        <dt>Evaluator</dt>
+        <dd>{report.evaluator_version}</dd>
+      </dl>
       <ol>
         {report.results.map((r) => (
           <li key={r.requirement_key}>

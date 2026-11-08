@@ -24,6 +24,7 @@ apps/web/dist/
 packages/contracts/ts/dist/
 *.tsbuildinfo
 .vite/
+apps/web/.hallmark/
 
 # Logs, caches, local data
 *.log

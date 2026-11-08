@@ -32,6 +32,7 @@ const reachable = (ready: boolean, fixture = false): ApiState => ({
 
 describe('App shell', () => {
   beforeEach(() => {
+    window.location.hash = '#/knowledge'
     vi.stubGlobal(
       'fetch',
       vi.fn(async () =>
@@ -61,7 +62,7 @@ describe('App shell', () => {
       expect(screen.getByRole('link', { name: f.label })).toBeInTheDocument()
     }
     expect(await screen.findByText('Database ready')).toBeInTheDocument()
-    expect(screen.getAllByText('Planned - not implemented').length).toBeGreaterThanOrEqual(6)
+    expect(screen.getAllByText('Coming later').length).toBeGreaterThanOrEqual(6)
     expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 
@@ -80,5 +81,35 @@ describe('App shell', () => {
   it('labels fixture mode conspicuously', async () => {
     render(<App load={async () => reachable(true, true)} />)
     expect(await screen.findByRole('alert')).toHaveTextContent(/LOCAL FIXTURE MODE/)
+  })
+
+  it('guides users through the existing grant workflow without replacing feature routes', async () => {
+    window.location.hash = '#/knowledge'
+    render(<App load={() => new Promise<ApiState>(() => undefined)} />)
+
+    expect(
+      screen.getByRole('region', { name: 'How to move through Strong Start' }),
+    ).toHaveTextContent('Step 3 of 5')
+    expect(
+      screen.getByRole('link', { name: 'Go to Intake & Prefill in workflow' }),
+    ).toHaveAttribute('href', '#/automation')
+    expect(screen.getByRole('link', { name: 'Go to Applications in workflow' })).toHaveAttribute(
+      'href',
+      '#/applications',
+    )
+  })
+
+  it('opens with a product landing page that links into the existing workspace', async () => {
+    window.location.hash = ''
+    render(<App load={() => new Promise<ApiState>(() => undefined)} />)
+
+    expect(
+      screen.getByRole('heading', { name: /Build stronger grants with evidence/ }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Open the workspace' })).toHaveAttribute(
+      'href',
+      '#/funding',
+    )
+    expect(screen.queryByRole('navigation', { name: 'Features' })).not.toBeInTheDocument()
   })
 })

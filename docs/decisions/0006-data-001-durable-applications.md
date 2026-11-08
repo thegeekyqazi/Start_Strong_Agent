@@ -118,3 +118,11 @@ IDs/export bytes/hashes/audit/revision. Operator rotation changes only recovered
 source stays unchanged. Host clients may be used, or existing explicitly local PG container
 clients in the local test only. Hosted backup/recovery uses the separate operator runbook.
 See DATA-01..42 mapping and final commands in the data handoff. Current main remainsbc5acd4.
+
+## Publication upstream reconciliation
+
+After draft PR20 publication, main advanced to41a80efc477044203cf94cc44a289c56a50003f3
+with Sawaab's shared UI redesign. Inspected the upstream delta/decision UI-001 and merged
+current main into the task branch (not a default-branch write). No conflicts; preserved
+all presentation/styles and revised copy. DATA-001's only frontend delta remains the
+functional storage paragraph/condition and its test. Required checks rerun on combined tree.
