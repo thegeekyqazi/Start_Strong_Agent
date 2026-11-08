@@ -28,6 +28,118 @@ export type ErrorCode =
  */
 export interface StrongStartContracts {}
 /**
+ * Plain-language wrapper around a shared ValidationResult (s8.3, s9.1, s18).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AnswerFinding".
+ */
+export interface AnswerFinding {
+  affected_text?: string | null
+  message: string
+  next_action?: string | null
+  result: ValidationResult
+  span_end?: number | null
+  span_start?: number | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ValidationResult".
+ */
+export interface ValidationResult {
+  evidence?: SourceReference[]
+  expected?: {
+    [k: string]: unknown
+  }
+  inputs?: {
+    [k: string]: unknown
+  }
+  observed?: {
+    [k: string]: unknown
+  }
+  outcome: 'pass' | 'fail' | 'needs_review' | 'not_applicable'
+  reasons?: string[]
+  rule_id: string
+  rule_version: string
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SourceReference".
+ */
+export interface SourceReference {
+  captured_at?: string | null
+  /**
+   * Hash of original bytes when actually computed; else null.
+   */
+  content_hash?: string | null
+  /**
+   * Page/section/offset/selector.
+   */
+  locator?: string | null
+  provenance: Provenance
+  publication_date: DateKnowledge
+  reporting_period?: string | null
+  source_id: string
+  source_version_id: string
+  verification_status?: 'unverified' | 'verified' | 'conflicting'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "Provenance".
+ */
+export interface Provenance {
+  is_simulated: boolean
+  note?: string | null
+  provenance_class: ProvenanceClass
+}
+/**
+ * A date that may be unknown. Unknown is explicit; it is never a fabricated value.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DateKnowledge".
+ */
+export interface DateKnowledge {
+  status: 'known' | 'unknown' | 'not_applicable'
+  value?: string | null
+}
+/**
+ * Planner proposal (s7): evidence per question and missing inputs. Nothing invented.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AnswerPlan".
+ */
+export interface AnswerPlan {
+  evidence_bundle_id: string
+  items: PlanItem[]
+  plan_id: string
+  planner: ModelRunInfo
+  provenance: Provenance
+  question_set_id: string
+  schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PlanItem".
+ */
+export interface PlanItem {
+  evidence_fact_ids: string[]
+  missing_inputs: string[]
+  question_id: string
+  question_version: number
+  repeated_with: string[]
+}
+/**
+ * Which adapter actually produced the proposal (s17: record provider/model).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ModelRunInfo".
+ */
+export interface ModelRunInfo {
+  adapter: 'fake' | 'gemini'
+  is_fixture: boolean
+  model: string
+}
+/**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "AnswerSnapshot".
  */
@@ -51,15 +163,6 @@ export interface DependencyRef {
   kind: 'fact' | 'source_version' | 'requirement_set' | 'pack' | 'policy' | 'question' | 'rule_set'
   ref_id: string
   version: string
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "Provenance".
- */
-export interface Provenance {
-  is_simulated: boolean
-  note?: string | null
-  provenance_class: ProvenanceClass
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -336,37 +439,6 @@ export interface QuestionLimit {
    * Unknown units stay 'unknown'; never guessed.
    */
   unit: 'words' | 'characters' | 'amount' | 'unknown'
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "SourceReference".
- */
-export interface SourceReference {
-  captured_at?: string | null
-  /**
-   * Hash of original bytes when actually computed; else null.
-   */
-  content_hash?: string | null
-  /**
-   * Page/section/offset/selector.
-   */
-  locator?: string | null
-  provenance: Provenance
-  publication_date: DateKnowledge
-  reporting_period?: string | null
-  source_id: string
-  source_version_id: string
-  verification_status?: 'unverified' | 'verified' | 'conflicting'
-}
-/**
- * A date that may be unknown. Unknown is explicit; it is never a fabricated value.
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "DateKnowledge".
- */
-export interface DateKnowledge {
-  status: 'known' | 'unknown' | 'not_applicable'
-  value?: string | null
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -986,12 +1058,85 @@ export interface ChangedVersion {
   ref_id: string
 }
 /**
+ * Deterministic findings for one exact text. Not a review or approval.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CheckReport".
+ */
+export interface CheckReport {
+  evidence_bundle_id: string
+  findings: AnswerFinding[]
+  mode: 'working' | 'reviewed'
+  question_id: string
+  question_version: number
+  rendered: RenderedAnswer
+  schema_version?: '1'
+  submitted_text_sha256: string
+}
+/**
+ * The answer as a funder would read it: slot tokens replaced by server-rendered facts.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RenderedAnswer".
+ */
+export interface RenderedAnswer {
+  bindings: ClaimBinding[]
+  text: string
+  text_sha256: string
+  unsupported_markers: UnsupportedMarker[]
+}
+/**
+ * A fact value the server rendered into the answer, with its exact text span (s8.2).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ClaimBinding".
+ */
+export interface ClaimBinding {
+  fact_id: string
+  /**
+   * Binding key until Fact gains a version (request to Dev A).
+   */
+  pack_version_id: string
+  rendered_text: string
+  span_end: number
+  /**
+   * Code-point offset in RenderedAnswer.text.
+   */
+  span_start: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "UnsupportedMarker".
+ */
+export interface UnsupportedMarker {
+  reason: string
+  span_end: number
+  span_start: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CheckRequest".
+ */
+export interface CheckRequest {
+  evidence_bundle_id: string
+  mode?: 'working' | 'reviewed'
+  question_version: number
+  /**
+   * Editor text; may contain slot tokens.
+   */
+  text: string
+}
+/**
  * Validated model proposal for one question. Not an answer version or approval.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "DraftProposal".
  */
 export interface DraftProposal {
+  /**
+   * Working-mode findings for the rendered proposal (C2).
+   */
+  check?: CheckReport | null
   evidence_bundle_id: string
   fact_ids: string[]
   pack_version_id: string
@@ -1001,24 +1146,13 @@ export interface DraftProposal {
   question_id: string
   question_version: number
   schema_version?: '1'
-  segments: (TextSegment | FactSlotSegment)[]
+  segments: (TextSegment | FactSlotSegment | UnsupportedSegment)[]
   template_sha256: string
   /**
    * Proposal text with {{fact:ID}} slot tokens.
    */
   template_text: string
   uncertainties: string[]
-}
-/**
- * Which adapter actually produced the proposal (s17: record provider/model).
- *
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "ModelRunInfo".
- */
-export interface ModelRunInfo {
-  adapter: 'fake' | 'gemini'
-  is_fixture: boolean
-  model: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1037,7 +1171,18 @@ export interface FactSlotSegment {
   kind: 'fact_slot'
 }
 /**
- * Client request for a draft. Extra fields (e.g. ``approved``) are rejected.
+ * Explicit APP-03 marker: the writer says a claim has no supporting evidence.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "UnsupportedSegment".
+ */
+export interface UnsupportedSegment {
+  kind: 'unsupported'
+  reason: string
+}
+/**
+ * Client request for a draft. Strict: extra fields (e.g. ``approved``) and coerced
+ * types (e.g. ``"1"`` for a version) are rejected (C2 rev 1.1 owner priority).
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "DraftRequest".
@@ -1329,6 +1474,13 @@ export interface OmittedResult {
   reason: string
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PlanRequest".
+ */
+export interface PlanRequest {
+  evidence_bundle_id: string
+}
+/**
  * Planned field entry. Only fill operations exist; submit/sign is unrepresentable.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1482,25 +1634,4 @@ export interface SessionIdentity {
   label: string
   organization_id: string
   roles: string[]
-}
-/**
- * This interface was referenced by `StrongStartContracts`'s JSON-Schema
- * via the `definition` "ValidationResult".
- */
-export interface ValidationResult {
-  evidence?: SourceReference[]
-  expected?: {
-    [k: string]: unknown
-  }
-  inputs?: {
-    [k: string]: unknown
-  }
-  observed?: {
-    [k: string]: unknown
-  }
-  outcome: 'pass' | 'fail' | 'needs_review' | 'not_applicable'
-  reasons?: string[]
-  rule_id: string
-  rule_version: string
-  schema_version?: '1'
 }
