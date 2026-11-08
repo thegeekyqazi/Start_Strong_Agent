@@ -71,6 +71,89 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "AnswerHistory": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Answer Id"
+        },
+        "approvals": {
+          "items": {
+            "$ref": "#/$defs/ApprovalRecord"
+          },
+          "title": "Approvals",
+          "type": "array"
+        },
+        "notes": {
+          "items": {
+            "$ref": "#/$defs/ReviewNote"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "prefill_ready": {
+          "description": "Latest version approved and not stale.",
+          "title": "Prefill Ready",
+          "type": "boolean"
+        },
+        "proposals": {
+          "items": {
+            "$ref": "#/$defs/ReviewerProposal"
+          },
+          "title": "Proposals",
+          "type": "array"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "store_is_fixture": {
+          "title": "Store Is Fixture",
+          "type": "boolean"
+        },
+        "versions": {
+          "items": {
+            "$ref": "#/$defs/AnswerVersion"
+          },
+          "title": "Versions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "question_id",
+        "answer_id",
+        "versions",
+        "approvals",
+        "notes",
+        "proposals",
+        "prefill_ready",
+        "store_is_fixture"
+      ],
+      "title": "AnswerHistory",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "AnswerPlan": {
       "additionalProperties": false,
       "description": "Planner proposal (s7): evidence per question and missing inputs. Nothing invented.",
@@ -200,6 +283,185 @@
         "provenance"
       ],
       "title": "AnswerSnapshot",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "AnswerVersion": {
+      "additionalProperties": false,
+      "description": "One frozen answer version. ``state`` is computed live by the server.",
+      "properties": {
+        "answer_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Id",
+          "type": "string"
+        },
+        "answer_version": {
+          "minimum": 1,
+          "title": "Answer Version",
+          "type": "integer"
+        },
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "check": {
+          "$ref": "#/$defs/CheckReport",
+          "description": "Reviewed-mode deterministic findings at save time."
+        },
+        "checked_at": {
+          "format": "date-time",
+          "title": "Checked At",
+          "type": "string"
+        },
+        "content_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Sha256",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "created_by": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "dependencies": {
+          "items": {
+            "$ref": "#/$defs/DependencyRef"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "is_latest": {
+          "title": "Is Latest",
+          "type": "boolean"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "rendered": {
+          "$ref": "#/$defs/RenderedAnswer"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        },
+        "snapshot_sha256": {
+          "description": "JOB-05 dependency snapshot at save time.",
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Snapshot Sha256",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "draft",
+            "checking",
+            "needs_attention",
+            "ready_for_review",
+            "approved",
+            "stale",
+            "rejected"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "answer_version_id",
+        "answer_id",
+        "question_id",
+        "question_version",
+        "answer_version",
+        "is_latest",
+        "text",
+        "content_sha256",
+        "rendered",
+        "dependencies",
+        "snapshot_sha256",
+        "check",
+        "checked_at",
+        "state",
+        "created_by",
+        "created_at"
+      ],
+      "title": "AnswerVersion",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "AnswerVersionCreate": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_bundle_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Evidence Bundle Id",
+          "type": "string"
+        },
+        "expected_answer_version": {
+          "anyOf": [
+            {
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Latest version the client saw; null only for the first.",
+          "title": "Expected Answer Version"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "question_version": {
+          "minimum": 1,
+          "title": "Question Version",
+          "type": "integer"
+        },
+        "text": {
+          "maxLength": 20000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "question_version",
+        "evidence_bundle_id",
+        "text"
+      ],
+      "title": "AnswerVersionCreate",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "C"
@@ -514,6 +776,161 @@
       "x-contract-status": "draft",
       "x-owner": "C"
     },
+    "ApprovalDecisionRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "acknowledge_review_items": {
+          "default": false,
+          "description": "Reviewer confirms they read every needs_review finding.",
+          "title": "Acknowledge Review Items",
+          "type": "boolean"
+        },
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "approve",
+            "reject"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "expected_content_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Expected Content Sha256",
+          "type": "string"
+        },
+        "expected_snapshot_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Expected Snapshot Sha256",
+          "type": "string"
+        },
+        "note": {
+          "default": "",
+          "maxLength": 2000,
+          "title": "Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "answer_version_id",
+        "expected_content_sha256",
+        "expected_snapshot_sha256",
+        "decision"
+      ],
+      "title": "ApprovalDecisionRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "ApprovalRecord": {
+      "additionalProperties": false,
+      "description": "Authoritative server-side decision record (ApprovalSnapshot.approval_record_ref).",
+      "properties": {
+        "answer_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Id",
+          "type": "string"
+        },
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "approval_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Approval Id",
+          "type": "string"
+        },
+        "content_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Content Sha256",
+          "type": "string"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "title": "Decided At",
+          "type": "string"
+        },
+        "decision": {
+          "enum": [
+            "approve",
+            "reject"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "is_stale": {
+          "title": "Is Stale",
+          "type": "boolean"
+        },
+        "note": {
+          "title": "Note",
+          "type": "string"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "reviewer_id": {
+          "title": "Reviewer Id",
+          "type": "string"
+        },
+        "reviewer_is_fixture_identity": {
+          "title": "Reviewer Is Fixture Identity",
+          "type": "boolean"
+        },
+        "snapshot_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Snapshot Sha256",
+          "type": "string"
+        },
+        "stale_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Stale Reason"
+        }
+      },
+      "required": [
+        "approval_id",
+        "answer_version_id",
+        "answer_id",
+        "question_id",
+        "decision",
+        "content_sha256",
+        "snapshot_sha256",
+        "reviewer_id",
+        "reviewer_is_fixture_identity",
+        "note",
+        "decided_at",
+        "is_stale"
+      ],
+      "title": "ApprovalRecord",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "ApprovalSnapshot": {
       "additionalProperties": false,
       "properties": {
@@ -668,6 +1085,79 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "AuditEvent": {
+      "additionalProperties": false,
+      "description": "SEC-10 event: actor, action, object, version, decision and time. Redacted details.",
+      "properties": {
+        "action": {
+          "enum": [
+            "answer_version_saved",
+            "approval_decided",
+            "approval_staled",
+            "review_note_added",
+            "reviewer_proposal_added",
+            "export_created",
+            "export_blocked",
+            "change_set_applied"
+          ],
+          "title": "Action",
+          "type": "string"
+        },
+        "actor_id": {
+          "title": "Actor Id",
+          "type": "string"
+        },
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "decision": {
+          "title": "Decision",
+          "type": "string"
+        },
+        "details": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Details",
+          "type": "object"
+        },
+        "event_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Event Id",
+          "type": "string"
+        },
+        "object_id": {
+          "title": "Object Id",
+          "type": "string"
+        },
+        "object_type": {
+          "title": "Object Type",
+          "type": "string"
+        },
+        "object_version": {
+          "title": "Object Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "event_id",
+        "actor_id",
+        "action",
+        "object_type",
+        "object_id",
+        "object_version",
+        "decision",
+        "at"
+      ],
+      "title": "AuditEvent",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "AutomationAvailability": {
       "additionalProperties": false,
@@ -2557,6 +3047,35 @@
       "x-contract-status": "draft",
       "x-owner": "B2"
     },
+    "ExportBlocker": {
+      "additionalProperties": false,
+      "properties": {
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "question_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Question Id",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "question_id",
+        "reason",
+        "message"
+      ],
+      "title": "ExportBlocker",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
     "ExportDefinitionRequest": {
       "additionalProperties": false,
       "description": "Body of POST /api/automation/export-definition. Server re-derives everything.",
@@ -2623,6 +3142,133 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B2"
+    },
+    "ExportRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "working",
+            "reviewed"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "question_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Question Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "mode",
+        "question_ids"
+      ],
+      "title": "ExportRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "ExportResult": {
+      "additionalProperties": false,
+      "properties": {
+        "audit_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Audit Sha256"
+        },
+        "blocked": {
+          "title": "Blocked",
+          "type": "boolean"
+        },
+        "blocked_by": {
+          "items": {
+            "$ref": "#/$defs/ExportBlocker"
+          },
+          "title": "Blocked By",
+          "type": "array"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "docx_sha256": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9a-f]{64}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Docx Sha256"
+        },
+        "export_id": {
+          "anyOf": [
+            {
+              "maxLength": 128,
+              "minLength": 1,
+              "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Export Id"
+        },
+        "labels": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Labels",
+          "type": "array"
+        },
+        "mode": {
+          "enum": [
+            "working",
+            "reviewed"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "schema_version": {
+          "const": "1",
+          "default": "1",
+          "title": "Schema Version",
+          "type": "string"
+        }
+      },
+      "required": [
+        "export_id",
+        "mode",
+        "blocked",
+        "blocked_by",
+        "labels",
+        "docx_sha256",
+        "audit_sha256",
+        "created_at"
+      ],
+      "title": "ExportResult",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "Fact": {
       "additionalProperties": false,
@@ -6229,6 +6875,216 @@
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "B1"
+    },
+    "ReviewNote": {
+      "additionalProperties": false,
+      "description": "A secondary reviewer's note. Carries no approval rights.",
+      "properties": {
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "author_id": {
+          "title": "Author Id",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "note_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Note Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "note_id",
+        "answer_version_id",
+        "author_id",
+        "text",
+        "created_at"
+      ],
+      "title": "ReviewNote",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "ReviewNoteCreate": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "text": {
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "answer_version_id",
+        "text"
+      ],
+      "title": "ReviewNoteCreate",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "ReviewerFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "concern": {
+          "title": "Concern",
+          "type": "string"
+        },
+        "fact_ids": {
+          "items": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+            "type": "string"
+          },
+          "title": "Fact Ids",
+          "type": "array"
+        },
+        "span_end": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Span End"
+        },
+        "span_start": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Span Start"
+        }
+      },
+      "required": [
+        "concern",
+        "fact_ids"
+      ],
+      "title": "ReviewerFinding",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "ReviewerProposal": {
+      "additionalProperties": false,
+      "description": "Model reviewer output (s8.1): proposed findings only, never an approval.",
+      "properties": {
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "findings": {
+          "items": {
+            "$ref": "#/$defs/ReviewerFinding"
+          },
+          "title": "Findings",
+          "type": "array"
+        },
+        "proposal_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Proposal Id",
+          "type": "string"
+        },
+        "provenance": {
+          "$ref": "#/$defs/Provenance"
+        },
+        "reviewer": {
+          "$ref": "#/$defs/ModelRunInfo"
+        },
+        "role": {
+          "enum": [
+            "numerical_reviewer",
+            "meaning_reviewer"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "proposal_id",
+        "answer_version_id",
+        "role",
+        "findings",
+        "reviewer",
+        "provenance",
+        "created_at"
+      ],
+      "title": "ReviewerProposal",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "ReviewerProposalRequest": {
+      "additionalProperties": false,
+      "properties": {
+        "answer_version_id": {
+          "maxLength": 128,
+          "minLength": 1,
+          "pattern": "^[a-z0-9][a-z0-9._:-]{0,127}$",
+          "title": "Answer Version Id",
+          "type": "string"
+        },
+        "role": {
+          "enum": [
+            "numerical_reviewer",
+            "meaning_reviewer"
+          ],
+          "title": "Role",
+          "type": "string"
+        }
+      },
+      "required": [
+        "answer_version_id",
+        "role"
+      ],
+      "title": "ReviewerProposalRequest",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
     },
     "SearchCandidate": {
       "additionalProperties": false,
