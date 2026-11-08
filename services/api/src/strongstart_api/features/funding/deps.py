@@ -42,7 +42,10 @@ def get_capture_store(
 ) -> LocalCaptureStore | None:
     if settings.environment == "production":
         return None  # development-only store; no supported production store yet (Dev A)
-    return LocalCaptureStore(settings.funding_capture_store_dir)
+    return LocalCaptureStore(
+        settings.funding_capture_store_dir,
+        allow_reduced_durability=settings.dev_b_store_allow_reduced_durability,
+    )
 
 
 def get_resolver() -> Resolver:

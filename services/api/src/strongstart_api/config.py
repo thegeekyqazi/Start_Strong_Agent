@@ -54,6 +54,12 @@ class Settings(BaseSettings):
     )
     funding_source_seed_path: Path | None = None
 
+    # Dev B local repositories (DEV-B-BUNDLE-002 s4.1): saved definitions, capture catalog,
+    # funding cases, evaluations, profiles and change observations. Development/test only;
+    # disabled in production. Windows writes need an explicit reduced-durability opt-in.
+    dev_b_store_dir: Path = Path(".local-data/dev-b-store")
+    dev_b_store_allow_reduced_durability: bool = False
+
     # Model adapters (owner C; C1-shell-and-adapter). "fake" is the deterministic fixture
     # adapter (local default; unavailable in production, enforced where the adapter is
     # selected so other lanes' production settings still load). "gemini" needs both a key and an

@@ -45,6 +45,66 @@ export interface ActivePackState {
   revision: number
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ActivitySpec".
+ */
+export interface ActivitySpec {
+  /**
+   * @minItems 1
+   * @maxItems 100
+   */
+  allowed: [string, ...string[]]
+  kind: 'activity'
+  /**
+   * any: at least one applicant activity is allowed; all: every one is.
+   */
+  mode: 'any' | 'all'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AmountInput".
+ */
+export interface AmountInput {
+  amount: string
+  currency: string
+  provenance: 'staff_asserted' | 'simulated'
+  scale?: 'units' | 'thousands' | 'millions'
+}
+/**
+ * Exact Decimal bounds. A pool or matching ratio is never a per-award cap.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AmountRangeSpec".
+ */
+export interface AmountRangeSpec {
+  currency: string
+  kind: 'amount_range'
+  limit_kind: 'per_award' | 'total_pool' | 'matching_ratio'
+  max_boundary?: 'inclusive' | 'exclusive'
+  maximum?: string | null
+  min_boundary?: 'inclusive' | 'exclusive'
+  minimum?: string | null
+  scale?: 'units' | 'thousands' | 'millions'
+}
+/**
+ * Staff selection of an exact passage. The server verifies it; it is not proof itself.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "AnchorInput".
+ */
+export interface AnchorInput {
+  anchor_key: string
+  artifact_id: string
+  capture_id: string
+  end: number
+  /**
+   * Hash of the representation staff read; a different stored hash is 409.
+   */
+  expected_artifact_sha256: string
+  quote: string
+  start: number
+}
+/**
  * Plain-language wrapper around a shared ValidationResult (s8.3, s9.1, s18).
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -183,6 +243,16 @@ export interface DependencyRef {
   kind: 'fact' | 'source_version' | 'requirement_set' | 'pack' | 'policy' | 'question' | 'rule_set'
   ref_id: string
   version: string
+}
+/**
+ * Reviewed applicability: n/a only when the typed input is known and differs.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ApplicabilityCondition".
+ */
+export interface ApplicabilityCondition {
+  equals: string
+  input_field: 'application_type'
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -972,6 +1042,60 @@ export interface SectionLocator {
   start_char: number
 }
 /**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureCatalogPage".
+ */
+export interface CaptureCatalogPage {
+  backfill_pending: number
+  /**
+   * Indexing of captures saved before the catalog existed. 'pending' means older captures are not listed yet; never reported complete after a capped step.
+   */
+  backfill_status: 'complete' | 'pending' | 'incomplete_scan'
+  /**
+   * True when the bounded catalog scan limit was reached.
+   */
+  incomplete: boolean
+  items: CaptureSummary[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
+}
+/**
+ * Metadata-only listing entry. Artifact content integrity is NOT checked here.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureSummary".
+ */
+export interface CaptureSummary {
+  authority_review?: ('unreviewed' | 'confirmed_official' | 'other') | null
+  capture_id: string
+  captured_at?: string | null
+  content_integrity?: 'not_checked_in_listing'
+  coverage?: ('complete' | 'partial' | 'empty') | null
+  detail?: string | null
+  final_url?: string | null
+  importable_artifacts?: ImportableArtifactRef[]
+  is_simulated?: boolean | null
+  page_title?: string | null
+  provider?: string | null
+  provider_mode?: ('live' | 'fixture') | null
+  representation_count?: number | null
+  requested_url?: string | null
+  status: 'ok' | 'corrupt'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ImportableArtifactRef".
+ */
+export interface ImportableArtifactRef {
+  artifact_id: string
+  /**
+   * Exact 'capture_id:artifact_id' string the automation intake expects.
+   */
+  intake_reference: string
+  representation: 'provider_markdown' | 'provider_html' | 'provider_raw_html'
+}
+/**
  * Authorized, integrity-verified artifact content for inert display.
  *
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -991,6 +1115,34 @@ export interface CaptureIntakeSource {
   artifact_id: string
   capture_id: string
   mode: 'capture'
+}
+/**
+ * A capture the case relies on, resolved through the org-scoped capture reader.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureLink".
+ */
+export interface CaptureLink {
+  authority_review: string
+  capture_id: string
+  coverage: 'complete' | 'partial' | 'empty'
+  declared_cycle_id?: string | null
+  declared_opportunity_id?: string | null
+  declared_stream_id?: string | null
+  final_url?: string | null
+  is_simulated: boolean
+  page_title?: string | null
+  provider_mode: 'live' | 'fixture'
+  requested_url: string
+  source_id: string
+  source_version_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaptureLinkInput".
+ */
+export interface CaptureLinkInput {
+  capture_id: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1055,6 +1207,76 @@ export interface CapturedDocument {
   stream_id?: string | null
   supported_import_representations: ('provider_markdown' | 'provider_html' | 'provider_raw_html')[]
   warnings: string[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "CaseReview".
+ */
+export interface CaseReview {
+  case_id: string
+  requirement_keys: string[]
+  reviewed_at: string
+  /**
+   * Server identity actor ID.
+   */
+  reviewer: string
+  statement: string
+  version: number
+  version_digest: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ChangeObservation".
+ */
+export interface ChangeObservation {
+  comparisons?: RepresentationComparison[]
+  created_by: string
+  downstream_effects?: string[]
+  explanation: string
+  failure_reason?: string | null
+  linked_case_id?: string | null
+  linked_case_version?: number | null
+  new_capture_id?: string | null
+  new_options?: {
+    [k: string]: string | number | boolean | string[]
+  }
+  observation_id: string
+  observed_at: string
+  old_capture_id: string
+  old_options?: {
+    [k: string]: string | number | boolean | string[]
+  }
+  options_comparable: boolean
+  organization_id: string
+  overall: 'unchanged' | 'changed' | 'partial' | 'failed' | 'not_comparable'
+  requested_url: string
+  schema_version?: '1'
+  /**
+   * Bounded unified diff to help staff; not authoritative.
+   */
+  text_diff?: string | null
+  text_diff_truncated?: boolean
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RepresentationComparison".
+ */
+export interface RepresentationComparison {
+  new_sha256?: string | null
+  old_sha256?: string | null
+  outcome: 'match' | 'changed' | 'missing_in_new' | 'missing_in_old'
+  representation: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ChangeObservationList".
+ */
+export interface ChangeObservationList {
+  incomplete: boolean
+  items: ChangeObservation[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1151,6 +1373,86 @@ export interface CheckRequest {
    * Editor text; may contain slot tokens.
    */
   text: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DateInput".
+ */
+export interface DateInput {
+  provenance: 'staff_asserted' | 'simulated'
+  value: string
+}
+/**
+ * Submission cutoff as reviewed. Unknown components stay null; nothing is guessed.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DeadlineSpec".
+ */
+export interface DeadlineSpec {
+  boundary?: 'inclusive' | 'exclusive' | 'unstated'
+  date?: string | null
+  /**
+   * Disambiguates a repeated local time at a DST fall-back (0 first, 1 second).
+   */
+  fold?: (0 | 1) | null
+  kind: 'deadline'
+  local_time?: string | null
+  original_wording: string
+  precision: 'exact' | 'date_only' | 'rolling' | 'unknown'
+  /**
+   * IANA zone, e.g. America/Toronto.
+   */
+  timezone?: string | null
+  /**
+   * Explicit offset like -05:00.
+   */
+  utc_offset?: string | null
+}
+/**
+ * IDs the source itself declared. Preserved as claims, never treated as authority.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DeclaredContext".
+ */
+export interface DeclaredContext {
+  basis: 'fixture_registry' | 'source_declared_claim' | 'none'
+  cycle_id?: string | null
+  opportunity_id?: string | null
+  stream_id?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DefinitionList".
+ */
+export interface DefinitionList {
+  /**
+   * True when the bounded scan limit was reached.
+   */
+  incomplete: boolean
+  items: DefinitionSummary[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "DefinitionSummary".
+ */
+export interface DefinitionSummary {
+  current_version?: number | null
+  definition_id: string
+  detail?: string | null
+  is_fixture?: boolean | null
+  mode_label?: string | null
+  opportunity_id?: string | null
+  question_count?: number | null
+  question_set_id?: string | null
+  raw_input_sha256?: string | null
+  saved_at?: string | null
+  saved_by?: string | null
+  status: 'ok' | 'integrity_failure'
+  title?: string | null
+  unresolved_count?: number | null
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1284,6 +1586,219 @@ export interface ErrorEnvelope {
   message: string
   request_id?: string | null
   schema_version?: '1'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "EvaluateCommand".
+ */
+export interface EvaluateCommand {
+  case_version: number
+  /**
+   * Aware evaluation instant; default is the server clock.
+   */
+  clock?: string | null
+  idempotency_key: string
+  inputs?: ScenarioInputs
+  scope?: EvaluationScope
+}
+/**
+ * Per-evaluation typed inputs. Not a knowledge base; nothing is written to A's store.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ScenarioInputs".
+ */
+export interface ScenarioInputs {
+  activities?: IdListInput | null
+  application_type?: LabelInput | null
+  invitation?: InvitationInput | null
+  organization_type?: IdInput | null
+  project_end?: DateInput | null
+  project_start?: DateInput | null
+  region?: IdInput | null
+  request_amount?: AmountInput | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "IdListInput".
+ */
+export interface IdListInput {
+  provenance: 'staff_asserted' | 'simulated'
+  /**
+   * @minItems 1
+   * @maxItems 50
+   */
+  values: [string, ...string[]]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "LabelInput".
+ */
+export interface LabelInput {
+  provenance: 'staff_asserted' | 'simulated'
+  value: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "InvitationInput".
+ */
+export interface InvitationInput {
+  /**
+   * Staff note of the invitation evidence (not verified by B).
+   */
+  evidence_note?: string | null
+  provenance: 'staff_asserted' | 'simulated'
+  status: 'invited' | 'not_invited'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "IdInput".
+ */
+export interface IdInput {
+  provenance: 'staff_asserted' | 'simulated'
+  value: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "EvaluationScope".
+ */
+export interface EvaluationScope {
+  cycle_label?: string | null
+  stage?: ('eoi' | 'full_application' | 'single_stage' | 'unknown') | null
+  stream_label?: string | null
+}
+/**
+ * A stored report plus its present-day staleness (computed at read, never rewritten).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "EvaluationEntry".
+ */
+export interface EvaluationEntry {
+  report: EvaluationReport
+  stale: boolean
+  stale_reasons?: string[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "EvaluationReport".
+ */
+export interface EvaluationReport {
+  case_digest: string
+  case_id: string
+  case_version: number
+  clock: string
+  clock_source: 'request' | 'server'
+  created_at: string
+  created_by: string
+  /**
+   * All-of over reviewed eligibility predicates (ELG-01 logic).
+   */
+  eligibility_group_outcome?:
+    ('met' | 'not_met' | 'unknown' | 'not_applicable' | 'at_cutoff_needs_review') | null
+  evaluation_id: string
+  evaluator_version?: 'b1-rules/1'
+  excluded?: ExcludedRequirement[]
+  inputs: ScenarioInputs
+  inputs_digest: string
+  organization_id: string
+  readiness_at_evaluation: string
+  reliance_explanation: string
+  reliance_status?: 'not_confirmed'
+  results: RequirementEvaluation[]
+  review_digest?: string | null
+  scenario_summary: string
+  schema_version?: '1'
+  scope: EvaluationScope
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ExcludedRequirement".
+ */
+export interface ExcludedRequirement {
+  reason: string
+  requirement_key: string
+}
+/**
+ * Four plain-language answers per finding, from deterministic templates.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RequirementEvaluation".
+ */
+export interface RequirementEvaluation {
+  /**
+   * What code compared.
+   */
+  compared: string
+  /**
+   * What it found, with exact values.
+   */
+  found: string
+  /**
+   * Typed inputs used, with provenance.
+   */
+  inputs_used: string[]
+  kind: string
+  missing_inputs?: string[]
+  next_action: string
+  outcome: 'met' | 'not_met' | 'unknown' | 'not_applicable' | 'at_cutoff_needs_review'
+  requirement_key: string
+  rule_ids: string[]
+  /**
+   * Exact saved source support used.
+   */
+  support: SupportExcerpt[]
+  /**
+   * What remains uncertain.
+   */
+  uncertainty: string
+  validation?: ValidationResult | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SupportExcerpt".
+ */
+export interface SupportExcerpt {
+  anchor_key: string
+  artifact_sha256: string
+  capture_id: string
+  coverage: string
+  end: number
+  quote: string
+  start: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "EvaluationList".
+ */
+export interface EvaluationList {
+  incomplete: boolean
+  items: EvaluationEntry[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
+}
+/**
+ * A server-verified exact quote inside one immutable stored representation.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "EvidenceAnchor".
+ */
+export interface EvidenceAnchor {
+  anchor_key: string
+  artifact_id: string
+  artifact_sha256: string
+  capture_id: string
+  coverage: 'complete' | 'partial' | 'empty'
+  end: number
+  is_simulated: boolean
+  locator_scheme?: 'unicode_code_points_in_utf8_decoded_representation'
+  provider_mode: 'live' | 'fixture'
+  quote: string
+  representation: string
+  source_id: string
+  source_version_id: string
+  start: number
+  verification?: 'quote_matched_hash_verified_bytes'
+  warnings?: string[]
 }
 /**
  * Body of POST /api/automation/export-definition. Server re-derives everything.
@@ -1484,6 +1999,496 @@ export interface ProviderAvailability {
   operation: 'search' | 'capture' | 'capture_store'
   provider: string
   status: 'available' | 'fixture_only' | 'unavailable'
+}
+/**
+ * Create (no expected_version) or revise (expected_version) a case. Strict.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingCaseCommand".
+ */
+export interface FundingCaseCommand {
+  anchors?: AnchorInput[]
+  /**
+   * @maxItems 20
+   */
+  capture_links?:
+    | []
+    | [CaptureLinkInput]
+    | [CaptureLinkInput, CaptureLinkInput]
+    | [CaptureLinkInput, CaptureLinkInput, CaptureLinkInput]
+    | [CaptureLinkInput, CaptureLinkInput, CaptureLinkInput, CaptureLinkInput]
+    | [CaptureLinkInput, CaptureLinkInput, CaptureLinkInput, CaptureLinkInput, CaptureLinkInput]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+    | [
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput,
+        CaptureLinkInput
+      ]
+  context: FundingContextInput
+  expected_version?: number | null
+  idempotency_key: string
+  requirements?: RequirementInput[]
+}
+/**
+ * Staff-entered labels. Missing labels stay unknown; nothing is guessed from a page.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingContextInput".
+ */
+export interface FundingContextInput {
+  cycle_label?: string | null
+  funder_label?: string | null
+  opportunity_title?: string | null
+  stage?: 'eoi' | 'full_application' | 'single_stage' | 'unknown'
+  stream_label?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RequirementInput".
+ */
+export interface RequirementInput {
+  /**
+   * @minItems 1
+   * @maxItems 10
+   */
+  anchor_keys:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+  applicability?: ApplicabilityCondition | null
+  /**
+   * Staff rationale, stored separately from the raw passage.
+   */
+  interpretation: string
+  requirement_key: string
+  scope?: RequirementScope
+  spec:
+    | DeadlineSpec
+    | ProjectWindowSpec
+    | AmountRangeSpec
+    | MembershipSpec
+    | ActivitySpec
+    | InvitationSpec
+}
+/**
+ * Which stream/stage/cycle the requirement applies to. Null = the case's own context.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RequirementScope".
+ */
+export interface RequirementScope {
+  application_type?: string | null
+  cycle_label?: string | null
+  stage?: ('eoi' | 'full_application' | 'single_stage' | 'unknown') | null
+  stream_label?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ProjectWindowSpec".
+ */
+export interface ProjectWindowSpec {
+  earliest_start?: string | null
+  end_boundary?: 'inclusive' | 'exclusive'
+  kind: 'project_window'
+  latest_end?: string | null
+  start_boundary?: 'inclusive' | 'exclusive'
+}
+/**
+ * Exact membership in a reviewed finite set (no substring or geocoding guesses).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "MembershipSpec".
+ */
+export interface MembershipSpec {
+  /**
+   * @minItems 1
+   * @maxItems 100
+   */
+  allowed: [string, ...string[]]
+  kind: 'geography' | 'organization_type'
+}
+/**
+ * Invitation / prior-stage requirement. An Apply button is not an invitation.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "InvitationSpec".
+ */
+export interface InvitationSpec {
+  evidence_required?: boolean
+  kind: 'invitation'
+  required: boolean
+}
+/**
+ * Consistent read: exact version, digest, review, source status and projections.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingCaseEnvelope".
+ */
+export interface FundingCaseEnvelope {
+  current_version: number
+  is_current: boolean
+  notes?: string[]
+  /**
+   * Emitted only when funder, stream and cycle are established.
+   */
+  opportunity?: Opportunity | null
+  opportunity_missing?: string[]
+  readiness: 'ready_for_evaluation' | 'not_reviewed' | 'requires_re_review' | 'no_rules'
+  /**
+   * Reviewed finite conditions; every evaluation stays 'unknown' (no verified organizational facts). Never a confirmed eligibility pass.
+   */
+  requirement_set?: RequirementSet | null
+  review?: CaseReview | null
+  review_status: 'reviewed' | 'unreviewed'
+  source_findings?: SourceFinding[]
+  source_status: 'current' | 'requires_re_review'
+  version: FundingCaseVersion
+  version_digest: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SourceFinding".
+ */
+export interface SourceFinding {
+  capture_id: string
+  message: string
+  observation_id: string
+  observed_at: string
+  overall: string
+}
+/**
+ * One immutable case revision. Review status lives in separate review records.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingCaseVersion".
+ */
+export interface FundingCaseVersion {
+  anchors: EvidenceAnchor[]
+  capture_links: CaptureLink[]
+  case_format?: 'b1-funding-case/1'
+  case_id: string
+  case_kind_label?: 'staff_selected_context_not_certified'
+  context: FundingContext
+  created_at: string
+  created_by: string
+  organization_id: string
+  requirements: Requirement[]
+  revision_of_version?: number | null
+  schema_version?: '1'
+  version: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingContext".
+ */
+export interface FundingContext {
+  cycle_id?: string | null
+  cycle_label?: string | null
+  /**
+   * Server-derived from the label.
+   */
+  funder_id?: string | null
+  funder_label?: string | null
+  opportunity_title?: string | null
+  stage: 'eoi' | 'full_application' | 'single_stage' | 'unknown'
+  stream_id?: string | null
+  stream_label?: string | null
+  unknown_fields?: string[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "Requirement".
+ */
+export interface Requirement {
+  anchor_keys: string[]
+  applicability?: ApplicabilityCondition | null
+  interpretation: string
+  requirement_key: string
+  /**
+   * Catalog rules this kind implements a subset of.
+   */
+  rule_ids: string[]
+  scope: RequirementScope
+  spec:
+    | DeadlineSpec
+    | ProjectWindowSpec
+    | AmountRangeSpec
+    | MembershipSpec
+    | ActivitySpec
+    | InvitationSpec
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingCaseList".
+ */
+export interface FundingCaseList {
+  incomplete: boolean
+  items: FundingCaseSummary[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingCaseSummary".
+ */
+export interface FundingCaseSummary {
+  case_id: string
+  created_at?: string | null
+  current_version?: number | null
+  cycle_label?: string | null
+  funder_label?: string | null
+  requirement_count?: number | null
+  review_status?: ('reviewed' | 'unreviewed') | null
+  source_status?: ('current' | 'requires_re_review') | null
+  stage?: ('eoi' | 'full_application' | 'single_stage' | 'unknown') | null
+  status: 'ok' | 'integrity_failure'
+  stream_label?: string | null
+  title?: string | null
+}
+/**
+ * An exact, version-pinned funding case selected by staff (M3).
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "FundingContextBinding".
+ */
+export interface FundingContextBinding {
+  case_review_status: 'reviewed' | 'unreviewed'
+  cycle_id: string
+  funder_id: string
+  funding_case_digest: string
+  funding_case_id: string
+  funding_case_version: number
+  linked_capture_ids?: string[]
+  opportunity_id: string
+  stage: 'eoi' | 'full_application' | 'single_stage' | 'unknown'
+  stream_id: string
 }
 /**
  * Body of POST /api/automation/intake. No org/approval fields exist to send.
@@ -1780,6 +2785,126 @@ export interface PrefillAction {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PublicationContext".
+ */
+export interface PublicationContext {
+  binding?: FundingContextBinding | null
+  declared: DeclaredContext
+  notes?: string[]
+  opportunity_basis: 'funding_case' | 'fixture_registry' | 'source_declared_claim'
+  opportunity_id: string
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PublicationIntegrity".
+ */
+export interface PublicationIntegrity {
+  algorithm?: 'dev-b-canonical-json-sha256/1'
+  /**
+   * Digest of the canonical JSON of the published content groups (question_set, application_definition, intake, id_mapping, unresolved, context).
+   */
+  normalized_digest: string
+  raw_input_retained?: 'dev_b_local_blob'
+  raw_input_sha256: string
+  raw_input_size: number
+}
+/**
+ * One immutable saved revision. Saved does not mean reviewed or approved.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "PublishedApplicationVersion".
+ */
+export interface PublishedApplicationVersion {
+  added_original_ids?: string[]
+  application_definition: ApplicationDefinition
+  approval_status?: 'not_approved'
+  consumer_notes?: string[]
+  context: PublicationContext
+  definition_id: string
+  id_mapping: QuestionIdMapping[]
+  intake: ApplicationIntakeResult1
+  integrity: PublicationIntegrity
+  is_fixture: boolean
+  mode_label: string
+  /**
+   * Server-derived organization scope.
+   */
+  organization_id: string
+  prefill_permitted?: false
+  provenance: Provenance
+  publication_format?: 'b2-published-definition/1'
+  question_set: QuestionSet
+  question_set_id: string
+  removed_original_ids?: string[]
+  review_status?: 'saved_not_reviewed'
+  revision_of_version?: number | null
+  saved_at: string
+  /**
+   * Server identity actor ID.
+   */
+  saved_by: string
+  schema_version?: '1'
+  /**
+   * Unresolved items keyed by PUBLISHED question IDs.
+   */
+  unresolved?: UnresolvedItem[]
+  version: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "QuestionIdMapping".
+ */
+export interface QuestionIdMapping {
+  order: number
+  /**
+   * ID in the imported source (a claim).
+   */
+  original_question_id: string
+  /**
+   * Namespaced by the stored definition.
+   */
+  published_question_id: string
+  /**
+   * Equals the definition version.
+   */
+  question_version: number
+}
+/**
+ * Typed import result. Nonpersistent; an imported definition is not an approval.
+ */
+export interface ApplicationIntakeResult1 {
+  application_definition?: ApplicationDefinition | null
+  application_definition_id?: string | null
+  approval_status?: 'not_approved'
+  authority_status?: 'imported_provisional_unreviewed'
+  coverage: IntakeCoverage
+  cycle_id?: string | null
+  /**
+   * Read-only text context for unsupported inputs (bounded).
+   */
+  evidence_excerpt?: ExactText | null
+  evidence_excerpt_truncated?: boolean
+  findings?: Finding[]
+  import_id: string
+  input: InputRepresentation
+  intake_format?: 'b2-application-intake/1'
+  is_fixture: boolean
+  mode_label: string
+  opportunity_id?: string | null
+  original_evidence?: {
+    [k: string]: unknown
+  }
+  original_guide_present?: boolean
+  persisted?: false
+  provenance: Provenance
+  question_set?: QuestionSet | null
+  questions?: IntakeQuestion[]
+  schema_version?: '1'
+  stream_id?: string | null
+  title?: ExactText | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "ReadinessCheck".
  */
 export interface ReadinessCheck {
@@ -1794,6 +2919,203 @@ export interface ReadinessCheck {
 export interface ReadinessReport {
   checks: ReadinessCheck[]
   status: 'ready' | 'not_ready'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RecheckCommand".
+ */
+export interface RecheckCommand {
+  funding_case_id?: string | null
+  funding_case_version?: number | null
+  idempotency_key: string
+}
+/**
+ * 'Review these requirements': names the exact version digest and every requirement.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "ReviewCommand".
+ */
+export interface ReviewCommand {
+  idempotency_key: string
+  /**
+   * @minItems 1
+   * @maxItems 20
+   */
+  requirement_keys:
+    | [string]
+    | [string, string]
+    | [string, string, string]
+    | [string, string, string, string]
+    | [string, string, string, string, string]
+    | [string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string]
+    | [string, string, string, string, string, string, string, string, string, string, string]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+    | [
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string,
+        string
+      ]
+  version_digest: string
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1830,6 +3152,64 @@ export interface RuleCapability {
       )
   rule_version: string
   state: 'planned' | 'implemented' | 'verified' | 'unavailable'
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RunComparison".
+ */
+export interface RunComparison {
+  base_run_id: string
+  newly_seen: string[]
+  not_seen_in_this_result_set: string[]
+  note: string
+  profile_id: string
+  profile_version: number
+  run_id: string
+  seen_again: string[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "RunSearchCommand".
+ */
+export interface RunSearchCommand {
+  idempotency_key: string
+  profile_version: number
+}
+/**
+ * Body of POST /api/automation/definitions. Strict: no coercion, no extra fields.
+ *
+ * The server re-runs intake on ``source`` and compares the parsed bytes with
+ * ``expected_input_sha256`` (the preview hash). Organization, actor, approval and
+ * provenance are never accepted from the client.
+ *
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SaveDefinitionRequest".
+ */
+export interface SaveDefinitionRequest {
+  /**
+   * Existing lineage for a revision (with expected_version).
+   */
+  definition_id?: string | null
+  expected_input_sha256: string
+  expected_version?: number | null
+  /**
+   * Exact funding case (with funding_case_version), M3 context.
+   */
+  funding_case_id?: string | null
+  funding_case_version?: number | null
+  idempotency_key: string
+  source: FixtureIntakeSource | StructuredJsonIntakeSource | HtmlIntakeSource | CaptureIntakeSource
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SaveDefinitionResult".
+ */
+export interface SaveDefinitionResult {
+  publication: PublishedApplicationVersion
+  /**
+   * True when an identical idempotent command was replayed.
+   */
+  replayed: boolean
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
@@ -1897,6 +3277,48 @@ export interface SearchProfile {
 }
 /**
  * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchProfileCommand".
+ */
+export interface SearchProfileCommand {
+  expected_version?: number | null
+  idempotency_key: string
+  label: string
+  profile: SearchProfile
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchProfileList".
+ */
+export interface SearchProfileList {
+  incomplete: boolean
+  items: SearchProfileVersion[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchProfileVersion".
+ */
+export interface SearchProfileVersion {
+  created_at: string
+  created_by: string
+  /**
+   * Inert staff label; never sent to a provider.
+   */
+  label: string
+  organization_id: string
+  profile: SearchProfile
+  profile_id: string
+  public_fields_used: string[]
+  /**
+   * Exactly the public query text a run would send.
+   */
+  query_preview: string
+  version: number
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
  * via the `definition` "SearchQueryRecord".
  */
 export interface SearchQueryRecord {
@@ -1934,6 +3356,37 @@ export interface SearchResult {
   schema_version?: '1'
   search_id: string
   warnings: string[]
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchRunList".
+ */
+export interface SearchRunList {
+  incomplete: boolean
+  items: SearchRunRecord[]
+  limit: number
+  more: boolean
+  next_cursor?: string | null
+}
+/**
+ * This interface was referenced by `StrongStartContracts`'s JSON-Schema
+ * via the `definition` "SearchRunRecord".
+ */
+export interface SearchRunRecord {
+  completed_at: string
+  created_by: string
+  error_message?: string | null
+  error_reason?: string | null
+  normalized_urls?: string[]
+  organization_id: string
+  outcome: 'success' | 'failed' | 'unavailable'
+  profile_id: string
+  profile_version: number
+  provider?: string | null
+  provider_mode?: string | null
+  result?: SearchResult | null
+  run_id: string
+  started_at: string
 }
 /**
  * Server-controlled identity. ``is_fixture`` must be shown conspicuously by clients.

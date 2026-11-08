@@ -10,6 +10,9 @@ import type {
   SearchResult,
 } from '@strongstart/contracts'
 import { describeError, httpFundingClient, type FundingClient } from './client'
+import { IntakeReferences, SavedCaptures } from './library'
+import { FundingCases } from './cases'
+import { Recheck, SavedSearches } from './research'
 
 type Phase<T> =
   | { kind: 'idle' }
@@ -148,7 +151,7 @@ function Results({
   )
 }
 
-function CapturePanel({ doc, client }: { doc: CapturedDocument; client: FundingClient }) {
+export function CapturePanel({ doc, client }: { doc: CapturedDocument; client: FundingClient }) {
   const [content, setContent] = useState<Phase<CaptureContent>>({ kind: 'idle' })
   const [copied, setCopied] = useState(false)
   const reference = JSON.stringify(doc, null, 2)
@@ -242,9 +245,11 @@ function CapturePanel({ doc, client }: { doc: CapturedDocument; client: FundingC
           </pre>
         </figure>
       )}
-      <h4>Capture reference for B2</h4>
+      <IntakeReferences doc={doc} />
+      <Recheck doc={doc} client={client} />
+      <h4>Full capture reference (JSON)</h4>
       <button type="button" onClick={copy}>
-        Copy capture reference
+        Copy full capture reference (JSON)
       </button>{' '}
       <a
         download={`${doc.capture_id}.json`}
@@ -382,6 +387,24 @@ export function FundingPage({ client = httpFundingClient }: { client?: FundingCl
         </div>
       )}
       {capture.kind === 'done' && <CapturePanel doc={capture.data} client={client} />}
+
+      {avail.kind === 'done' && avail.data.authenticated && (
+        <>
+          <SavedCaptures
+            client={client}
+            renderCapture={(doc) => <CapturePanel doc={doc} client={client} />}
+          />
+
+          <FundingCases client={client} />
+
+          <SavedSearches client={client} />
+        </>
+      )}
+      {avail.kind === 'done' && !avail.data.authenticated && (
+        <p className="hint">
+          Saved captures, funding cases and saved searches appear after you sign in.
+        </p>
+      )}
     </section>
   )
 }

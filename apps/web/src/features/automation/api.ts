@@ -3,11 +3,15 @@ import type {
   ApplicationIntakeResult,
   AutomationAvailability,
   AutomationHandoffExport,
+  DefinitionList,
   ErrorEnvelope,
   ExportDefinitionRequest,
   FormInspectionResult,
   ImportApplicationRequest,
   InspectFixtureRequest,
+  PublishedApplicationVersion,
+  SaveDefinitionRequest,
+  SaveDefinitionResult,
 } from '@strongstart/contracts'
 
 const BASE = import.meta.env.VITE_API_BASE_URL ?? ''
@@ -61,6 +65,37 @@ export function exportDefinition(
   return call('/export-definition', { method: 'POST', body: JSON.stringify(req) })
 }
 
+export function saveDefinition(
+  req: SaveDefinitionRequest,
+): Promise<ApiResult<SaveDefinitionResult>> {
+  return call('/definitions', { method: 'POST', body: JSON.stringify(req) })
+}
+
+export function listDefinitions(cursor?: string | null): Promise<ApiResult<DefinitionList>> {
+  const q = cursor ? `?cursor=${encodeURIComponent(cursor)}` : ''
+  return call(`/definitions${q}`)
+}
+
+export function getDefinition(
+  definitionId: string,
+): Promise<ApiResult<PublishedApplicationVersion>> {
+  return call(`/definitions/${encodeURIComponent(definitionId)}`)
+}
+
+export function getQuestionSet(
+  questionSetId: string,
+): Promise<ApiResult<PublishedApplicationVersion>> {
+  return call(`/question-sets/${encodeURIComponent(questionSetId)}`)
+}
+
+export function newIdempotencyKey(): string {
+  const random =
+    typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random().toString(16).slice(2)}`
+  return `ui-${random}`
+}
+
 export function portalUrl(fixtureId: string): string {
   return `${PREFIX}/fixtures/portal/${encodeURIComponent(fixtureId)}`
 }
@@ -77,6 +112,29 @@ const REASON_TEXT: Record<string, string> = {
   fixture_not_allowed: 'That fixture is not registered or fixture mode is off.',
   timeout: 'The inspection ran out of time; no result was produced.',
   unknown_form_version: 'No stored form map exists for that version.',
+  input_changed:
+    'The source changed since this preview. Re-import before saving; nothing was saved.',
+  publication_blocked:
+    'This import cannot be published yet (no questions, or the opportunity is unknown). Nothing was saved.',
+  version_conflict:
+    'Someone saved a newer version first. Reload the saved definition and revise that version.',
+  idempotency_key_reused: 'This save request was already used for different content.',
+  too_many_questions: 'Saved definitions are limited to 100 questions.',
+  history_limit: 'This definition reached its version-history limit (20).',
+  integrity_failure: 'The stored definition failed its integrity check; content was withheld.',
+  definition_not_found: 'Saved definition not found.',
+  store_unavailable: 'No saved-definition store is available in this environment.',
+  store_busy: 'The store is busy. Try again.',
+  store_write_failed: 'The store could not finish writing. Nothing was committed.',
+  context_unavailable: 'Funding-case context is not available.',
+  context_incomplete:
+    'The selected funding case does not establish funder, stream and cycle yet. Complete it first.',
+  context_conflict:
+    'The source declares a different opportunity/stream/cycle than the selected funding case. Held for review; nothing was saved.',
+  context_changed:
+    'The selected funding case has a newer version. Select the current version explicitly.',
+  context_not_found: 'The selected funding case was not found.',
+  ambiguous_question_identity: 'Question identities are ambiguous; nothing was saved.',
 }
 
 export function describeError(r: { status: number; error: ErrorEnvelope | null }): string {

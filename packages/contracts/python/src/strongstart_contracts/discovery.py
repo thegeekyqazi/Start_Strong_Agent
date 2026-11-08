@@ -289,6 +289,66 @@ class FundingAvailability(ContractModel):
     notes: list[str]
 
 
+# --------------------------------------------------------------------------- catalog
+# DEV-B-BUNDLE-002 s6 (M2): additive capture library contracts.
+
+
+class ImportableArtifactRef(ContractModel):
+    model_config = contract_model_config("draft", "B1")
+
+    artifact_id: StableId
+    representation: RepresentationType
+    intake_reference: str = Field(
+        description="Exact 'capture_id:artifact_id' string the automation intake expects."
+    )
+
+
+class CaptureSummary(ContractModel):
+    """Metadata-only listing entry. Artifact content integrity is NOT checked here."""
+
+    model_config = contract_model_config("draft", "B1")
+
+    capture_id: StableId
+    status: Literal["ok", "corrupt"]
+    page_title: str | None = None
+    requested_url: str | None = None
+    final_url: str | None = None
+    captured_at: datetime | None = None
+    provider: str | None = None
+    provider_mode: ProviderMode | None = None
+    coverage: Literal["complete", "partial", "empty"] | None = None
+    representation_count: int | None = Field(default=None, ge=0)
+    importable_artifacts: list[ImportableArtifactRef] = Field(default_factory=list)
+    authority_review: AuthorityStatus | None = None
+    is_simulated: bool | None = None
+    content_integrity: Literal["not_checked_in_listing"] = "not_checked_in_listing"
+    detail: str | None = None
+
+
+class CaptureCatalogPage(ContractModel):
+    model_config = contract_model_config("draft", "B1")
+
+    items: list[CaptureSummary]
+    next_cursor: str | None = None
+    more: bool
+    incomplete: bool = Field(description="True when the bounded catalog scan limit was reached.")
+    backfill_status: Literal["complete", "pending", "incomplete_scan"] = Field(
+        description="Indexing of captures saved before the catalog existed. 'pending' means "
+        "older captures are not listed yet; never reported complete after a capped step."
+    )
+    backfill_pending: int = Field(ge=0)
+    limit: int
+
+
+@runtime_checkable
+class CaptureCatalogReader(Protocol):
+    """Bounded, organization-scoped capture listing (DEV-B-BUNDLE-002 s6)."""
+
+    def list_captures(
+        self, organization_id: str, cursor: str | None, limit: int
+    ) -> CaptureCatalogPage: ...
+
+
 # --------------------------------------------------------------------------- seam port
 
 
