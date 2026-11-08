@@ -190,4 +190,8 @@ warnings; they were fixed in `8f312bb`, then the complete required checks ran su
 
 All INT-01 through INT-38 rows above have executed evidence. This is **not** a claim that
 all 86 catalog predicates, G2/G4, real-data integration or release readiness are complete.
-Draft PR publication follows this verification-only documentation checkpoint.
+Published as **draft PR [#19](https://github.com/thegeekyqazi/strong-start-agent/pull/19)**,
+base main `b543454`, task branch pushed without force. Verification-only commit `c34a550`
+records local results; this publication-link commit changes documentation only. The exact
+reviewable branch head is the PR head. No merge, deployment or default-branch write.
+Remote CI status is reported in the completion message; local required checks above passed.
