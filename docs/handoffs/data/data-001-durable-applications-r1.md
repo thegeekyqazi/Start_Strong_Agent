@@ -187,3 +187,14 @@ approved writing policy and full A3 review/export workspace; bounded managed tes
 not that production integration. Authentication/roles, practice jobs and deployment remain.
 Sawaab can incorporate the functional metadata paragraphs into his presentation work.
 The owner reviews/merges the draft PR under policy; no merge/deploy is authorized here.
+
+## Post-publication reconciliation evidence
+
+Sawaab's main41a80ef UI was merged on the task branch at800db22. Required rerun caught
+5 unchanged browser no-external-request assertions due to the new remote Google Fonts
+import. The same Red Hat typography is served locally with original OFL notices/source
+hashes; only asset transport changes, no design or weakened assertions. CI also found
+pg_dump16/server17 mismatch; the recovery test now explicitly uses that job's owned PG17
+container clients. Initial failed reconciliation runs are retained as findings, not passes.
+Final combined-tree verification follows the fixes; source/head/results below supersede
+the pre-reconciliation check counts where the UI suite adds two tests.

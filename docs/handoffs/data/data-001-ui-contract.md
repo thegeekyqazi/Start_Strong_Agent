@@ -26,3 +26,10 @@ Publication reconciliation: main advanced to41a80efc477044203cf94cc44a289c56a500
 Sawaab's shared UI/landing/journey. Merged current main into this task branch, preserving
 all his styles, layout and revised wording. Functional durable paragraph/metadata condition
 remains. Complete required checks are rerun on that combined tree; no redesign authored here.
+
+The combined browser suite caught external requests from UI-001's Google Fonts import.
+To preserve both typography and existing no-external-request assertions, the exact Red Hat
+Display600/Mono400/500/Text400/500/600 binaries are now served at /fonts with their original
+SIL OFL notices and source hashes. Only font transport/import changed; no layout/tokens or
+other design changes. Browser assertions/allowlists remain unchanged. This functional
+reconciliation exception is documented in decision0006 and final handoff.

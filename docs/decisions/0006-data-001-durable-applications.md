@@ -126,3 +126,18 @@ with Sawaab's shared UI redesign. Inspected the upstream delta/decision UI-001 a
 current main into the task branch (not a default-branch write). No conflicts; preserved
 all presentation/styles and revised copy. DATA-001's only frontend delta remains the
 functional storage paragraph/condition and its test. Required checks rerun on combined tree.
+
+## Reconciliation failures and bounded fixes
+
+Unchanged browser network assertions caught UI-001's remote Google Fonts CSS/font requests
+(5 browser cases failed on external requests). Preserve the same Red Hat families/weights,
+serve unmodified binaries with their SIL OFL notices/source hashes from app public/fonts,
+and replace only the remote import with local font-face declarations. No palette/layout/
+component redesign and no network allowlist/test weakening. This necessary presentation
+asset transport change is the only additional frontend scope beyond durability labels.
+
+CI DB smoke exposed Ubuntu's pg_dump16 against the PostgreSQL17 service (84 passed, recovery
+failed due to client/server version mismatch). Explicitly route local recovery tools to
+the current job's owned PostgreSQL service container; an explicit local container takes
+precedence over installed host clients. Local and CI container paths use actual pg_dump/
+pg_restore and no reset. Hosted runner still has no Docker path. Assertions remain intact.

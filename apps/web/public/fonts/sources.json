@@ -1,0 +1,32 @@
+[
+  {
+    "file": "red-hat-display-600.ttf",
+    "source": "https://fonts.gstatic.com/s/redhatdisplay/v21/8vIf7wUr0m80wwYf0QCXZzYzUoTK8RZQvRd-D1NYbrKRckg.ttf",
+    "sha256": "16fc325abaa901b90a55cc516987f7758de2cd166768fbf824ed428e2ccf408f"
+  },
+  {
+    "file": "red-hat-mono-400.ttf",
+    "source": "https://fonts.gstatic.com/s/redhatmono/v16/jVyY7nDnA2uf2zVvFAhhzEs-VMSjJpBTfgjwQV3I-7E.ttf",
+    "sha256": "8bbd57c68b7d4614cce315cf15381964bfe0f0447a1cca935caba6c3282537f7"
+  },
+  {
+    "file": "red-hat-mono-500.ttf",
+    "source": "https://fonts.gstatic.com/s/redhatmono/v16/jVyY7nDnA2uf2zVvFAhhzEs-VMSjJpBTfgjwQW_I-7E.ttf",
+    "sha256": "46d939c3e9cf9f87fe1e99970ac594ea569540dba7282578932fee75a73025d3"
+  },
+  {
+    "file": "red-hat-text-400.ttf",
+    "source": "https://fonts.gstatic.com/s/redhattext/v19/RrQCbohi_ic6B3yVSzGBrMx6ZI_cy1A6Ok2ML7hwVrY.ttf",
+    "sha256": "dc3604a07966e266e221d3c5635a6cb5d6c9a15744a8b64c56ad1a0c1ffe5855"
+  },
+  {
+    "file": "red-hat-text-500.ttf",
+    "source": "https://fonts.gstatic.com/s/redhattext/v19/RrQCbohi_ic6B3yVSzGBrMx6ZI_cy1A6Ok2ML4pwVrY.ttf",
+    "sha256": "dc5247ac0792fab5ea2b18ff308c96f085ccc04b5f45daf6367e5689341f3255"
+  },
+  {
+    "file": "red-hat-text-600.ttf",
+    "source": "https://fonts.gstatic.com/s/redhattext/v19/RrQCbohi_ic6B3yVSzGBrMx6ZI_cy1A6Ok2ML2Z3VrY.ttf",
+    "sha256": "7195cc09814bc46cdd65fe51310d4acfb9d40d0301db3d6d8f023f8afa6c53e9"
+  }
+]

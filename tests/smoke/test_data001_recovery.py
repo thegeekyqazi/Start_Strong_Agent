@@ -35,7 +35,8 @@ def restore_db(data_db):
 def local_client(db: Database, executable: str) -> list[str]:
     url = make_url(db.url)
     assert url.host in {"localhost", "127.0.0.1", "::1"}
-    if shutil.which(executable):
+    # Explicit owned container uses its matching server/client version (CI host has PG16).
+    if not os.environ.get("DATA001_LOCAL_PG_CONTAINER") and shutil.which(executable):
         return [
             executable,
             "--host",

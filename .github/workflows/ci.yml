@@ -82,6 +82,8 @@ jobs:
           version: '0.12.23'
       - run: uv sync --locked
       - run: make smoke
+        env:
+          DATA001_LOCAL_PG_CONTAINER: ${{ job.services.postgres.id }}
 
   browser:
     name: browser readiness (Playwright Chromium)
