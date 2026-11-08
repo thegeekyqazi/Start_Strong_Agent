@@ -1,5 +1,7 @@
 # Dev B: Two-agent execution and integration plan
 
+> **Superseded in part (2026-11-07, decision 0004).** The two-agent arrangement has ended: one Dev B agent now owns both modules and works sequentially. See `dev-b-single-agent-plan.md`. Module boundaries (s2), producer/consumer dependencies (s4), check sub-ownership as module ownership (s5), task IDs and spec sequence (s6) and integration expectations (s9) remain in force. The two-session, shared-file patch and inter-agent review instructions (s1, s3 coordination rules, s8) are superseded. The body below is preserved unchanged as the historical record.
+
 **Revision:** 1.0  
 **Confirmed developer:** Project owner is Dev B.  
 **Scope:** Two implementation agents inside the Dev B lane, alongside the team's separate Dev A and Dev C work.  
