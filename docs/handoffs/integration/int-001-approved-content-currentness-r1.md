@@ -167,4 +167,27 @@ and the root input spec were preserved.
 
 ## Final verification and publication
 
-Pending final required command results and exact commit/PR evidence; updated before handoff.
+Final tested source: `8f312bba8747bab3b2f0ed94a1dd97930a97f956` (M4 source/test
+checkpoint `3a741afdb34db3dfac1d6e8409ff473fcaf4ab6b` plus frontend lint fix).
+Subsequent commits only record this evidence/publication. Worktree was clean at test exit.
+Final upstream fetch still resolved main to `b543454255c45e9a079e3090337585b375fe34f0`.
+
+| Command / environment | Result |
+| --- | --- |
+| `make contracts` | Exit 0; deterministic schema/TS generation. All 229 baseline schema definitions retained; 231 now, adding only binding/registration models. |
+| `make check` | Exit 0: Ruff and formatting, oxlint/Prettier, strict mypy (210 files), TypeScript, **782 Python tests** (84 DB/browser deselected), **100 Vitest tests**, schema/TS drift and web/Python builds. |
+| `make smoke` with local PostgreSQL URL configured | Exit 0: forward migration/seed, **110 import tests**, **46 real PostgreSQL smoke tests**, real API live/ready/capabilities 200; head `0008_browser_bindings`. |
+| `make browser-smoke` | Exit 0: web build and **38 real Chromium tests**, including both new normal C integration tests and all existing hostile/canary/truncation/cleanup cases. |
+| `uv run python scripts/verify_int001_registration_mutation.py` with real DB | Exit 0 for audit: mutant failed specifically at `stale_registration: replacement missed the new target`; exact source restored, protected race passed. Restored SHA-256 `e0574503c6d2e4698c9c51cacf1202e70f62308ad12575d52764bc34815f44ea`. |
+| `uv run python -m scripts.verify_int001_managed_api --port 18008 --replacement <printed synthetic ID>` against owned rehearsal | Exit 0: actual HTTP C/A4/B/Chromium two-field entry/final reread, both registered targets, real activation, stale GET, blocked zero operations and unchanged historical replay. Server then stopped; owned data cleaned. |
+
+Environment: Linux, Python 3.12.15, Node 22.22.2, local PostgreSQL 17, installed Playwright
+Chromium. No SQLite/mocked database substitutes, live model/search/capture calls, TigerData
+host, production authentication, deployment or merge. No required task check is unrun.
+The full browser suite printed test-proxy BrokenPipe messages for disconnected requests;
+all 38 assertions/tests passed. The initial final-check attempt found two React effect lint
+warnings; they were fixed in `8f312bb`, then the complete required checks ran successfully.
+
+All INT-01 through INT-38 rows above have executed evidence. This is **not** a claim that
+all 86 catalog predicates, G2/G4, real-data integration or release readiness are complete.
+Draft PR publication follows this verification-only documentation checkpoint.
