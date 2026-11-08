@@ -35,7 +35,7 @@ from .models.validation import (
 from .rules.checks import CheckContext, Mode, run_checks, sha256_text
 from .rules.policy import WritingPolicy
 from .rules.render import render
-from .workspace import WorkspaceSource
+from .workspace import WorkspaceSource, load_workspace
 
 INSTRUCTIONS = (
     "You draft one grant answer as a proposal for staff review. Return only JSON with keys "
@@ -165,7 +165,7 @@ def check_answer(
     request: CheckRequest,
     policy: WritingPolicy | None,
 ) -> CheckReport:
-    workspace = source.get(organization_id)
+    workspace = load_workspace(source, organization_id, request.question_set_id)
     question = _question(workspace, question_id, request.question_version)
     bundle = _bundle(workspace, request.evidence_bundle_id)
     return build_check_report(
@@ -183,7 +183,7 @@ async def draft_answer(
     timeout_seconds: float,
     policy: WritingPolicy | None = None,
 ) -> DraftProposal:
-    workspace = source.get(organization_id)
+    workspace = load_workspace(source, organization_id, request.question_set_id)
     question = _question(workspace, question_id, request.question_version)
     bundle = _bundle(workspace, request.evidence_bundle_id)
 
@@ -251,7 +251,7 @@ async def plan_application(
     request: PlanRequest,
     timeout_seconds: float,
 ) -> AnswerPlan:
-    workspace = source.get(organization_id)
+    workspace = load_workspace(source, organization_id, request.question_set_id)
     bundle = _bundle(workspace, request.evidence_bundle_id)
     questions = sorted(workspace.question_set.questions, key=lambda q: q.order)
     caps = adapter.capabilities()

@@ -11,9 +11,11 @@ from typing import Annotated, NoReturn
 from fastapi import Depends, Request
 
 from strongstart_contracts import CapabilityUnavailable, ErrorCode
+from strongstart_contracts.application_publication import ApplicationDefinitionReader
 
 from ...config import Settings, get_settings
 from ...errors import ApiError
+from ..automation.public import get_application_definition_reader
 from .models.base import (
     DataClassNotPermitted,
     ModelAdapter,
@@ -29,15 +31,25 @@ from .rules.policy import WritingPolicy, fixture_policy
 from .service import EvidenceBundleNotFound, QuestionNotFound, QuestionVersionConflict
 from .store import AnswerStore, InMemoryAnswerStore, UnconfiguredAnswerStore
 from .workspace import (
+    DefinitionWorkspaceSource,
     FixtureWorkspaceSource,
+    QuestionSetIntegrityError,
+    QuestionSetNotFound,
     UnconfiguredWorkspaceSource,
     WorkspaceNotFound,
     WorkspaceSource,
 )
 
 
-def get_workspace_source(settings: Annotated[Settings, Depends(get_settings)]) -> WorkspaceSource:
-    return FixtureWorkspaceSource() if settings.fixture_mode else UnconfiguredWorkspaceSource()
+def get_workspace_source(
+    settings: Annotated[Settings, Depends(get_settings)],
+    reader: Annotated[ApplicationDefinitionReader, Depends(get_application_definition_reader)],
+) -> WorkspaceSource:
+    """Fixture mode: demo questions by default, or an exact Dev B saved question set through
+    B's public reader (C2b). Outside fixture mode no evidence producer exists yet."""
+    if not settings.fixture_mode:
+        return UnconfiguredWorkspaceSource()
+    return DefinitionWorkspaceSource(reader, FixtureWorkspaceSource())
 
 
 class _FixtureAdapterForbidden:
@@ -83,6 +95,20 @@ def get_answer_store(
 
 
 def lookup_error(exc: Exception) -> ApiError:
+    if isinstance(exc, QuestionSetNotFound):
+        return ApiError(
+            404,
+            ErrorCode.VALIDATION_FAILED,
+            "unknown question set",
+            {"reason": "unknown_question_set"},
+        )
+    if isinstance(exc, QuestionSetIntegrityError):
+        return ApiError(
+            502,
+            ErrorCode.DEPENDENCY_UNAVAILABLE,
+            "question set failed verification",
+            {"reason": "question_set_integrity_failure"},
+        )
     if isinstance(exc, EvidenceBundleNotFound):
         return ApiError(
             404,
@@ -105,6 +131,7 @@ def lookup_error(exc: Exception) -> ApiError:
 LOOKUP_ERRORS = (
     QuestionNotFound,
     WorkspaceNotFound,
+    QuestionSetIntegrityError,
     EvidenceBundleNotFound,
     QuestionVersionConflict,
 )

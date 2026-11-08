@@ -128,7 +128,9 @@ def test_app01_passes_when_convention_confirmed() -> None:
     class Source:
         is_fixture = True
 
-        def get(self, organization_id: str) -> ApplicationWorkspace:
+        def get(
+            self, organization_id: str, question_set_id: str | None = None
+        ) -> ApplicationWorkspace:
             return ws
 
     c = make_client(auth_mode="fixture")

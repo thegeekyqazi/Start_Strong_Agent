@@ -28,15 +28,12 @@ class StoreApprovedAnswerResolver:
         self.is_fixture = is_fixture
 
     def _find(self, ctx: Context, approval_id: str) -> tuple[StoredVersion, StoredDecision] | None:
-        try:
-            questions = ctx.workspace_source.get(ctx.organization_id).question_set.questions
-        except Exception:  # an unknown org/workspace behaves like an unknown approval
-            return None
-        for q in questions:
-            for v in ctx.store.versions(ctx.organization_id, q.question_id):
-                d = ctx.store.decision_for(ctx.organization_id, v.answer_version_id)
-                if d is not None and d.approval_id == approval_id:
-                    return v, d
+        # Search the org-scoped store directly, so approvals on any question set (demo
+        # fixture or a Dev B saved definition) resolve; other orgs see nothing.
+        for v in ctx.store.all_versions(ctx.organization_id):
+            d = ctx.store.decision_for(ctx.organization_id, v.answer_version_id)
+            if d is not None and d.approval_id == approval_id:
+                return v, d
         return None
 
     def resolve(self, organization_id: str, approval_snapshot_id: str) -> ApprovalSnapshot:

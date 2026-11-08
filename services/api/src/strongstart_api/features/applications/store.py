@@ -49,6 +49,7 @@ class StoredVersion:
     question_id: str
     question_version: int
     answer_version: int
+    question_set_id: str | None
     evidence_bundle_id: str
     text: str
     content_sha256: str
@@ -106,6 +107,8 @@ class AnswerStore(Protocol):
     ) -> StoredVersion: ...
 
     def versions(self, organization_id: str, question_id: str) -> list[StoredVersion]: ...
+
+    def all_versions(self, organization_id: str) -> list[StoredVersion]: ...
 
     def get_version(self, organization_id: str, answer_version_id: str) -> StoredVersion: ...
 
@@ -171,6 +174,10 @@ class InMemoryAnswerStore:
     def versions(self, organization_id: str, question_id: str) -> list[StoredVersion]:
         with self._lock:
             return list(self._org(organization_id).versions.get(question_id, []))
+
+    def all_versions(self, organization_id: str) -> list[StoredVersion]:
+        with self._lock:
+            return [v for h in self._org(organization_id).versions.values() for v in h]
 
     def get_version(self, organization_id: str, answer_version_id: str) -> StoredVersion:
         with self._lock:
@@ -278,6 +285,9 @@ class UnconfiguredAnswerStore:
         raise self._unavailable()
 
     def versions(self, organization_id: str, question_id: str) -> list[StoredVersion]:
+        raise self._unavailable()
+
+    def all_versions(self, organization_id: str) -> list[StoredVersion]:
         raise self._unavailable()
 
     def get_version(self, organization_id: str, answer_version_id: str) -> StoredVersion:

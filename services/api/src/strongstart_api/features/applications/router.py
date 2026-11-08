@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import Annotated, NoReturn
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 
 from strongstart_contracts import Capability, ErrorCode
 from strongstart_contracts.answers import (
@@ -38,7 +38,13 @@ from .models.base import ModelAdapter, ModelError
 from .review_router import review_router
 from .rules.policy import WritingPolicy
 from .service import check_answer, draft_answer, plan_application
-from .workspace import WorkspaceNotFound, WorkspaceSource
+from .workspace import (
+    QuestionSetIntegrityError,
+    QuestionSetNotFound,
+    WorkspaceNotFound,
+    WorkspaceSource,
+    load_workspace,
+)
 
 __all__ = [
     "CAPABILITIES",
@@ -146,10 +152,18 @@ def status(settings: Annotated[Settings, Depends(get_settings)]) -> list[Capabil
 
 @router.get("/workspace", response_model=ApplicationWorkspace)
 def workspace(
-    identity: Identity, source: Annotated[WorkspaceSource, Depends(get_workspace_source)]
+    identity: Identity,
+    source: Annotated[WorkspaceSource, Depends(get_workspace_source)],
+    question_set_id: Annotated[
+        str | None, Query(pattern=r"^[a-z0-9][a-z0-9._:-]{0,127}$", max_length=128)
+    ] = None,
 ) -> ApplicationWorkspace:
+    """Demo fixture questions by default; with ``question_set_id``, that exact Dev B saved
+    question set read server-side (C2b). Errors are surfaced; there is no fallback."""
     try:
-        return source.get(identity.organization_id)
+        return load_workspace(source, identity.organization_id, question_set_id)
+    except (QuestionSetNotFound, QuestionSetIntegrityError) as exc:
+        raise lookup_error(exc) from None
     except WorkspaceNotFound:
         raise ApiError(
             404, ErrorCode.VALIDATION_FAILED, "no workspace", {"reason": "unknown_workspace"}
