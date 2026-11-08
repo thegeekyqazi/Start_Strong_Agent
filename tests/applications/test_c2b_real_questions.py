@@ -38,6 +38,7 @@ def settings(tmp_path: Path) -> Settings:
     return Settings(
         _env_file=None,
         auth_mode="fixture",
+        answer_store_backend="memory",
         funding_capture_store_dir=tmp_path / "captures",
         dev_b_store_dir=tmp_path / "dev-b",
     )
@@ -164,7 +165,7 @@ class _Reader:
 
 
 def with_reader(reader: object) -> TestClient:
-    app = create_app(Settings(_env_file=None, auth_mode="fixture"))
+    app = create_app(Settings(_env_file=None, answer_store_backend="memory", auth_mode="fixture"))
     app.dependency_overrides[get_application_definition_reader] = lambda: reader
     return TestClient(app)
 

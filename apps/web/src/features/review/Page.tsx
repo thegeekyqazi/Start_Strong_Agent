@@ -236,7 +236,14 @@ export function ReviewPage({
         Check exact answer versions, then approve or reject them. An approval covers one exact
         version; any edit or evidence change makes it out of date.
       </p>
-      {hist?.store_is_fixture && (
+      {hist?.store?.durable && (
+        <p className="badge badge-planned">
+          Durable PostgreSQL store – saved C versions, approvals and exports survive API restart.
+          Synthetic data and fixture reviewer labels still apply. Prepare a new Automation plan
+          after restart.
+        </p>
+      )}
+      {(hist?.store?.backend === 'memory' || (!hist?.store && hist?.store_is_fixture)) && (
         <p className="badge badge-planned">
           FIXTURE store – saved versions and approvals are demo data and are lost on restart.
           Fixture approval – not authentication.

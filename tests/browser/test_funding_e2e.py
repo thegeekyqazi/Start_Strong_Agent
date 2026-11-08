@@ -123,6 +123,7 @@ def stack(
 
 
 FIXTURE_ENV = {
+    "STRONGSTART_ANSWER_STORE_BACKEND": "memory",
     "STRONGSTART_AUTH_MODE": "fixture",
     "STRONGSTART_FUNDING_SEARCH_MODE": "fixture",
     "STRONGSTART_FUNDING_CAPTURE_MODE": "fixture",

@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     # "fixture": LOCAL-ONLY fixed demo identity; rejected for production.
     auth_mode: Literal["none", "fixture"] = "none"
     database_url: str | None = Field(
-        default=None, repr=False, description="Server-only PostgreSQL connection URL"
+        default=None, repr=False, exclude=True, description="Server-only PostgreSQL connection URL"
     )
     db_connect_timeout_seconds: int = Field(default=3, ge=1, le=30)
     answer_store_backend: Literal["postgres", "memory", "unconfigured"] = "unconfigured"

@@ -39,6 +39,7 @@ def main() -> None:
             _env_file=None,
             environment="local",
             auth_mode="fixture",
+            answer_store_backend="postgres",
             database_url=configured.database_url,
             dev_b_store_dir=Path(temporary) / "b-store",
         )

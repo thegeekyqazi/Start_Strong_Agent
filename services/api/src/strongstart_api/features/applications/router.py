@@ -63,7 +63,7 @@ _REVIEW_STATIC = Capability(
     feature="review",
     owner="C",
     status="unavailable",
-    detail="Review needs an answer store (fixture mode only until the C3 migration is sequenced).",
+    detail="Review needs configured storage, identity and a question/evidence workspace.",
 )
 _SKILLS = Capability(
     feature="skills",
@@ -126,18 +126,35 @@ def capabilities_for(settings: Settings) -> list[Capability]:
             else "Workspace needs a configured question/evidence producer."
         ),
     )
+    configured = settings.answer_store_backend == "memory" or (
+        settings.answer_store_backend == "postgres" and bool(settings.database_url)
+    )
     review = Capability(
         feature="review",
         owner="C",
-        status="fixture_only" if settings.fixture_mode else "unavailable",
+        status="fixture_only" if settings.fixture_mode and configured else "unavailable",
         detail=(
-            "Saved versions, exact-version approval, staleness, resolver and DOCX/audit export "
-            "over an in-memory FIXTURE store (C3 migration pending Dev A)."
-            if settings.fixture_mode
-            else _REVIEW_STATIC.detail
+            "Exact-version review/export with "
+            + settings.answer_store_backend
+            + " storage. Fixture identity and synthetic evidence remain simulation; "
+            "database connectivity/schema are checked by readiness."
         ),
     )
-    return [workspace, _model_capability(settings), review, _SKILLS]
+    storage = Capability(
+        feature="applications.storage",
+        owner="C",
+        status=("available" if settings.answer_store_backend == "postgres" else "fixture_only")
+        if configured
+        else "unavailable",
+        detail=(
+            "Durable PostgreSQL selected; readiness must pass."
+            if settings.answer_store_backend == "postgres" and configured
+            else "Explicit memory fixture; process-local and lost on restart."
+            if settings.answer_store_backend == "memory"
+            else "Answer storage is unconfigured; no fallback."
+        ),
+    )
+    return [workspace, _model_capability(settings), review, storage, _SKILLS]
 
 
 _lookup_error = lookup_error

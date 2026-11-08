@@ -421,6 +421,17 @@
           "title": "Schema Version",
           "type": "string"
         },
+        "store": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/AnswerStoreMetadata"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
         "store_is_fixture": {
           "title": "Store Is Fixture",
           "type": "boolean"
@@ -577,6 +588,32 @@
         "provenance"
       ],
       "title": "AnswerSnapshot",
+      "type": "object",
+      "x-contract-status": "draft",
+      "x-owner": "C"
+    },
+    "AnswerStoreMetadata": {
+      "additionalProperties": false,
+      "properties": {
+        "backend": {
+          "enum": [
+            "postgres",
+            "memory",
+            "unconfigured"
+          ],
+          "title": "Backend",
+          "type": "string"
+        },
+        "durable": {
+          "title": "Durable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "backend",
+        "durable"
+      ],
+      "title": "AnswerStoreMetadata",
       "type": "object",
       "x-contract-status": "draft",
       "x-owner": "C"

@@ -88,3 +88,17 @@ transaction; events control approval/read/export races. The targeted C predicate
 fails specifically on stale_export_publication, restores exact bytes and passes protected.
 Test DBs/roles are uniquely created and removed, never shared resets. Commit-fault injection
 is explicitly labelled injection; connection termination and timeout tests use real SQL.
+
+## M3 runtime and UI
+
+App construction selects the backend explicitly without connecting/seeding; its lifespan
+disposes its owned C pool. The default stays unavailable. Public reader factory permits
+new PostgreSQL adapters to address the same dataset; memory replacement protection is
+retained. PostgreSQL identity/revision is observed fresh after external checks. Recovery
+rotation requires operator UPDATE(epoch), intentionally absent from runtime grants.
+
+Additive optional AnswerHistory.store separates storage from synthetic evidence. Existing
+legacy store_is_fixture is retained. Review changes only functional paragraphs. All test
+fixtures that need memory now choose it explicitly; production fixture restrictions stay.
+Managed INT tests use actual durable C and A4 SQL, isolated per-test databases. Browser CI
+now supplies PostgreSQL for the normal runtime restart/Chromium test; no hosted secrets.

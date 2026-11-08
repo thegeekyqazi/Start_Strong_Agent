@@ -25,6 +25,7 @@ from strongstart_contracts.answers import (
     AnswerFinding,
     AnswerHistory,
     AnswerState,
+    AnswerStoreMetadata,
     AnswerVersion,
     AnswerVersionCreate,
     ApplicationWorkspace,
@@ -321,6 +322,7 @@ def history(ctx: Context, question_id: str, question_set_id: str | None = None) 
         ],
         prefill_ready=bool(contracts) and contracts[-1].state == "approved",
         store_is_fixture=ctx.store.is_fixture,
+        store=AnswerStoreMetadata(backend=ctx.store.backend, durable=ctx.store.durable),
     )
 
 

@@ -7,3 +7,18 @@ metadata actually says postgres. A fixture reviewer remains a fixture reviewer e
 TigerData. API restarts preserve C state, but old B plans still need preparation again.
 No Sawaab redesign branch is integrated by this task. Final field/component changes and
 validation will be recorded here after implementation.
+
+Implemented additive `AnswerHistory.store: AnswerStoreMetadata | null` (backend:
+postgres/memory/unconfigured, durable:boolean). Legacy `store_is_fixture` remains for
+compatibility and describes the adapter; approval provenance comes from reviewer plus
+saved workspace/version, not persistence. Review Page.tsx consumes this optional object:
+postgres shows durable C state + continuing simulation/reviewer labels + new-plan restart
+instruction; memory keeps its loss-on-restart notice. No CSS, layout, auth or flow redesign.
+Backend capability `applications.storage` describes selection; readiness verifies the DB.
+Workspace capability stays fixture-only/unavailable until real evidence integration.
+
+Contracts regenerated together, preserving all baseline registrations. Review unit test
+checks durable and simulation labels coexist, and restarted normal API + real Chromium
+verifies the label at the same time as durable approval/new-plan read-back. B local files,
+pending plan epochs and single-use grants are unchanged. Sawaab can restyle these existing
+paragraphs while preserving their functional meaning and capability boundaries.

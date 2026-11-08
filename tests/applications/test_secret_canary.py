@@ -23,6 +23,7 @@ def _client(status: int) -> TestClient:
     settings = Settings(
         _env_file=None,
         auth_mode="fixture",
+        answer_store_backend="memory",
         model_provider="gemini",
         gemini_api_key=CANARY,
         gemini_model="demo-model",

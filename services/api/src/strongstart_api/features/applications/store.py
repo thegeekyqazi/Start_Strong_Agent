@@ -392,12 +392,11 @@ class UnconfiguredAnswerStore:
     def approval_read_current(self, organization_id: str, captured: ApprovalRead) -> bool:
         raise self._unavailable()
 
-    @staticmethod
-    def _unavailable() -> CapabilityUnavailable:
-        return CapabilityUnavailable(
-            "AnswerStore",
-            "TigerData durable answer store is not configured; process-local fixture mode only",
-        )
+    def __init__(self, reason: str = "answer_store_unconfigured") -> None:
+        self.reason = reason
+
+    def _unavailable(self) -> CapabilityUnavailable:
+        return StoreFailure(self.reason)
 
     def append_version(
         self,

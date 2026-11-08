@@ -25,6 +25,7 @@ UNIMPLEMENTED_OPS = [
 
 
 def client(**overrides: Any) -> TestClient:
+    overrides.setdefault("answer_store_backend", "memory")
     return TestClient(create_app(Settings(_env_file=None, **overrides)))
 
 

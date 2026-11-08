@@ -51,6 +51,8 @@ def _envelope(
 
 
 def install_error_handling(app: FastAPI) -> None:
+    from .features.applications.store import StoreFailure
+
     @app.middleware("http")
     async def request_id_middleware(
         request: Request, call_next: Callable[[Request], Awaitable[Response]]
@@ -64,6 +66,20 @@ def install_error_handling(app: FastAPI) -> None:
     @app.exception_handler(ApiError)
     async def _api_error(request: Request, exc: ApiError) -> JSONResponse:
         return _envelope(request, exc.status_code, exc.code, exc.message, exc.details)
+
+    @app.exception_handler(StoreFailure)
+    async def _store_failure(request: Request, exc: StoreFailure) -> JSONResponse:
+        return _envelope(
+            request,
+            503,
+            ErrorCode.CAPABILITY_UNAVAILABLE,
+            "application storage unavailable",
+            {
+                "port": exc.port,
+                "reason": exc.reason,
+                "next_action": "Read stored state before retrying; reconcile uncertain writes.",
+            },
+        )
 
     @app.exception_handler(CapabilityUnavailable)
     async def _unavailable(request: Request, exc: CapabilityUnavailable) -> JSONResponse:
