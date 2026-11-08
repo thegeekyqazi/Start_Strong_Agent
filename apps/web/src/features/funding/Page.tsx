@@ -12,6 +12,7 @@ import type {
 import { describeError, httpFundingClient, type FundingClient } from './client'
 import { IntakeReferences, SavedCaptures } from './library'
 import { FundingCases } from './cases'
+import { Recheck, SavedSearches } from './research'
 
 type Phase<T> =
   | { kind: 'idle' }
@@ -245,6 +246,7 @@ export function CapturePanel({ doc, client }: { doc: CapturedDocument; client: F
         </figure>
       )}
       <IntakeReferences doc={doc} />
+      <Recheck doc={doc} client={client} />
       <h4>Full capture reference (JSON)</h4>
       <button type="button" onClick={copy}>
         Copy full capture reference (JSON)
@@ -392,6 +394,8 @@ export function FundingPage({ client = httpFundingClient }: { client?: FundingCl
       />
 
       <FundingCases client={client} />
+
+      <SavedSearches client={client} />
     </section>
   )
 }

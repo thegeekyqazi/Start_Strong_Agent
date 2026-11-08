@@ -64,6 +64,22 @@
         "contentType": "text/html; charset=utf-8",
         "language": "en"
       }
+    },
+    {
+      "url": "https://demo-funder.example/programs/community-grants/updates",
+      "fixture_note": "FIXTURE rotation for recheck demos: 1st capture v1, 2nd unchanged v1, 3rd changed v2, 4th+ partial (markdown only).",
+      "variants": [
+        {"markdown_file": "updates-v1.md", "html_file": "updates-v1.html", "raw_html_file": "updates-v1.html"},
+        {"markdown_file": "updates-v1.md", "html_file": "updates-v1.html", "raw_html_file": "updates-v1.html"},
+        {"markdown_file": "updates-v2.md", "html_file": "updates-v2.html", "raw_html_file": "updates-v2.html"},
+        {"markdown_file": "updates-v2.md", "warning": "FIXTURE: only markdown was produced for this page."}
+      ],
+      "metadata": {
+        "title": "FIXTURE Community Grants Program - Updates",
+        "url": "https://demo-funder.example/programs/community-grants/updates",
+        "statusCode": 200,
+        "contentType": "text/html; charset=utf-8"
+      }
     }
   ]
 }

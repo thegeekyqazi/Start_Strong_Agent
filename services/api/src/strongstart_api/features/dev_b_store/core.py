@@ -411,6 +411,20 @@ class VersionCollection:
             return None
         return value if isinstance(value, str) else None
 
+    def replay(self, idempotency_key: str, command_hash: str) -> CommitResult | None:
+        """Completed result for this key, if any (before doing external work such as a
+        provider call). Raises IdempotencyReused for the same key with another command."""
+        key_hash = sha256_hex(f"{self.name}\0{idempotency_key}".encode())
+        intent = self._load_intent(self.store.confined(self._idem_dir / f"{key_hash}.json"))
+        if intent is None:
+            return None
+        if intent["command_hash"] != command_hash:
+            raise IdempotencyReused("idempotency key was used for a different command")
+        oid, ver = intent["object_id"], intent["version"]
+        if self._read_command_hash(oid, ver) != command_hash:
+            return None
+        return CommitResult(oid, ver, self.read(oid, ver), replayed=True)
+
     def commit(
         self,
         *,

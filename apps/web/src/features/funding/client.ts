@@ -1,6 +1,16 @@
 // Find Funding API client (owner: B1). Types are generated from the Python contracts.
 import type {
   CaptureCatalogPage,
+  ChangeObservation,
+  ChangeObservationList,
+  RecheckCommand,
+  RunComparison,
+  RunSearchCommand,
+  SearchProfileCommand,
+  SearchProfileList,
+  SearchProfileVersion,
+  SearchRunList,
+  SearchRunRecord,
   EvaluateCommand,
   EvaluationList,
   EvaluationReport,
@@ -60,6 +70,20 @@ export interface FundingClient {
   ): Promise<ApiResult<FundingCaseEnvelope>>
   evaluateCase(caseId: string, body: EvaluateCommand): Promise<ApiResult<EvaluationReport>>
   listEvaluations(caseId: string): Promise<ApiResult<EvaluationList>>
+  listProfiles(): Promise<ApiResult<SearchProfileList>>
+  saveProfile(
+    body: SearchProfileCommand,
+    profileId?: string,
+  ): Promise<ApiResult<SearchProfileVersion>>
+  runProfile(profileId: string, body: RunSearchCommand): Promise<ApiResult<SearchRunRecord>>
+  listRuns(profileId: string): Promise<ApiResult<SearchRunList>>
+  compareRuns(
+    profileId: string,
+    baseRunId: string,
+    runId: string,
+  ): Promise<ApiResult<RunComparison>>
+  recheck(captureId: string, body: RecheckCommand): Promise<ApiResult<ChangeObservation>>
+  listObservations(captureId: string): Promise<ApiResult<ChangeObservationList>>
 }
 
 const enc = encodeURIComponent
@@ -90,6 +114,26 @@ export const httpFundingClient: FundingClient = {
       body: JSON.stringify(body),
     }),
   listEvaluations: (id) => call(`/api/funding/cases/${enc(id)}/evaluations`),
+  listProfiles: () => call('/api/funding/searches'),
+  saveProfile: (body, profileId) =>
+    call(
+      profileId ? `/api/funding/searches/${enc(profileId)}/revisions` : '/api/funding/searches',
+      {
+        method: 'POST',
+        body: JSON.stringify(body),
+      },
+    ),
+  runProfile: (id, body) =>
+    call(`/api/funding/searches/${enc(id)}/runs`, { method: 'POST', body: JSON.stringify(body) }),
+  listRuns: (id) => call(`/api/funding/searches/${enc(id)}/runs`),
+  compareRuns: (id, base, runId) =>
+    call(`/api/funding/searches/${enc(id)}/runs/${enc(runId)}/compare?base=${enc(base)}`),
+  recheck: (id, body) =>
+    call(`/api/funding/captures/${enc(id)}/recheck`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+  listObservations: (id) => call(`/api/funding/captures/${enc(id)}/observations`),
   listCaptures: (cursor) => call(`/api/funding/captures${cursor ? `?cursor=${enc(cursor)}` : ''}`),
 }
 
@@ -147,6 +191,12 @@ export function describeError(result: { status: number; error: ErrorEnvelope | n
       return 'This request was already used for different content.'
     case 'too_large':
       return `Too large: ${result.error?.message ?? ''}`
+    case 'not_comparable':
+      return 'These runs cannot be compared (different profile versions or a failed run).'
+    case 'profile_not_found':
+      return 'Saved search not found.'
+    case 'run_not_found':
+      return 'Search run not found.'
     case 'history_limit':
       return 'This item reached its version-history limit (20).'
     case 'integrity_failure':

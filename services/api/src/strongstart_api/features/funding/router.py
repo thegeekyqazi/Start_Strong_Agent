@@ -167,6 +167,13 @@ def capabilities_for(settings: Settings) -> list[Capability]:
             f"version-bound staff review; {where}. Not funder certification.",
         ),
         Capability(
+            feature="funding.saved_searches",
+            owner="B1",
+            status=dev,
+            detail="Saved public search profiles with staff-triggered reruns, comparisons and "
+            "explicit single-source rechecks. No scheduling or notifications (no JobStore).",
+        ),
+        Capability(
             feature="funding.evaluations",
             owner="B1",
             status=dev,
@@ -348,5 +355,8 @@ def placeholder_operation(identity: Identity) -> NoReturn:
 
 # DEV-B-BUNDLE-002 M3/M4: funding case routes under /api/funding/cases.
 from .cases_router import router as _cases_router  # noqa: E402
+from .monitoring_router import router as _monitoring_router  # noqa: E402
 
 router.include_router(_cases_router)
+# DEV-B-BUNDLE-002 M5: saved searches, manual reruns and source rechecks.
+router.include_router(_monitoring_router)
